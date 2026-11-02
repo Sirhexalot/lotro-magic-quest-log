@@ -9,7 +9,7 @@ Author-only notes live in [publish-notes.md](publish-notes.md).
 |---|---|
 | Category | LotRO Stand-Alone Plugins → Other |
 | Name | **Magic Quest Log** (must match the `.plugin` file exactly) |
-| Version | 0.1.1 |
+| Version | 0.1.2 |
 | File | `dist/MagicQuestLog-<version>.zip` |
 | Author | Adrian |
 | Homepage | https://github.com/Sirhexalot/lotro-magic-quest-log |
@@ -204,11 +204,19 @@ after a successful run, both for the optional section above.
 
 ### Changes
 
+0.1.2 - the counters show what is still possible.
+
+- A session play is never written to the journal, so it is now marked and left out of
+  the counters instead of standing there as permanently open.
+- Of two quests that rule each other out only one can be taken. Once one is finished
+  the other is marked "not possible" and no longer counted - for example the alternate
+  ninth chapter of volume IV. A chapter group that showed 6 of 8 now reads 6/6.
+
 0.1.1 — long names and a duplicate area fixed.
 
 - A long quest or deed name now wraps onto a second line and the row grows with
   it. Before, the second line was drawn underneath the next row and could not be
-  read ("Rückeroberung des Agarnaith: Môkál Rûkh").
+  read ("Rückeroberung des Agarnaith: Mokál Rukh").
 - Territories no longer appear twice in the tree: "Agarnaith", "Lhingris",
   "Ambarûl", "Khûd Zagin", "Imhûlar", "Urash Dâr", "Lossarnach", "Osgiliath",
   "Pinnath Gelin", "Anfalas" and "Ringló Vale" were listed once as a zone and once

@@ -167,11 +167,34 @@ local MQL = MagicQuestLog;
 questTotal = #MQL.catalogs.quests;
 deedTotal = #MQL.catalogs.deeds;
 assert(questTotal > 14000, "quest catalog implausibly small: " .. questTotal);
+-- Counted totals are not the catalog size: a session play is never recorded by the
+-- game, and of two quests that rule each other out only one can be taken. Both stay
+-- out of the counters, so the expected numbers are worked out here.
+function erwartet(completed)
+	local total, done = 0, 0;
+	local known = completed ~= nil and completed ~= false;
+	for _, record in ipairs(MQL.catalogs.quests) do
+		local finished = known and completed[record.id] == true;
+		if finished then
+			total, done = total + 1, done + 1;
+		elseif record.x ~= 1 then
+			local blocked = false;
+			if known then
+				for _, other in ipairs(record.ex or {}) do
+					if completed[other] == true then blocked = true; break; end
+				end
+			end
+			if not blocked then total = total + 1; end
+		end
+	end
+	return total, done;
+end
+function zahl(completed) return (erwartet(completed)); end
 assert(MQL.language == "de", "client德语 should win, got " .. tostring(MQL.language));
 assert(MQL.window ~= nil, "window missing");
 local window = MQL.window;
 assert(window:IsVisible(), "window must start visible");
-assert(string.find(window.countLabel:GetText(), tostring(questTotal)), "count label: " .. window.countLabel:GetText());
+assert(string.find(window.countLabel:GetText(), tostring(zahl(window.completed)), 1, true), "count label: " .. window.countLabel:GetText());
 -- Collapsed by default: only root nodes are rows.
 local roots = 0;
 for _, child in ipairs(MQL.Model.Build(MQL.catalogs.quests, "", MQL.strings).order) do roots = roots + 1; end
@@ -184,7 +207,7 @@ local function search(text)
 	return window.root.total;
 end
 local all = search("");
-assert(all == questTotal, "unfiltered total " .. tostring(all));
+assert(all == zahl(window.completed), "unfiltered total " .. tostring(all));
 local diacritic = search("ker izel");
 local plain = search("Kêr Izel");
 assert(diacritic > 0 and diacritic == plain, "accent-insensitive search failed");
@@ -261,7 +284,7 @@ local before = window.tree:GetItemCount();
 window.expanded["|0/region:Gondor"] = true;
 window:Rebuild();
 assert(window.tree:GetItemCount() > before, "expanding must add rows");
-assert(window.root.total == questTotal, "totals must not change on expand");
+assert(window.root.total == zahl(window.completed), "totals must not change on expand");
 -- Switching kinds must not leave the other kind's record in the detail pane.
 assert(window.record == false, "a kind switch must clear the detail pane");
 -- Row clicks use the list selection path. Open the path of one known quest so the
@@ -303,7 +326,7 @@ local function click(index)
 end
 click(1);
 assert(window.tree:GetItemCount() > collapsed, "clicking a node must expand it");
-assert(window.root.total == questTotal, "totals must survive expanding");
+assert(window.root.total == zahl(window.completed), "totals must survive expanding");
 click(1);
 assert(window.tree:GetItemCount() == collapsed, "clicking the same node again must collapse it");
 -- The longest catalog name must actually arrive as a taller row, not as a clipped
@@ -332,6 +355,98 @@ assert(tallRow.control:GetHeight() > 20,
 	"a long name must get a taller row, got " .. tostring(tallRow.control:GetHeight()));
 assert(tallRow.control.text:GetHeight() == tallRow.control:GetHeight(),
 	"the name label must fill the taller row");
+window.expanded = {};
+window.searchBox:SetText("");
+window.query = "";
+window:Rebuild();
+-- Session plays and alternatives. The game never records a session play, and of two
+-- quests that rule each other out only one can be taken, so neither is counted.
+assert(type(window.completed) == "table", "precondition: progress is known here");
+local completed = window.completed;
+local sessionRecord, excludedRecord = nil, nil;
+for _, record in ipairs(MQL.catalogs.quests) do
+	if record.x == 1 and sessionRecord == nil then sessionRecord = record; end
+	if excludedRecord == nil and completed ~= nil and record.ex ~= nil then
+		for _, other in ipairs(record.ex) do
+			if completed[other] == true and completed[record.id] ~= true then
+				excludedRecord = record;
+			end
+		end
+	end
+end
+assert(sessionRecord ~= nil, "expected a session play in the catalog");
+assert(excludedRecord ~= nil, "expected an entry ruled out by a finished alternative");
+window:Rebuild();
+assert(sessionRecord.sessionPlay == true, "the session play must be flagged");
+assert(excludedRecord.excluded == true, "a finished alternative must rule an entry out");
+assert(type(excludedRecord.excludedByName) == "string" and excludedRecord.excludedByName ~= "",
+	"the entry that rules it out must be named");
+-- A finished entry always counts, even where the data claims both alternatives are
+-- exclusive: eleven such pairs exist in the export and this character has both.
+assert(completed[excludedRecord.id] ~= true, "precondition: the ruled-out entry is open");
+local paired = nil;
+for _, record in ipairs(MQL.catalogs.quests) do
+	for _, other in ipairs(record.ex or {}) do
+		if completed[record.id] == true and completed[other] == true then paired = record; end
+	end
+end
+assert(paired == nil or paired.excluded ~= true, "a finished entry must never be marked as ruled out");
+-- The two entries reported from the game: "Ein Schlag auf den Kopf" is ruled out by
+-- the chapter this character played, "Endlich, der Schatz" is a session play. Both
+-- sit in the same epic chapter group, which must count only what is still doable.
+local ersatz, interlude = nil, nil;
+for _, record in ipairs(MQL.catalogs.quests) do
+	if record.id == "70048CDF" then ersatz = record; end
+	if record.id == "70048CDC" then interlude = record; end
+end
+assert(ersatz ~= nil and interlude ~= nil, "expected the two entries from the game");
+local root = MQL.Model.Build(MQL.catalogs.quests, "", MQL.strings, completed, {});
+local function leafOf(record)
+	local node = root;
+	for _, part in ipairs(record.p) do node = node.children[part.k]; end
+	return node;
+end
+local group = leafOf(interlude);
+assert(group ~= nil and leafOf(ersatz) == group, "both entries must share one chapter group");
+local counted, listed = 0, 0;
+for _, record in ipairs(group.items) do
+	listed = listed + 1;
+	if not (record.sessionPlay or record.excluded) then counted = counted + 1; end
+end
+assert(counted == listed - 2, "the two entries must be the only uncounted ones: "
+	.. tostring(counted) .. " of " .. tostring(listed));
+assert(group.total == counted, "the group must count only what can still be done: "
+	.. tostring(group.total) .. " of " .. tostring(listed));
+bookCounted, bookListed = counted, listed;
+assert(ersatz.excluded == true, "the alternate chapter must be ruled out");
+assert(interlude.sessionPlay == true, "the interlude must be a session play");
+-- Rows say so: dimmed text with a short label, and no status mark that would claim
+-- the entry is still open.
+window.expanded = {};
+window.searchBox:SetText("Endlich, der Schatz");
+window.query = "Endlich, der Schatz";
+local interludePath = "|";
+for depth, part in ipairs(interlude.p) do
+	interludePath = interludePath .. (depth - 1) .. "/" .. part.k;
+	window.expanded[interludePath] = true;
+end
+window:Rebuild();
+local interludeRow = nil;
+for _, row in ipairs(window.rows) do
+	if row.control.text and row.control.text:GetText() == interlude.displayName
+		.. "   (" .. MQL.strings.sessionplay .. ")" then interludeRow = row; break; end
+end
+assert(interludeRow ~= nil, "the session play row must carry its label");
+assert(interludeRow.control.status == false, "a session play must not carry a status mark");
+window:ShowDetails(interlude);
+assert(string.find(window.detailText:GetText(), MQL.strings.sessionnote, 1, true),
+	"the details must explain why it is not counted");
+window:ShowDetails(ersatz);
+assert(string.find(MQL.Model.Normalize(window.detailText:GetText()),
+	MQL.Model.Normalize(MQL.strings.alternative), 1, true),
+	"the details must say the entry is not possible");
+assert(string.find(window.detailText:GetText(), ersatz.excludedByName, 1, true),
+	"the details must name the finished alternative");
 window.expanded = {};
 window.searchBox:SetText("");
 window.query = "";
@@ -374,7 +489,7 @@ assert(builds == 0, "an unchanged rebuild must reuse the cached tree, got " .. b
 window.expanded["|0/region:Gondor"] = true;
 window:Rebuild();
 assert(builds == 0, "expanding must reuse the cached tree, got " .. builds);
-assert(window.root.total == questTotal, "cached tree must keep its totals");
+assert(window.root.total == zahl(window.completed), "cached tree must keep its totals");
 window.query = "Zügellosen";
 window:Rebuild();
 assert(builds == 1, "a new search must rebuild exactly once, got " .. builds);
@@ -390,7 +505,7 @@ local sampleId = MQL.catalogs.quests[1].id;
 window:SetProgress({ [sampleId] = true }, true);
 assert(string.find(window.countLabel:GetText(), MQL.strings.finished, 1, true),
 	"progress must be reported: " .. window.countLabel:GetText());
-assert(string.find(window.countLabel:GetText(), "1 / " .. tostring(questTotal)), "headline count: " .. window.countLabel:GetText());
+assert(string.find(window.countLabel:GetText(), "1 / " .. tostring(zahl(window.completed)), 1, true), "headline count: " .. window.countLabel:GetText());
 window.expanded["|0/region:Gondor"] = true;
 window:Rebuild();
 local counterSeen = false;
@@ -400,7 +515,7 @@ for _, row in ipairs(window.rows) do
 end
 assert(counterSeen, "node counters must show n/total with progress");
 window:SetProgress(nil);
-assert(not string.find(window.countLabel:GetText(), "1 / " .. tostring(questTotal), 1, true),
+assert(not string.find(window.countLabel:GetText(), "1 / " .. tostring(zahl(window.completed)), 1, true),
 	"without progress the finished count must disappear again");
 -- Placeholders in names and group captions are filled in, never shown raw.
 local resolved = MQL.Model.Display("Der ${CLASS} prueft ${PLAYERNAME:A[1]|B[2]}", { charclass = "Jäger" },
@@ -593,7 +708,7 @@ fallbackLanguage = MagicQuestLog.language;
 assert(fallbackLanguage == "en", "fallback language: " .. tostring(fallbackLanguage));
 assert(MagicQuestLog.window ~= previousWindow, "fallback must build a new window, not keep the old one");
 assert(MagicQuestLog.window ~= nil and MagicQuestLog.window.root ~= nil, "fallback window missing");
-assert(MagicQuestLog.window.root.total == questTotal, "fallback total: " .. tostring(MagicQuestLog.window.root.total));
+assert(MagicQuestLog.window.root.total == zahl(MagicQuestLog.window.completed), "fallback total: " .. tostring(MagicQuestLog.window.root.total));
 assert(MagicQuestLog.strings.quests == "Quests", "fallback strings");
 assert(MagicQuestLog.Data["quests_en"] ~= nil, "English catalog must be present for the fallback");
 assert(MagicQuestLog.Data["quests_de"] ~= nil, "German catalog stays loaded and is simply not chosen");
@@ -676,7 +791,8 @@ assert(MagicQuestLog.language == "de", "German client must use the German catalo
              language = MQL.language,
              searchLabelText = MQL.strings.search,
              counterSample = (MQL.window.rows[1] and MQL.window.rows[1].control.label
-                 and MQL.window.rows[1].control.label:GetText()) or "" };
+                 and MQL.window.rows[1].control.label:GetText()) or "",
+             bookCounted = bookCounted, bookListed = bookListed };
 end''')
     lua.globals().read = read
     values = read()
@@ -693,6 +809,8 @@ end''')
     print('PASS: header sits below the title bar, search is labelled "%s"' % values['searchLabelText'])
     print('PASS: expanding reuses the cached tree (no re-sort); a new search rebuilds exactly once')
     print('PASS: counters show "%s" with progress and claim nothing without it' % values['counterSample'])
+    print('PASS: session plays and ruled-out alternatives stay out of the counters (the reported chapter group counts %s of %s entries)'
+          % (values['bookCounted'], values['bookListed']))
     print('PASS: MoorMap runs through a quickslot alias shortcut, not by printing the command')
     print('PASS: a progress file for another character is ignored instead of being shown as ours')
     print('PASS: LOTRO markup is removed from texts, a stray "<" in real words is kept')

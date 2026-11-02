@@ -18,6 +18,9 @@ MagicQuestLog.Strings = {
 		festivals = "Festivals and events", other = "No geographic assignment",
 		catalogerror = "Catalog could not be loaded", maperror = "MoorMap is not available",
 		help = "/mql shows or hides Magic Quest Log",
+		sessionplay = "session play", alternative = "not possible",
+		sessionnote = "Session play: you play someone else for a while. The game does not record it as finished, so it is not counted.",
+		alternativenote = "Not possible: \"%s\" is already finished.",
 	},
 	de = {
 		title = "Magic Quest Log", quests = "Aufgaben", deeds = "Taten",
@@ -35,6 +38,9 @@ MagicQuestLog.Strings = {
 		festivals = "Feste und Ereignisse", other = "Nicht geografisch zugeordnet",
 		catalogerror = "Katalog konnte nicht geladen werden", maperror = "MoorMap ist nicht verfügbar",
 		help = "/mql zeigt oder verbirgt Magic Quest Log",
+		sessionplay = "Sitzungsspiel", alternative = "nicht möglich",
+		sessionnote = "Sitzungsspiel: Hier spielt Ihr kurz jemand anderen. Das Spiel trägt es nicht als erledigt ein, deshalb zählt es nicht mit.",
+		alternativenote = "Nicht möglich: \"%s\" ist bereits erledigt.",
 	},
 	fr = {
 		title = "Magic Quest Log", quests = "Quêtes", deeds = "Prouesses",
@@ -52,5 +58,8 @@ MagicQuestLog.Strings = {
 		festivals = "Festivals et événements", other = "Sans attribution géographique",
 		catalogerror = "Impossible de charger le catalogue", maperror = "MoorMap n'est pas disponible",
 		help = "/mql affiche ou masque Magic Quest Log",
+		sessionplay = "jeu de session", alternative = "impossible",
+		sessionnote = "Jeu de session : vous jouez brièvement un autre personnage. Le jeu ne l'enregistre pas comme terminé, il n'est donc pas compté.",
+		alternativenote = "Impossible : \"%s\" est déjà terminé.",
 	},
 };

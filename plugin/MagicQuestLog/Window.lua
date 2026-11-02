@@ -121,6 +121,7 @@ function Window:Constructor(strings, catalogs)
 	self.small = Turbine.UI.Lotro.Font.Verdana12;
 	self.back = Turbine.UI.Color(0.05, 0.05, 0.05);
 	self.trim = Turbine.UI.Color(0.78, 0.78, 0.78);
+	self.dim = Turbine.UI.Color(0.45, 0.45, 0.45);
 	self.gold = Turbine.UI.Color(1, 0.9, 0.5);
 	self.selectedBack = Turbine.UI.Color(0.16, 0.15, 0.10);
 
@@ -532,8 +533,9 @@ function Window:AddNode(node, depth, parentPath)
 		item:SetBackColor(self.back);
 		item:SetMouseVisible(true);
 		-- A status mark only exists when progress is known: without it every row
-		-- would carry a grey circle that says nothing.
-		if self.completed then
+		-- would carry a grey circle that says nothing. Entries that are not counted
+		-- get no mark at all - a circle would claim they are still open.
+		if self.completed and not record.sessionPlay and not record.excluded then
 			local mark = makeImage(item, self.completed[record.id] == true and "done" or "todo");
 			mark:SetPosition(3, 1);
 			item.status = mark;
@@ -544,7 +546,18 @@ function Window:AddNode(node, depth, parentPath)
 		item.marker = false;
 		local text = makeLabel(item, self.body, self.trim);
 		text:SetMultiline(true);
-		text:SetText(record.displayName or record.name);
+		-- An entry that cannot be counted says so next to its name: a session play
+		-- the game never records, or one the finished alternative rules out. Both
+		-- are dimmed so the eye skips them when reading the numbers.
+		local name = record.displayName or record.name;
+		if record.sessionPlay then
+			text:SetForeColor(self.dim);
+			name = name .. "   (" .. self.strings.sessionplay .. ")";
+		elseif record.excluded then
+			text:SetForeColor(self.dim);
+			name = name .. "   (" .. self.strings.alternative .. ")";
+		end
+		text:SetText(name);
 		text:SetSize(1, LINE);
 		item.text = text;
 		self:AddRow(item, depth + 1, function()

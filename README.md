@@ -18,6 +18,10 @@ A character's own progress file also stays local.
 - **Search** by name or part of a name, ignoring case and accents.
 - On the right, the **description** and the objectives split into steps. Known
   objective counts read "required: 10"; live counters are never invented.
+- The counters show what a character can still do, not what merely exists: a
+  **session play** is never written to the journal, and of two quests that rule
+  each other out only one can be taken. Both are marked in the tree ("session
+  play", "not possible") and stay out of the numbers. The details say why.
 - **Progress** from two sources: an optional status file (`Data/Progress.lua`)
   for everything done before, and the quest chat channel for what you finish
   while playing. The tree and the headline then show "finished / total" (e.g.
@@ -205,6 +209,20 @@ that carries the name of a known zone of the same region is now that zone
 the tree stays identical in every language, and `verify_catalog.py` refuses a name
 that appears both as zone and as area.
 
+Two facts from the game data decide what is still possible. Both are worked out
+in the catalogue, so all three languages and every view agree:
+
+- 78 quests are **session plays** (`Quest_IsSessionQuest`): the game plays someone
+  else for a while and never records them. None of the 87 session plays in the
+  export appears in a played character's journal.
+- 521 quests rule out another quest and are ruled out by it: each demands the
+  other one "not started and not finished", so whoever took one cannot take the
+  other. Which pairs those are is derived from the requirement blobs; the operator
+  mapping (2 = not equal, 3 = equal, 0x30000000 = completed) was checked against
+  1,886 prerequisites of finished quests, 96 % of whose targets are finished too.
+  Missing prerequisite names, class or trait gates are *not* evaluated: the plugin
+  cannot know what a character has.
+
 **Known limits, accepted on purpose:**
 
 - The DAT export carries no per-quest map reference. Companion XML has
@@ -227,6 +245,10 @@ that appears both as zone and as area.
   wrapper) in 14 and 2–18 places per language. The plugin fills them, and
   `test_plugin.py` checks that with a fixture built in the test itself.
 - 1,454 quests still sit in the collection node "Ohne Gebiet" (9.6 %).
+- Eleven exclusion pairs have both sides finished in the export although the data
+  calls them exclusive. A finished entry always counts, so the rule never hides
+  something that was done - but it is a reminder that the requirement blobs also
+  describe entry points, not only either/or choices.
 
 ### Getting your older progress in
 

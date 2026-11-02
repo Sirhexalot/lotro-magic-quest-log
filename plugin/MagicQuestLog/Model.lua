@@ -71,13 +71,41 @@ function M.Build(records, query, strings, completed, context)
 		end
 		return record.displayName;
 	end
+	-- What a character can still do, not what exists. A session play is never
+	-- written to the journal (the game plays someone else), and of two quests that
+	-- rule each other out only one can be taken. Neither belongs in a counter.
+	-- A finished entry always counts: the game data has a few pairs that a
+	-- character has evidently done both of.
+	local function attainable(record, finished)
+		record.sessionPlay = record.x == 1;
+		record.excluded = false;
+		record.excludedBy = false;
+		if finished then return true; end
+		if record.sessionPlay then return false; end
+		if completed ~= nil then
+			for _, other in ipairs(record.ex or {}) do
+				if completed[other] == true then
+					record.excluded, record.excludedBy = true, other;
+					return false;
+				end
+			end
+		end
+		return true;
+	end
+	local byId = {};
+	for _, record in ipairs(records or {}) do byId[record.id] = record; end
 	local needle = M.Normalize(query or "");
 	for _, record in ipairs(records or {}) do
 		local name = display(record);
+		-- The state is worked out for every record, not only for the ones the
+		-- search keeps: a stale flag would otherwise be shown later.
+		local finished = completed ~= nil and completed[record.id] == true;
+		local counts = attainable(record, finished);
 		if needle == "" or string.find(record.searchText, needle, 1, true) ~= nil then
-			local finished = completed ~= nil and completed[record.id] == true;
-			root.total = root.total + 1;
-			if finished then root.done = root.done + 1; end
+			if counts then
+				root.total = root.total + 1;
+				if finished then root.done = root.done + 1; end
+			end
 			local node = root;
 			for _, part in ipairs(record.p or {}) do
 				local child = node.children[part.k];
@@ -89,11 +117,21 @@ function M.Build(records, query, strings, completed, context)
 					node.children[part.k] = child;
 					table.insert(node.order, child);
 				end
-				child.total = child.total + 1;
-				if finished then child.done = child.done + 1; end
+				if counts then
+					child.total = child.total + 1;
+					if finished then child.done = child.done + 1; end
+				end
 				node = child;
 			end
 			table.insert(node.items, record);
+		end
+	end
+	-- Name the alternative that blocks an entry. It may itself be filtered out by
+	-- the search, so the record is looked up in the whole catalog.
+	for _, record in ipairs(records or {}) do
+		if record.excluded then
+			local other = byId[record.excludedBy];
+			record.excludedByName = other ~= nil and display(other) or record.excludedBy;
 		end
 	end
 	local function sort(node)
@@ -222,6 +260,16 @@ function M.Detail(record, strings, context)
 	local parts = {};
 	if record.l ~= nil and record.l ~= "" then
 		table.insert(parts, strings.level .. ": " .. (record.l == "Scaling" and strings.scaled or tostring(record.l)));
+	end
+	-- Why an entry is not counted. The row is dimmed in the tree; this says why.
+	if record.sessionPlay then
+		table.insert(parts, strings.sessionnote);
+	end
+	if record.excluded then
+		-- Resolve returns two values; the second would become table.insert's position.
+		local note = M.Resolve(string.format(strings.alternativenote,
+			tostring(record.excludedByName or record.excludedBy or "")), context, strings);
+		table.insert(parts, note);
 	end
 	local description = M.Resolve(record.d, context, strings);
 	if (string.gsub(description, "%s", "")) ~= "" then

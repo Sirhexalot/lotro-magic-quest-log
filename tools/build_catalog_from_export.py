@@ -309,6 +309,37 @@ def build(export_dir, enums_path, output, moormap_path=None, overrides=None, lan
                 return zone, suffix, False
         return None, None, False
 
+    # Two facts that decide what a player can still finish. Both are language
+    # independent, so they are worked out once from the English structure:
+    #  * a session play is never written to the journal - no character can ever
+    #    carry one as "finished" (all 87 in the export are absent from a played
+    #    character's record);
+    #  * two quests that each demand the other one "not started and not finished"
+    #    rule each other out: whoever picked one cannot do the other.
+    # The comparison operator from the DAT is 2 = NOT_EQUAL and 3 = EQUAL, with the
+    # status mask 0x30000000 = completed and 0x10000000 = underway; that mapping was
+    # checked against 1,886 prerequisites of quests this character has finished
+    # (96 % of their targets are finished too).
+    session_ids = set()
+    not_taken = defaultdict(set)
+    for entry in source.quests:
+        ident = entry['id']
+        props = entry.get('properties') or {}
+        if props.get('Quest_IsSessionQuest') == 1:
+            session_ids.add(ident)
+        for requirement in ((props.get('DefaultPermissionBlobStruct') or {})
+                            .get('Usage_QuestRequirements') or []):
+            if requirement.get('Usage_Operator') != 2:
+                continue
+            target = '%08X' % (int(requirement.get('Usage_QuestID', 0)) & 0xffffffff)
+            if target != ident:
+                not_taken[ident].add(target)
+    exclusions = defaultdict(set)
+    for ident, targets in not_taken.items():
+        for target in targets:
+            if ident in not_taken.get(target, ()):
+                exclusions[ident].add(target)
+
     def section_for(category_en):
         if category_en.startswith('Mission'):
             return 'missions'
@@ -489,6 +520,18 @@ def build(export_dir, enums_path, output, moormap_path=None, overrides=None, lan
                     built = make_record(entry, kind, locale, stats, fallback)
                     if built is not None:
                         records.append(built)
+                if kind == 'quests':
+                    # These two fields only name entries the catalog still shows:
+                    # a pointer at a hidden test entry would dangle.
+                    visible = {r['id'] for r in records}
+                    for record in records:
+                        if record['id'] in session_ids:
+                            record['x'] = 1
+                            stats['quests_session'] += 1
+                        mates = sorted(exclusions.get(record['id'], set()) & visible)
+                        if mates:
+                            record['ex'] = mates
+                            stats['quests_mutually_exclusive'] += 1
                 (staging / ('%s_%s.lua' % (kind.capitalize(), locale))).write_text(
                     MARKER + 'MagicQuestLog = MagicQuestLog or {};\nMagicQuestLog.Data = MagicQuestLog.Data or {};\n'
                     'MagicQuestLog.Data.%s_%s = {\n' % (kind, locale)
