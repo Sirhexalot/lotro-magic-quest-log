@@ -1,0 +1,52 @@
+{
+  "schema": 1,
+  "sources": {
+    "quests.xml": "c834387b0c045130e6aa47cb00944faafe45d01681df7d186b225b03e1c0540e",
+    "deeds.xml": "b49976dd25cf853c03f234d306546c4c0ea3cdc5eada421f31aa3ac5a97c4b0d",
+    "geoAreas.xml": "f693f4c66b338a7f126ab861b71bf1b3365b89ecb97ed75281e3fb75e98ac46f",
+    "maps/maps/maps.xml": "10824a23607e1e2e7c909e8fa76f471e079c030b02de2c80ae2992ddc1c22c0c",
+    "MoorMap/Defaults.lua": "6dae9cbc72d4e8798aa1eb03a67fd2e60f66a9092d781d9a2de4022c9e8eead0"
+  },
+  "locales": {
+    "en": {
+      "counts": {
+        "quests": 15117,
+        "quests_with_targets": 10051,
+        "quests_targets": 71189,
+        "quests_hidden": 372,
+        "deeds": 5534,
+        "deeds_with_targets": 456,
+        "deeds_targets": 4975
+      },
+      "english_fallback_texts": {},
+      "zones_without_region": {}
+    },
+    "de": {
+      "counts": {
+        "quests": 15117,
+        "quests_with_targets": 10051,
+        "quests_targets": 71189,
+        "quests_hidden": 372,
+        "deeds": 5534,
+        "deeds_with_targets": 456,
+        "deeds_targets": 4975
+      },
+      "english_fallback_texts": {},
+      "zones_without_region": {}
+    },
+    "fr": {
+      "counts": {
+        "quests": 15117,
+        "quests_with_targets": 10051,
+        "quests_targets": 71189,
+        "quests_hidden": 372,
+        "deeds": 5534,
+        "deeds_with_targets": 456,
+        "deeds_targets": 4975
+      },
+      "english_fallback_texts": {},
+      "zones_without_region": {}
+    }
+  },
+  "coverage": {}
+}

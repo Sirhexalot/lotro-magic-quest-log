@@ -1,0 +1,14 @@
+# The generated catalogs are ~102 MB and are shipped as a release archive
+# instead of living in the repository. Rebuild them with tools/rebuild.command.
+plugin/MagicQuestLog/Data/*.lua
+!plugin/MagicQuestLog/Data/Progress.example.lua
+
+# A character's own progress is private and is never published.
+plugin/MagicQuestLog/Data/Progress.lua
+
+.venv/
+__pycache__/
+*.pyc
+
+# Local build output: release archives and staged catalogs.
+dist/
