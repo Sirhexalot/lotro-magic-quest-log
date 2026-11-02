@@ -220,55 +220,23 @@ position (formerly 10,051).
 
 ### Getting your older progress in
 
-There are two ways. Both end in the same file, `Data/Progress.lua`.
+The plugin counts what you finish from the moment it is installed. For everything
+before that there is one optional tool, and it ships with the plugin:
+`MagicQuestLog/Optional-Progress-Tool/`. Its `START-HERE.txt` has the four steps;
+`README.md` next to it answers the usual questions.
 
-**A. Read the running client (no Companion import needed).**
-`tools/journal-reader/` contains a small Java tool with a Windows and a macOS
-launcher. It reads the journal of the character that is logged in and writes
-`Progress.lua` directly. Start it with `read-journal.bat` (Windows) or
-`read-journal.command` (macOS); both find the game and Companion themselves.
-The tool ships **inside the plugin folder** as
-`MagicQuestLog/Optional-Progress-Tool/`, in the release archive and in every
-rebuild install. It needs a local LOTRO Companion installation (library and
-Windows Java); the download page and `START-HERE.txt` say so.
+Short version: install LOTRO Companion once (it only lends two files, it never
+starts), log in the character, double-click the launcher for your system, then
+restart the game. The tool reads the journal of the character that is logged in —
+there is nothing to choose — and writes `Data/Progress.lua`. For a second
+character, log that one in and run it again.
 
-There is **no character list to pick from**: the client only holds the character
-that is logged in, so that is the one read, and the tool refuses to guess when two
-clients run at once. For another character, log it in and run the tool again —
-each character keeps its own file, and the plugin shows the one matching the
-character you play. Way B is different: it lists every character Companion has
-imported and takes the name as an argument.
+Afterwards **restart the game**: the file is read at plugin load, and reloading
+the plugin in a running session is not reliable with the large catalog.
 
-It needs a local **LOTRO Companion installation**, but only for its memory
-library and its Windows Java — Companion does not have to run, and its interface
-is never used. The library is not part of this repository; see
-`tools/journal-reader/README.md`.
-
-**B. Read what Companion wrote (no foreign code at all).**
-LOTRO Companion writes two plain XML files per imported character
-
-```
-~/.lotrocompanion/data/characters/<account>/<server>/<character>/
-    questsStatus.xml   deedsStatus.xml
-```
-
-and this reads them:
-
-```sh
-python3 MagicQuestLog/tools/build_progress_from_companion.py              # list characters
-python3 MagicQuestLog/tools/build_progress_from_companion.py <character>  # write Progress.lua
-```
-
-Import the character in LOTRO Companion first — that step is Companion's job and
-on Windows it works natively. The LOTRO Compendium import reads the same two
-files, which is why the format can be relied on.
-
-Either way, afterwards **restart the game**: the progress file is read at plugin
-load, and reloading the plugin in a running session is not reliable with the
-large catalog.
-
-`tools/journal-reader/verify_progress.py` checks a written file without any game
-data.
+Developers: `tools/journal-reader/TECHNICAL.md` has what exactly is read, the exit
+codes, rebuilding the prebuilt class, and the alternative route through
+Companion's XML files.
 
 A character's own status file does **not** belong in the repository:
 `Data/Progress.lua` is listed in `.gitignore`, `make_release.py` leaves it out of

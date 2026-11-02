@@ -73,7 +73,8 @@ def main():
         # it without visiting the repository. It needs a local LOTRO Companion
         # installation; the download page and START-HERE.txt say so.
         for path in sorted(TOOLS.rglob('*')):
-            if not path.is_file() or path.name.endswith('.pyc'):
+            # Developer notes stay in the repository; the download is for players.
+            if not path.is_file() or path.name.endswith('.pyc') or path.name in ('TECHNICAL.md', 'JournalExport.java', 'verify_progress.py'):
                 continue
             relative = path.relative_to(TOOLS)
             archive.write(path, arcname=str(TOOL_FOLDER / relative))

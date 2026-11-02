@@ -68,6 +68,10 @@ else
 	cp -R "$ROOT/plugin/MagicQuestLog" "$PLUGIN_DIR/"
 	# The optional journal reader ships inside the plugin folder (same as the release).
 	cp -R "$ROOT/tools/journal-reader" "$PLUGIN_DIR/MagicQuestLog/Optional-Progress-Tool"
+	# Developer notes stay in the repository; players get the instructions only.
+	rm -f "$PLUGIN_DIR/MagicQuestLog/Optional-Progress-Tool/TECHNICAL.md" \
+	      "$PLUGIN_DIR/MagicQuestLog/Optional-Progress-Tool/JournalExport.java" \
+	      "$PLUGIN_DIR/MagicQuestLog/Optional-Progress-Tool/verify_progress.py"
 	echo
 	echo "Done. In game: /plugins unload MagicQuestLog, /plugins load MagicQuestLog, /mql"
 	echo "German client: /zusatzmodule entfernen MagicQuestLog, /zusatzmodule laden MagicQuestLog"

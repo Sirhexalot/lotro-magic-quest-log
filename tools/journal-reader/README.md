@@ -1,112 +1,68 @@
-# Journal reader – technical reference
+# Journal reader – questions and answers
 
-**Start with [`START-HERE.txt`](START-HERE.txt)** if you just want to use it; that
-file has the four steps. This one is the reference.
+You do not need this page to use the tool. [`START-HERE.txt`](START-HERE.txt) has
+the four steps. This page answers what people ask afterwards.
 
-Reads the quest journal of the **running LOTRO client** and writes the plugin's
-`Progress.lua` directly. Read-only towards the game: no write call into the
-client, no general memory dump, no account or session data.
+## Do I have to use LOTRO Companion?
 
-Verified against a running client on 2 November 2026: 3,660 completed and 582
-active records, written and then checked with `verify_progress.py`.
+No. You only have to **install** it once. The tool borrows two files from its
+program folder that can read the game's memory; those files are not ours to give
+away. Companion itself never starts, and you do not import anything in it.
 
-## Setting it up
+## Why does it need the game running?
 
-Three things have to exist, two of them are found automatically.
+The quest journal exists only while the game is open: the client keeps it in
+memory and nowhere else. So the tool has to look while your character stands in
+the world. Being at the launcher or the character selection is not enough.
 
-1. **The plugin.** The folder `Plugins/MagicQuestLog` has to be installed — the
-   tool writes into its `Data` folder.
-2. **LOTRO Companion.** Only for its `app/lib` (the memory library) and its
-   Windows Java under `runtime/bin`. The tool does not use its interface. It does
-   **not** have to run.
-3. **The game, running**, with the character in the world. The launcher alone is
-   not enough; the tool reads the journal of a logged-in character.
+## Which character does it read?
 
-Then, from this folder:
+The one that is logged in. There is nothing to choose, because the game only
+holds that one in memory. For a second character, log it in and run the tool
+again — each character keeps its own progress file.
 
-| System | Start |
+If two game windows are open, close one first. The tool refuses to guess.
+
+## Is my data safe?
+
+Yes. It reads the list of finished and running quests and deeds — nothing else.
+No inventory, no money, no mail, no chat, no account data. It never writes into
+the game and never sends anything anywhere; it only writes one file inside the
+plugin folder: `Data/Progress.lua`.
+
+## Can I undo it?
+
+Delete `MagicQuestLog/Data/Progress.lua`. The plugin then shows plain totals
+again, as if the tool had never run.
+
+## It said `Done`, but nothing changed
+
+The file is read when the plugin loads, so the game has to be restarted. Unloading
+and loading the plugin inside a running game usually fails because the catalog is
+large; a restart always works.
+
+## The tool stops and writes nothing
+
+It tells you why. The usual causes:
+
+| What it says | What to do |
 |---|---|
-| Windows | double-click `read-journal.bat` |
-| macOS | double-click `read-journal.command` |
+| LOTRO Companion was not found | Install it, or point `COMPANION_DIR` (Windows) or `MQL_COMPANION` (Mac) at its folder |
+| the LOTRO client folder was not found | Start the game once so the path exists |
+| no LOTRO processes found / enter the world first | The game is closed, or your character is not logged in yet |
+| the active character is X, not Y | A different character is logged in — log in the right one |
 
-Both wrappers search for Companion and the game, so nothing has to be configured
-in the normal case. If the search fails, the error message names the variable to
-set: `COMPANION_DIR` and `LOTRO_DIR` in the `.bat`, `MQL_COMPANION`,
-`MQL_LOTRO_APP` and `MQL_OUTPUT` for the `.command`.
+After a big game update the read can fail until LOTRO Companion ships an update.
+That only affects this tool. The plugin keeps working; it just will not add older
+progress until then.
 
-Afterwards, restart the game. The plugin reads the file at load; a reload inside
-a running session is not reliable with the large catalog.
+## On a Mac
 
-The result lands in `Plugins/MagicQuestLog/Data/Progress.lua`; the headline then
-reads the full count instead of "finished (known)".
+LOTRO runs through Wine there. `read-journal.command` knows that setup and finds
+the game and its Wine prefix by itself; nothing has to be configured.
 
-### Check the result without the game
+## Something for developers?
 
-```sh
-python3 verify_progress.py <Progress.lua>
-```
-
-It loads the file, checks the generator header, the id format and the table the
-plugin expects. Needs `lupa` (Lua 5.1).
-
-## What it needs on the system
-
-| | |
-|---|---|
-| LOTRO Companion | `app/lib/delta-lotro-memory-*.jar` and a Windows Java |
-| LOTRO client | the folder containing `client_gamelogic.dat` |
-| Rights | on Windows the client may have to run as administrator for the read |
-
-`classes/JournalExport.class` is prebuilt for Java 8 on purpose: Companion ships
-a **JRE only**, without `javac`, so compiling on the user's machine is not an
-option. Rebuild it after changing the source:
-
-```sh
-javac --release 8 -cp '<companion>/app/lib/*' -d classes JournalExport.java
-```
-
-## What it reads, and what it does not
-
-| Read | Not read |
-|---|---|
-| the character summary, only to name the file | inventory, wallet, mail, chat, account data |
-| `m_completedQuestRecords` (keys only) | the record values and their counters |
-| `m_currentQuestRecords` (keys only) | any part of the client's configuration |
-
-The journal does not say whether an id is a quest or a deed; the catalog decides
-that, which is why nothing is classified here.
-
-## Exit codes
-
-| Code | Meaning |
-|---|---|
-| 0 | written |
-| 1 | usage, paths, or the target file was not written by this tool |
-| 2 | game not running, character not in the world, wrong character, or no read access |
-| 3 | the read returned nothing plausible – nothing written |
-
-Only a file whose first line is the generator header is replaced, and only through
-a temporary file, so a failed run cannot leave half a file behind.
-
-## Limits
-
-- **Version-bound.** The memory library has to match the game client. After a
-  game update the read can fail; the tool then reports it instead of writing a
-  half-empty file.
-- **One client only.** Two running clients are refused rather than guessing.
-- **Live counters are not read.** Active records are listed, but not their
-  objective progress.
-- **The memory library is not part of this repository.** It comes from the user's
-  own LOTRO Companion installation. LOTRO Companion as a distribution is
-  Apache-2.0, while the repositories of the `delta-*` libraries carry no licence
-  file — ask the author (lotrocompanion@gmail.com) before passing the jars on.
-- The plugin only ever reads `Progress.lua`; its live data goes to the client's
-  per-character plugin data. Running the tool again simply replaces the file.
-
-## Alternative without any memory access
-
-If the library cannot be used,
-[`../build_progress_from_companion.py`](../build_progress_from_companion.py) reads
-the two XML files that LOTRO Companion writes per imported character
-(`questsStatus.xml`, `deedsStatus.xml`). Same result, no memory access, no foreign
-code — but it needs Companion's own character import first.
+[`TECHNICAL.md`](TECHNICAL.md) has the internals: what exactly is read, exit
+codes, rebuilding the prebuilt class and the alternative route through
+Companion's XML files.
