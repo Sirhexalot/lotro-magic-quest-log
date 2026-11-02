@@ -27,6 +27,20 @@ The site answered: "Your interface or update has been submitted to our database
 and is now awaiting approval from one of our file administrators." Nothing is
 public until that approval.
 
+## Updating an existing entry
+
+File id **1346**: `downloads/editfile.php?id=1346` (only while logged in). The form
+has `ftitle`, `version`, `fileaction` (`keep`/`replace`), `replacementfile`,
+the description as `message`, `deletearchives` (leave unchecked so older archives
+stay), `allowpa`, `securitytoken`, `op=editfile`, `id`, `type`, `sbutton=Update`.
+An update keeps the entry and goes back into the approval queue: the version and
+the changes are visible at once, the download keeps serving the old archive until
+a file admin approves it.
+
+- 2 November 2026, evening: 0.1.2 uploaded (long names wrap, duplicate area gone,
+  counters show only what is still possible). Page shows "awaiting approval";
+  the download link still serves 0.1.0.
+
 Next once approved: take the numeric id from the download URL and add the
 `.plugincompendium` file with the next upload.
 
