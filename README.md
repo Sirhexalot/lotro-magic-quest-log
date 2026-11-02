@@ -344,11 +344,10 @@ copy.
   export from one point in time; live tracking only knows what happened since the
   plugin was loaded with that character. Neither replaces the other, and nothing
   here can know what was done before either of them existed.
-- **The same name can appear more than once** — 381 of the 15,209 quests sit
-  twice in the same group (for example "Das letzte Wort" or "Einleitung
-  überspringen"). These are not duplicates from our build: 15,117 entries were
-  checked and all 15,117 have different ids. They are separate quests that share
-  a name, for instance with a different bestower (`7003783D` → Arcil,
+- **The same name can appear more than once** — hundreds of quests sit twice in
+  the same group (for example "Das letzte Wort" or "Einleitung überspringen").
+  These are not duplicates from our build: every entry has its own id. They are
+  separate quests that share a name, for instance with a different bestower (`7003783D` → Arcil,
   `7003A67E` → Éothain), or one version per race and class. The game only shows
   the applicable one; without prerequisite data the catalog cannot tell them
   apart and therefore keeps both visible. A bestower field in the catalog would
@@ -371,8 +370,8 @@ copy.
   Rhovanion.
 - Map positions are only offered when they have been verified against the
   **exact texture id** of the map and the MoorMap bounds, and the region code
-  matches. Ambiguous or missing positions show no button at all: 10,051 of the
-  15,117 quests have a verified position.
+  matches. Ambiguous or missing positions show no button at all: 8,403 of the
+  15,209 quests have a verified position.
 - Positions come from the original coordinates of objectives and bestowers.
   They are not always the start of the quest.
 - The catalog totals are entries, not "reachable" quests. Class, race,
@@ -388,11 +387,12 @@ in [`packaging/lotrointerface.md`](packaging/lotrointerface.md).
 
 ## State and checks
 
-Generated: 15,117 quests (372 test entries hidden) and 5,534 deeds per language,
-71,189 verified quest positions. A progress file with 3,657 entries finished
+Generated: 15,209 quests (483 test entries hidden) and 5,534 deeds per language,
+8,403 verified quest positions in the German catalog (8,402 in English). A
+progress file with 3,657 entries finished
 (3,177 quests + 480 deeds), 579 running, 3 listed twice (repeatable) and 3
 unknown ids. Data check: identical id sets and an identical tree structure in all
-three languages, child totals add up. Plugin test: 17 checks green, among them a
+three languages, child totals add up. Plugin test: 21 checks green, among them a
 collapsed start, name search including "ker izel" → "Kêr Izel", details without
 raw placeholders, an honest display without a position, the English fallback when
 a language catalog is missing, the header below the title bar, a labelled search
