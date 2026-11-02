@@ -1,11 +1,7 @@
-# Publishing on LOTROInterface
+# Text for the LOTROInterface download
 
-Two parts: **the text to paste into the download form**, and the admin notes for
-you as the author.
-
----
-
-# Part 1 – the download page
+Everything here is meant to be pasted into the download form — nothing else.
+Author-only notes live in [publish-notes.md](publish-notes.md).
 
 ## Fields
 
@@ -89,73 +85,3 @@ download and is not needed to use the plugin.
   up without any export or restart.
 - MoorMap integration through a quickslot, because a plugin cannot run a slash
   command itself.
-
----
-
-# Part 2 – author notes
-
-## Upload mechanics
-
-- The archive must contain **one top-level folder** holding the `.plugin` file.
-  It does: `MagicQuestLog/MagicQuestLog.plugin`. The optional tool lives inside
-  that folder (`MagicQuestLog/Optional-Progress-Tool/`); the client ignores
-  folders without a `.plugin` file, so it cannot disturb loading.
-- The name in `.plugin` and in the download title must match character for
-  character, otherwise the client and the Plugin Compendium show two entries.
-- New uploads are invisible until staff approve them. While waiting, LPC
-  downloads a broken zip; that is a known LPC bug, not ours.
-- Precedent for shipping game text: LOTRO Compendium (id 526) carries the whole
-  quest and deed database. Rights position: “Where the catalog data comes from”
-  in the README.
-
-## After the first upload
-
-1. **`.plugincompendium`** so LPC can install and update. Needs the numeric id
-   from the download URL, so it can only be added with the next upload:
-
-   ```xml
-   <?xml version="1.0" encoding="utf-8"?>
-   <PluginConfig xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-                 xmlns:xsd="http://www.w3.org/2001/XMLSchema">
-     <Id>FILL_IN</Id>
-     <Name>Magic Quest Log</Name>
-     <Version>0.1.0</Version>
-     <Author>Adrian</Author>
-     <InfoUrl>https://www.lotrointerface.com/downloads/infoFILL_IN</InfoUrl>
-     <DownloadUrl>https://www.lotrointerface.com/downloads/downloadFILL_IN</DownloadUrl>
-     <Descriptors>
-       <descriptor>MagicQuestLog\MagicQuestLog.plugin</descriptor>
-     </Descriptors>
-     <Dependencies />
-   </PluginConfig>
-   ```
-
-   Case sensitive, name must match, raise the version with every upload. Ask for
-   inclusion in the LPC list in the comments on the LPC download page (id 663).
-
-2. **Screenshots**: two are enough — the tree with the detail pane, and a quest
-   whose objectives show counts.
-
-## The old-progress question
-
-The plugin needs nothing but its own files. Older progress can only be read with
-software that knows the client's memory, and that is not ours:
-
-| Option | Cost |
-|---|---|
-| ship the memory library (`delta-lotro-memory`) | needs the author's permission; his `delta-*` repositories carry no licence file |
-| require a local LOTRO Companion | works today, but a store page that says so loses most players |
-| no import at all | plugin is complete in itself; only quests from install time on are counted |
-
-Current state: the tool exists in the repository under `tools/journal-reader/`
-and is **not** part of the download, so the download has no dependency at all.
-If the permission is granted, the tool can go back into the archive and the page
-gets one step instead of a pointer.
-
-## Before uploading
-
-- Play-test the current build: open, search, details, MoorMap.
-- Raise the version in `plugin/MagicQuestLog/MagicQuestLog.plugin` **and** here,
-  then rebuild the archive so they cannot drift apart.
-- LPC currently reports 403 errors for many users because of Cloudflare on
-  lotrointerface.com; that is outside this project.
