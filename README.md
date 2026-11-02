@@ -220,23 +220,54 @@ position (formerly 10,051).
 
 ### Getting your older progress in
 
-The plugin counts what you finish from the moment it is installed. For everything
-before that there is one optional tool, and it ships with the plugin:
-`MagicQuestLog/Optional-Progress-Tool/`. Its `START-HERE.txt` has the four steps;
-`README.md` next to it answers the usual questions.
+The plugin counts what you finish from the moment it is installed. Quests and
+deeds from before that are not in the game's chat, so the plugin cannot know
+them. There is one optional tool for this, and it ships with the plugin:
+`MagicQuestLog/Optional-Progress-Tool/`. Use it once.
 
-Short version: install LOTRO Companion once (it only lends two files, it never
-starts), log in the character, double-click the launcher for your system, then
-restart the game. The tool reads the journal of the character that is logged in —
-there is nothing to choose — and writes `Data/Progress.lua`. For a second
-character, log that one in and run it again.
+**What you need**
 
-Afterwards **restart the game**: the file is read at plugin load, and reloading
-the plugin in a running session is not reliable with the large catalog.
+- The plugin, already installed.
+- **LOTRO Companion** from <https://sourceforge.net/projects/lotrocompanion/>.
+  Install it and leave it installed; you never start it and never import
+  anything in it. The tool only borrows two files from its program folder.
+- The game, running, with your character **in the world** (not at the launcher).
 
-Developers: `tools/journal-reader/TECHNICAL.md` has what exactly is read, the exit
-codes, rebuilding the prebuilt class, and the alternative route through
-Companion's XML files.
+**Windows**
+
+1. Log in your character and enter the world.
+2. Open `Plugins\MagicQuestLog\Optional-Progress-Tool\` in Explorer.
+3. Double-click `read-journal.bat`; allow the administrator prompt.
+4. Wait until it says `Done`.
+5. Close the game completely and start it again.
+6. Type `/mql` — your old progress is counted.
+
+**macOS**
+
+LOTRO runs through Wine there, and `read-journal.command` knows that setup.
+
+1. Log in your character and enter the world.
+2. Open the same folder in Finder.
+3. Double-click `read-journal.command`. If macOS blocks it, right-click it,
+   choose **Open** and confirm once.
+4. Wait until it says `Done`.
+5. Close the game completely and start it again.
+6. Type `/mql` — your old progress is counted.
+
+**Why a restart?** The plugin reads the file when it loads. Unloading and loading
+it again inside a running game usually fails because the catalog is large; a
+restart always works.
+
+The tool reads the journal of the character that is logged in — there is nothing
+to choose. For a second character, log that one in and run it again; each
+character keeps its own file. With two game windows open, close one first.
+
+It reads only the quest journal: no inventory, money, mail, chat or account data,
+and it never writes into the game. Delete `Data/Progress.lua` to undo it.
+
+The same instructions ship in the folder (`README.md` and `START-HERE.txt`).
+Developers find the internals, exit codes and the alternative route through
+Companion's XML files in `tools/journal-reader/TECHNICAL.md`.
 
 A character's own status file does **not** belong in the repository:
 `Data/Progress.lua` is listed in `.gitignore`, `make_release.py` leaves it out of
