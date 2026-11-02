@@ -172,6 +172,9 @@ There are two ways. Both end in the same file, `Data/Progress.lua`.
 launcher. It reads the journal of the character that is logged in and writes
 `Progress.lua` directly. Start it with `read-journal.bat` (Windows) or
 `read-journal.command` (macOS); both find the game and Companion themselves.
+The same folder ships inside every release archive as
+`MagicQuestLog/Optional-Progress-Tool/`, with `START-HERE.txt` as the four-step
+guide — a player needs one download, not a second trip to GitHub.
 
 There is **no character list to pick from**: the client only holds the character
 that is logged in, so that is the one read, and the tool refuses to guess when two

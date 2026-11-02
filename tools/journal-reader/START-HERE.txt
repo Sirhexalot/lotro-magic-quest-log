@@ -1,0 +1,78 @@
+# Optional: your older progress
+
+The plugin picks up what you finish **while playing** by itself — you do not need
+this folder for that. Use it once if you also want the quests you completed
+*before* installing to appear as finished.
+
+You only need this if you want the older quests counted. Otherwise ignore it.
+
+## Do this
+
+**1. Install LOTRO Companion** (free): <https://sourceforge.net/projects/lotrocompanion/>
+Install it and leave it installed. Do **not** start it, and do not import anything
+in it — this tool only borrows two files from its program folder.
+
+**2. Start LOTRO and log in the character** whose old quests you want.
+The character has to be **in the world**, not only at the launcher.
+
+**3. Double-click the launcher in this folder.**
+
+| Your system | File |
+|---|---|
+| Windows | `read-journal.bat` |
+| macOS | `read-journal.command` |
+
+Windows may ask for administrator rights. Allow it — reading the game's memory
+needs it. A black window opens and prints a few lines; that is normal.
+
+**4. In game, reload the plugin:**
+
+```
+/plugins unload MagicQuestLog
+/plugins load MagicQuestLog
+```
+
+The tree now counts what you have really done.
+
+## That is all
+
+There is nothing to configure and no character to choose: the tool always reads
+the character that is logged in, because that is the only one the game holds in
+memory. For a second character, log that one in and do step 3 and 4 again — each
+character keeps its own file, and the plugin shows the one matching the character
+you play.
+
+If you play two characters at the same time (two game windows), close one first;
+the tool refuses to guess.
+
+## What it reads
+
+Only the quest journal of the logged-in character: the list of finished and
+running quests and deeds. Nothing else — no inventory, no money, no mail, no chat,
+no account data. It never writes into the game.
+
+Result: one file, `MagicQuestLog/Data/Progress.lua`. Delete it if you want to go
+back to plain totals.
+
+## If it does not work
+
+It stops and tells you why, and writes nothing:
+
+| Message | What to do |
+|---|---|
+| LOTRO Companion was not found | Install it, or set `COMPANION_DIR` at the top of the `.bat` |
+| the LOTRO client folder was not found | Set `LOTRO_DIR` at the top of the `.bat` |
+| no LOTRO processes found / enter the world first | The game is closed, or the character is not logged in yet |
+| the active character is X, not Y | A different character is logged in |
+
+After a big game update the read can fail until LOTRO Companion ships an update.
+That only affects this tool — the plugin itself keeps working, it just will not
+add older progress until then.
+
+## Details
+
+`README.md` next to this file has the technical side: what exactly is read, the
+exit codes, and why the prebuilt `classes/JournalExport.class` is included
+(LOTRO Companion ships a Java runtime without a compiler).
+
+No Python, no command line, no build step is needed.

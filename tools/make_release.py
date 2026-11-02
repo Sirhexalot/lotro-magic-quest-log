@@ -23,6 +23,8 @@ DIST = ROOT / 'dist'
 CATALOGS = ('Quests_en.lua', 'Quests_de.lua', 'Quests_fr.lua',
             'Deeds_en.lua', 'Deeds_de.lua', 'Deeds_fr.lua')
 PRIVATE = ('Progress.lua',)
+TOOLS = ROOT / 'tools/journal-reader'
+TOOL_FOLDER = Path('MagicQuestLog/Optional-Progress-Tool')
 
 
 def version():
@@ -33,6 +35,8 @@ def version():
 
 
 def main():
+    if not (TOOLS / 'JournalExport.java').is_file():
+        raise SystemExit('missing the optional progress tool: ' + str(TOOLS))
     missing = [name for name in CATALOGS if not (DATA / name).is_file()]
     if missing:
         print('Missing catalog files: ' + ', '.join(missing))
@@ -60,6 +64,14 @@ def main():
         archive.write(ROOT / 'README.md', arcname='MagicQuestLog/README.md')
         archive.write(ROOT / 'LICENSE', arcname='MagicQuestLog/LICENSE.txt')
         archive.write(ROOT / 'icon-sources/NOTICE', arcname='MagicQuestLog/icons-NOTICE.txt')
+        # The optional progress tool ships inside the same folder, so a player needs
+        # one download and no second trip to GitHub. The client ignores folders
+        # without a .plugin file, so this cannot disturb loading.
+        for path in sorted(TOOLS.rglob('*')):
+            if not path.is_file() or '__pycache__' in path.parts:
+                continue
+            archive.write(path, arcname=str(Path(TOOL_FOLDER) / path.relative_to(TOOLS)))
+            count += 1
     digest = hashlib.sha256(target.read_bytes()).hexdigest()
     print('%s  %d files  %.1f MiB'
           % (target, count + 2, target.stat().st_size / 1024 / 1024))

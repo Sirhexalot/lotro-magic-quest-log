@@ -1,4 +1,7 @@
-# Journal reader – read your own quest state
+# Journal reader – technical reference
+
+**Start with [`START-HERE.txt`](START-HERE.txt)** if you just want to use it; that
+file has the four steps. This one is the reference.
 
 Reads the quest journal of the **running LOTRO client** and writes the plugin's
 `Progress.lua` directly. Read-only towards the game: no write call into the
