@@ -110,6 +110,8 @@ else
 	echo "4/4 install"
 	rm -rf "$PLUGIN_DIR/MagicQuestLog"
 	cp -R "$ROOT/plugin/MagicQuestLog" "$PLUGIN_DIR/"
+	# The optional journal reader ships inside the plugin folder (same as the release).
+	cp -R "$ROOT/tools/journal-reader" "$PLUGIN_DIR/MagicQuestLog/Optional-Progress-Tool"
 	echo
 	echo "Done. In game: /plugins unload MagicQuestLog, /plugins load MagicQuestLog, /mql"
 	echo "German client: /zusatzmodule entfernen MagicQuestLog, /zusatzmodule laden MagicQuestLog"

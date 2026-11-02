@@ -32,6 +32,9 @@ needs it. A black window opens and prints a few lines; that is normal.
 /plugins load MagicQuestLog
 ```
 
+German client: the commands are called `Zusatzmodule` there, so type
+`/zusatzmodule entfernen MagicQuestLog` and `/zusatzmodule laden MagicQuestLog`.
+
 The tree now counts what you have really done.
 
 ## That is all

@@ -41,6 +41,9 @@ Afterwards, in game:
 /plugins load MagicQuestLog
 ```
 
+German client: `/zusatzmodule entfernen MagicQuestLog`, then
+`/zusatzmodule laden MagicQuestLog`.
+
 The result lands in `Plugins/MagicQuestLog/Data/Progress.lua`; the headline then
 reads the full count instead of "finished (known)".
 

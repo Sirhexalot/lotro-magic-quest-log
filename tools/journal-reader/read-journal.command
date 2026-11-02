@@ -89,6 +89,8 @@ if [ "$RESULT" -eq 0 ]; then
 	echo "Done. Reload the plugin in game:"
 	echo "    /plugins unload MagicQuestLog"
 	echo "    /plugins load MagicQuestLog"
+	echo "  German client: /zusatzmodule entfernen MagicQuestLog"
+	echo "                 /zusatzmodule laden MagicQuestLog"
 	echo
 	echo "Note: a running plugin session may overwrite the file when it unloads."
 	echo "Running this tool again rewrites it."

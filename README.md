@@ -205,9 +205,10 @@ There are two ways. Both end in the same file, `Data/Progress.lua`.
 launcher. It reads the journal of the character that is logged in and writes
 `Progress.lua` directly. Start it with `read-journal.bat` (Windows) or
 `read-journal.command` (macOS); both find the game and Companion themselves.
-This tool is **not** part of the release archive: it needs a local LOTRO
-Companion installation, and the download must not carry a dependency its page
-does not mention. The archive contains the plugin only.
+The tool ships **inside the plugin folder** as
+`MagicQuestLog/Optional-Progress-Tool/`, in the release archive and in every
+rebuild install. It needs a local LOTRO Companion installation (library and
+Windows Java); the download page and `START-HERE.txt` say so.
 
 There is **no character list to pick from**: the client only holds the character
 that is logged in, so that is the one read, and the tool refuses to guess when two
