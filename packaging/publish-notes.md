@@ -62,6 +62,8 @@ If the permission is granted, the tool can go back into the archive
 (`tools/make_release.py` has the packaging code ready) and the page gets one step
 instead of a pointer.
 
+The email to ask for it is ready: [mail-to-companion-author.txt](mail-to-companion-author.txt).
+
 Why not rebuild it ourselves: LOTRO's Lua API has no quest access at all — the
 only gameplay objects it exposes are `LocalPlayer`, `Class`, `Race` and
 `Alignment`, so a plugin cannot see the journal. The past therefore only exists
