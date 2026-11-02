@@ -12,3 +12,7 @@ __pycache__/
 
 # Local build output: release archives and staged catalogs.
 dist/
+
+# The journal reader ships a prebuilt class on purpose: LOTRO Companion provides
+# a JRE without javac, so users cannot compile it themselves.
+!tools/journal-reader/classes/*.class

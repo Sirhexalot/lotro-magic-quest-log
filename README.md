@@ -165,9 +165,21 @@ thing to add to the export; until then the shipped catalog is built from the XML
 
 ### Getting your older progress in
 
-Live tracking starts at zero, so the history has to come from somewhere once. The
-easy route needs no memory access, no game process and no third-party code: LOTRO
-Companion writes two plain XML files per imported character
+There are two ways. Both end in the same file, `Data/Progress.lua`.
+
+**A. Read the running client (no Companion import needed).**
+`tools/journal-reader/` contains a small Java tool with a Windows and a macOS
+launcher. It reads the journal of the character that is logged in and writes
+`Progress.lua` directly. Start it with `read-journal.bat` (Windows) or
+`read-journal.command` (macOS); both find the game and Companion themselves.
+
+It needs a local **LOTRO Companion installation**, but only for its memory
+library and its Windows Java — Companion does not have to run, and its interface
+is never used. The library is not part of this repository; see
+`tools/journal-reader/README.md`.
+
+**B. Read what Companion wrote (no foreign code at all).**
+LOTRO Companion writes two plain XML files per imported character
 
 ```
 ~/.lotrocompanion/data/characters/<account>/<server>/<character>/
@@ -184,6 +196,16 @@ python3 MagicQuestLog/tools/build_progress_from_companion.py <character>  # writ
 Import the character in LOTRO Companion first — that step is Companion's job and
 on Windows it works natively. The LOTRO Compendium import reads the same two
 files, which is why the format can be relied on.
+
+Either way, afterwards reload the plugin in game:
+
+```
+/plugins unload MagicQuestLog
+/plugins load MagicQuestLog
+```
+
+`tools/journal-reader/verify_progress.py` checks a written file without any game
+data.
 
 A character's own status file does **not** belong in the repository:
 `Data/Progress.lua` is listed in `.gitignore`, `make_release.py` leaves it out of
