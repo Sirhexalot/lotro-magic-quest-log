@@ -75,8 +75,16 @@ Turbine.Gameplay.Class = { Hunter = 1 };
 Turbine.Gameplay.Race = { Hobbit = 2 };
 Turbine.UI.Control = controlFactory;
 Turbine.UI.Label = controlFactory;
+-- A scroll bar bound to a label only shows while the text overflows the label. The
+-- stub cannot lay out text, so it always reports "fits" and the plugin's fallback
+-- (counting characters) is what the checks below exercise.
+local function scrollFactory()
+	local object = controlFactory();
+	object.visible = false;
+	return object;
+end
 Turbine.UI.ListBox = controlFactory;
-Turbine.UI.Lotro = { Button = controlFactory, ScrollBar = controlFactory, TextBox = controlFactory,
+Turbine.UI.Lotro = { Button = controlFactory, ScrollBar = scrollFactory, TextBox = controlFactory,
 	Quickslot = controlFactory };
 Turbine.UI.Lotro.ShortcutType = { Alias = 1 };
 -- A shortcut only matters through its data, so the stub keeps it readable.
@@ -218,6 +226,19 @@ end
 assert(nodeRow ~= nil, "expected a tree node row");
 assert(nodeRow.control.label.font == window.body, "tree node font must be the body font");
 assert(nodeRow.control:GetHeight() >= 20, "tree rows must be taller for the bigger font");
+-- A name that does not fit must not run into the row below: the row grows in whole
+-- lines, and the height is cached per text and column width.
+local oneLine = window:RowHeight("Rueckeroberung", 300);
+local manyLines = window:RowHeight(string.rep("Rueckeroberung des Agarnaith ", 6), 300);
+assert(oneLine == 20, "a short name must stay one line, got " .. tostring(oneLine));
+assert(manyLines > oneLine and manyLines <= 80, "a long name must grow its row: " .. tostring(manyLines));
+assert(window:RowHeight(string.rep("Rueckeroberung des Agarnaith ", 6), 300) == manyLines,
+	"row heights must be cached per text and width");
+local ladder = { [20] = true, [40] = true, [60] = true, [80] = true };
+for _, row in ipairs(window.rows) do
+	assert(ladder[row.control:GetHeight()], "row height must be a whole number of lines: "
+		.. tostring(row.control:GetHeight()));
+end
 -- A record without a verified position must not pretend to have one.
 local without = nil;
 for _, record in ipairs(MQL.catalogs.quests) do if #record.t == 0 then without = record; break end end
@@ -285,6 +306,36 @@ assert(window.tree:GetItemCount() > collapsed, "clicking a node must expand it")
 assert(window.root.total == questTotal, "totals must survive expanding");
 click(1);
 assert(window.tree:GetItemCount() == collapsed, "clicking the same node again must collapse it");
+-- The longest catalog name must actually arrive as a taller row, not as a clipped
+-- one: this runs through AddNode and AddRow, not only through the height helper.
+local tallest, tallestLength = nil, 0;
+for _, record in ipairs(MQL.catalogs.quests) do
+	local name = tostring(record.displayName or record.name);
+	if #name > tallestLength then tallest, tallestLength = record, #name; end
+end
+assert(tallest ~= nil, "expected a quest record");
+window.expanded = {};
+window.searchBox:SetText(tallest.displayName);
+window.query = tallest.displayName;
+local tallPath = "|";
+for depth, part in ipairs(tallest.p) do
+	tallPath = tallPath .. (depth - 1) .. "/" .. part.k;
+	window.expanded[tallPath] = true;
+end
+window:Rebuild();
+local tallRow = nil;
+for _, row in ipairs(window.rows) do
+	if row.control.text and row.control.text:GetText() == tallest.displayName then tallRow = row; break; end
+end
+assert(tallRow ~= nil, "expected the longest name as a visible row");
+assert(tallRow.control:GetHeight() > 20,
+	"a long name must get a taller row, got " .. tostring(tallRow.control:GetHeight()));
+assert(tallRow.control.text:GetHeight() == tallRow.control:GetHeight(),
+	"the name label must fill the taller row");
+window.expanded = {};
+window.searchBox:SetText("");
+window.query = "";
+window:Rebuild();
 -- Start icon toggles the window and remembers its place.
 assert(MQL.icon ~= nil, "start icon missing");
 local visibleBefore = MQL.window:IsVisible();

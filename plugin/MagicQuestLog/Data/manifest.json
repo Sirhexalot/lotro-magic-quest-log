@@ -1,5 +1,5 @@
 {
-  "schema": 2,
+  "schema": 3,
   "sources": {
     "quests.json": "8e20d49566b8fce8eac2dbdef66d73db965c545da28191b0c785160ff21799cb",
     "deeds.json": "feed49652f24f13388c0e353d4bf2caebde6cad0d62ca881984e7217c6a83766",

@@ -9,7 +9,7 @@ Author-only notes live in [publish-notes.md](publish-notes.md).
 |---|---|
 | Category | LotRO Stand-Alone Plugins → Other |
 | Name | **Magic Quest Log** (must match the `.plugin` file exactly) |
-| Version | 0.1.0 |
+| Version | 0.1.1 |
 | File | `dist/MagicQuestLog-<version>.zip` |
 | Author | Adrian |
 | Homepage | https://github.com/Sirhexalot/lotro-magic-quest-log |
@@ -203,6 +203,16 @@ after a successful run, both for the optional section above.
   after a game start takes a moment.
 
 ### Changes
+
+0.1.1 — long names and a duplicate area fixed.
+
+- A long quest or deed name now wraps onto a second line and the row grows with
+  it. Before, the second line was drawn underneath the next row and could not be
+  read ("Rückeroberung des Agarnaith: Môkál Rûkh").
+- Territories no longer appear twice in the tree: "Agarnaith", "Lhingris",
+  "Ambarûl", "Khûd Zagin", "Imhûlar", "Urash Dâr", "Lossarnach", "Osgiliath",
+  "Pinnath Gelin", "Anfalas" and "Ringló Vale" were listed once as a zone and once
+  as an area inside a neighbouring zone. 530 quests moved to the plain zone.
 
 0.1.0 — first release.
 

@@ -83,6 +83,12 @@ local ROW = TITLEBAR + 6;
 local HEADER = ROW + 28;
 local FOOTER = 16;
 
+-- Row heights in whole lines. A name that does not fit the tree column must not
+-- run into the row below it, so the row grows instead of clipping: one line, then
+-- one more line for each 20 px, at most four lines. The longest catalog name is 95
+-- characters, so that is more than enough.
+local LINE = 20;
+
 function Window:Constructor(strings, catalogs)
 	Turbine.UI.Lotro.Window.Constructor(self);
 	self.strings = strings;
@@ -92,6 +98,9 @@ function Window:Constructor(strings, catalogs)
 	self.expanded = {};
 	self.rows = {};
 	self.actions = {};
+	-- Row height per text and column width, so expanding or resizing does not ask
+	-- the client for the same measurement twice.
+	self.heights = {};
 	-- Last highlighted tree row. A real value, not nil: a class whose unknown
 	-- fields resolve to methods would hand back a function here.
 	self.highlighted = false;
@@ -114,6 +123,29 @@ function Window:Constructor(strings, catalogs)
 	self.trim = Turbine.UI.Color(0.78, 0.78, 0.78);
 	self.gold = Turbine.UI.Color(1, 0.9, 0.5);
 	self.selectedBack = Turbine.UI.Color(0.16, 0.15, 0.10);
+
+	-- Ruler for wrapped tree text. A label reports no text metrics, but a label
+	-- bound to a vertical scroll bar reports overflow: the bar is visible only while
+	-- the text is taller than the label. MoorMap's FontMetric measures the same way.
+	-- Nothing is estimated unless that report turns out to be unavailable. The value
+	-- is a real string, never nil: on this class an unset field reads back as a
+	-- method, which would look like a working ruler.
+	self.rulerWorks = "unknown";
+	-- Height of a single line, measured once: a client with a larger font scale needs
+	-- taller rows, and an assumed 20 px would make every name look wrapped.
+	self.lineHeight = "unknown";
+	self.ruler = makeLabel(self, self.body, self.trim);
+	self.ruler:SetMultiline(true);
+	self.ruler:SetPosition(0, 0);
+	self.ruler:SetSize(LINE, LINE);
+	self.ruler:SetOpacity(0);
+	self.rulerBar = Turbine.UI.Lotro.ScrollBar();
+	self.rulerBar:SetOrientation(Turbine.UI.Orientation.Vertical);
+	self.rulerBar:SetParent(self);
+	self.rulerBar:SetSize(12, LINE);
+	self.rulerBar:SetPosition(0, 0);
+	self.rulerBar:SetOpacity(0);
+	self.ruler:SetVerticalScrollBar(self.rulerBar);
 
 	local settings = MagicQuestLog.Settings.Get();
 	local width, height = 1020, 640;
@@ -248,6 +280,9 @@ function Window:Constructor(strings, catalogs)
 		local settingsNow = MagicQuestLog.Settings.Get();
 		settingsNow.windowVisible = self:IsVisible();
 		MagicQuestLog.Settings.Save();
+		-- A hidden window cannot measure wrapped text; once it is on screen the
+		-- rows are measured for real instead of estimated from their length.
+		if self:IsVisible() then self:Remeasure(); end
 	end;
 	self:ShowDetails(nil);
 	self:Rebuild();
@@ -353,33 +388,115 @@ function Window:SetProgress(completed, exact)
 	if self.root ~= nil then self:Rebuild(); end
 end
 
+--- Can this client report wrapped text at all? The scroll bar bound to the ruler is
+--- the only available answer. A hidden window cannot answer, so the question stays
+--- open until it is on screen.
+function Window:RulerWorks()
+	if self.rulerWorks ~= "unknown" then return self.rulerWorks == true; end
+	if not self:IsVisible() then return false; end
+	self.ruler:SetWidth(40);
+	self.ruler:SetHeight(LINE);
+	self.ruler:SetText(string.rep("Schatzsuche ", 8));
+	self.rulerWorks = self.rulerBar:IsVisible() == true;
+	self.ruler:SetText("");
+	return self.rulerWorks;
+end
+
+--- Height of one line of tree text, measured once with a word that cannot wrap.
+--- A client whose font needs more than the assumed LINE gets taller rows from the
+--- start instead of every row being judged as two lines.
+function Window:LineHeight()
+	if self.lineHeight ~= "unknown" then return self.lineHeight; end
+	if not self:RulerWorks() then return LINE; end
+	self.ruler:SetWidth(400);
+	self.ruler:SetText("Agarnaith");
+	local height = LINE;
+	for candidate = 8, 80, 2 do
+		height = candidate;
+		self.ruler:SetHeight(candidate);
+		if not self.rulerBar:IsVisible() then break; end
+	end
+	self.ruler:SetText("");
+	self.lineHeight = math.max(LINE, height);
+	return self.lineHeight;
+end
+
+--- Height one tree row needs for this text in this column. The client wraps the real
+--- text with the real font, so nothing about the break is guessed. Without a working
+--- ruler the length is counted instead: 9 px per character is above the average
+--- glyph width of Verdana14, so the estimate errs towards a taller row, never a
+--- clipped name.
+function Window:RowHeight(text, width)
+	text = tostring(text or "");
+	width = math.max(LINE, tonumber(width) or LINE);
+	local key = text .. "\1" .. tostring(width);
+	local known = self.heights[key];
+	if known ~= nil then return known; end
+	local base = self:LineHeight();
+	local height = base;
+	if self:RulerWorks() then
+		self.ruler:SetWidth(width);
+		self.ruler:SetText(text);
+		for step = 0, 3 do
+			height = base + step * LINE;
+			self.ruler:SetHeight(height);
+			if not self.rulerBar:IsVisible() then break; end
+		end
+		self.ruler:SetText("");
+	else
+		local perLine = math.max(8, math.floor(width / 9));
+		local lines = math.min(4, math.max(1, math.ceil(#text / perLine)));
+		height = base + (lines - 1) * LINE;
+	end
+	self.heights[key] = height;
+	return height;
+end
+
+--- Rows measured while the window was hidden used the fallback; once it is visible
+--- the real ruler decides, so the cached heights are dropped and rebuilt.
+function Window:Remeasure()
+	self.heights = {};
+	if self.root ~= nil then self:Rebuild(); end
+end
+
 function Window:Sizes(control, depth)
 	local width = math.max(80, self.tree:GetWidth() - 16);
-	control:SetSize(width, control:GetHeight());
 	local indent = depth * 14;
-	if control.marker then
-		control.marker:SetPosition(3 + indent, 5);
-	end
+	local markerLeft = 3 + indent;
+	local labelLeft = (control.marker and 18 or 6) + indent;
+	local textLeft = 20 + indent;
+	local height = control:GetHeight();
+	-- A wrapped name needs a taller row; a row that stays one line high would let
+	-- the second line run into the row below it.
 	if control.label then
-		local left = (control.marker and 18 or 6) + indent;
-		control.label:SetPosition(left, 0);
-		control.label:SetSize(math.max(20, width - left - 6), control:GetHeight());
-	end
-	if control.status then
-		control.status:SetPosition(3 + indent, 3);
+		height = self:RowHeight(control.label:GetText(), math.max(20, width - labelLeft - 6));
 	end
 	if control.text then
-		local left = 20 + indent;
-		control.text:SetPosition(left, 0);
-		control.text:SetSize(math.max(20, width - left - 6), 18);
+		height = self:RowHeight(control.text:GetText(), math.max(20, width - textLeft - 6));
+	end
+	control:SetSize(width, height);
+	if control.marker then
+		control.marker:SetPosition(markerLeft, 5);
+	end
+	if control.label then
+		control.label:SetPosition(labelLeft, 0);
+		control.label:SetSize(math.max(20, width - labelLeft - 6), height);
+	end
+	if control.status then
+		control.status:SetPosition(markerLeft, 3);
+	end
+	if control.text then
+		control.text:SetPosition(textLeft, 0);
+		control.text:SetSize(math.max(20, width - textLeft - 6), height);
 	end
 end
 
 function Window:AddRow(control, depth, action)
+	-- Size first: the list box stacks its items by the height they already have.
+	self:Sizes(control, depth);
 	self.rows[#self.rows + 1] = { control = control, depth = depth };
 	self.tree:AddItem(control);
 	self.actions[self.tree:GetItemCount()] = action;
-	self:Sizes(control, depth);
 end
 
 function Window:AddNode(node, depth, parentPath)
@@ -387,7 +504,7 @@ function Window:AddNode(node, depth, parentPath)
 	local hasChildren = (#node.order > 0) or (#node.items > 0);
 	local open = self.expanded[path] == true;
 	local row = Turbine.UI.Control();
-	row:SetSize(1, 20);
+	row:SetSize(1, LINE);
 	row:SetBackColor(self.back);
 	row:SetMouseVisible(true);
 	-- The expander is a chevron texture instead of "[+]"/"[-]" text.
@@ -397,8 +514,9 @@ function Window:AddNode(node, depth, parentPath)
 		row.marker = false;
 	end
 	local label = makeLabel(row, self.body, depth == 0 and self.gold or self.trim);
+	label:SetMultiline(true);
 	label:SetText(node.name .. "   (" .. Model.Counter(node) .. ")");
-	label:SetSize(1, 20);
+	label:SetSize(1, LINE);
 	row.label = label;
 	row.status, row.text = false, false;
 	self:AddRow(row, depth, function()
@@ -410,7 +528,7 @@ function Window:AddNode(node, depth, parentPath)
 	for _, child in ipairs(node.order) do self:AddNode(child, depth + 1, path); end
 	for _, record in ipairs(node.items) do
 		local item = Turbine.UI.Control();
-		item:SetSize(1, 18);
+		item:SetSize(1, LINE);
 		item:SetBackColor(self.back);
 		item:SetMouseVisible(true);
 		-- A status mark only exists when progress is known: without it every row
@@ -425,8 +543,9 @@ function Window:AddNode(node, depth, parentPath)
 		item.label = false;
 		item.marker = false;
 		local text = makeLabel(item, self.body, self.trim);
+		text:SetMultiline(true);
 		text:SetText(record.displayName or record.name);
-		text:SetSize(1, 18);
+		text:SetSize(1, LINE);
 		item.text = text;
 		self:AddRow(item, depth + 1, function()
 			if self.highlighted then self.highlighted:SetBackColor(self.back); end

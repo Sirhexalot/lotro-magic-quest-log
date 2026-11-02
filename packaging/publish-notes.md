@@ -41,7 +41,7 @@ Next once approved: take the numeric id from the download URL and add the
                  xmlns:xsd="http://www.w3.org/2001/XMLSchema">
      <Id>FILL_IN</Id>
      <Name>Magic Quest Log</Name>
-     <Version>0.1.0</Version>
+     <Version>0.1.1</Version>
      <Author>Adrian</Author>
      <InfoUrl>https://www.lotrointerface.com/downloads/infoFILL_IN</InfoUrl>
      <DownloadUrl>https://www.lotrointerface.com/downloads/downloadFILL_IN</DownloadUrl>

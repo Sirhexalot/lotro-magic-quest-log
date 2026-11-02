@@ -29,6 +29,7 @@ def load(locale, kind, runtime):
 def check(locale, kind, records):
     assert records is not None, '%s %s missing' % (locale, kind)
     ids, structure = set(), {}
+    zones, areas = set(), set()
     for record in records.values():
         assert HEX.match(record.id), '%s: bad id %r' % (locale, record.id)
         assert record.name and record.name.strip(), '%s %s: empty name' % (locale, record.id)
@@ -41,6 +42,11 @@ def check(locale, kind, records):
                 assert part.n in SECTIONS or part.n.startswith('@volume:'), \
                     '%s %s: unknown section %s' % (locale, record.id, part.n)
         structure[record.id] = '|'.join(part.k for part in record.p.values())
+        for part in record.p.values():
+            if part.k.startswith('zone:'):
+                zones.add(part.k[len('zone:'):])
+            elif part.k.startswith('area:'):
+                areas.add(part.k.rsplit(':', 1)[1])
         indexes = set()
         for step in record.s.values():
             assert step.i != '', '%s %s: step without index' % (locale, record.id)
@@ -54,6 +60,11 @@ def check(locale, kind, records):
             assert -180 <= target.lat <= 180 and -360 <= target.lon <= 360, \
                 '%s %s: bad position' % (locale, record.id)
             assert target.step in indexes, '%s %s: target for unshown step' % (locale, record.id)
+    # A name may be a zone or a sub-area, never both: "Agarnaith" appeared as a zone
+    # and as the area "Mordor: Agarnaith" at the same time, which looked like a
+    # duplicate territory in the tree.
+    shared = sorted(areas & zones)
+    assert not shared, '%s %s: name used as zone and as area: %s' % (locale, kind, ', '.join(shared))
     return ids, structure
 
 

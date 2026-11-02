@@ -13,7 +13,8 @@ A character's own progress file also stays local.
 - Tree on the left: **Epic story** by volume/book, everything else as
   **region → zone → area → group**, plus separate branches for missions,
   instances, crafting, festivals and entries without a geographic assignment.
-  Every node starts collapsed.
+  Every node starts collapsed. Long names wrap and the row grows with them
+  instead of running into the row below.
 - **Search** by name or part of a name, ignoring case and accents.
 - On the right, the **description** and the objectives split into steps. Known
   objective counts read "required: 10"; live counters are never invented.
@@ -194,6 +195,15 @@ Result: 15,209 quests and 5,534 deeds per language, identical ids and identical
 tree structure in all three languages (verified). 483 test/developer entries are
 hidden. 11,583 quests get a zone (formerly 9,963) and 8,403 have a verified map
 position (formerly 10,051).
+
+Some territories used to stand twice in the tree, once as a zone and once as an
+area inside a neighbouring zone: `zone:Agarnaith` next to
+`area:Mordor:Agarnaith` and the same for Lhingris, Ambarûl, Khûd Zagin, Imhûlar,
+Urash Dâr, Lossarnach, Osgiliath, Pinnath Gelin, Anfalas and Ringló Vale. An area
+that carries the name of a known zone of the same region is now that zone
+(530 quests on 13 category paths). The decision is made on the English keys, so
+the tree stays identical in every language, and `verify_catalog.py` refuses a name
+that appears both as zone and as area.
 
 **Known limits, accepted on purpose:**
 
