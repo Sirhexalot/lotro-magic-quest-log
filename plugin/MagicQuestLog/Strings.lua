@@ -5,6 +5,8 @@ MagicQuestLog.Strings = {
 	en = {
 		title = "Magic Quest Log", quests = "Quests", deeds = "Deeds",
 		search = "Search", clear = "Clear", results = "entries", finished = "finished",
+		finishedknown = "finished (known)",
+		liveshared = "name shared by %d entries — not assigned",
 		searchhint = "Name or part of the name",
 		choose = "Select a quest or deed", description = "DESCRIPTION", step = "STEP",
 		level = "Level", scaled = "scales", showmap = "Show in MoorMap",
@@ -20,6 +22,8 @@ MagicQuestLog.Strings = {
 	de = {
 		title = "Magic Quest Log", quests = "Aufgaben", deeds = "Taten",
 		search = "Suchen", clear = "Leeren", results = "Einträge", finished = "Erledigt",
+		finishedknown = "erledigt (bekannt)",
+		liveshared = "Name kommt %d-mal vor — nicht zugeordnet",
 		searchhint = "Name oder Namensteil",
 		choose = "Aufgabe oder Tat auswählen", description = "BESCHREIBUNG", step = "SCHRITT",
 		level = "Stufe", scaled = "skaliert", showmap = "In MoorMap zeigen",
@@ -35,6 +39,8 @@ MagicQuestLog.Strings = {
 	fr = {
 		title = "Magic Quest Log", quests = "Quêtes", deeds = "Prouesses",
 		search = "Rechercher", clear = "Effacer", results = "entrées", finished = "terminées",
+		finishedknown = "terminées (connues)",
+		liveshared = "nom partagé par %d entrées — non attribué",
 		searchhint = "Nom ou partie du nom",
 		choose = "Sélectionnez une quête ou une prouesse", description = "DESCRIPTION", step = "ÉTAPE",
 		level = "Niveau", scaled = "adapté", showmap = "Afficher dans MoorMap",

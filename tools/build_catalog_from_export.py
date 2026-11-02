@@ -60,9 +60,10 @@ STORY_EXTRA = {'The Black Book of Mordor', 'The Legacy of Durin and the Trials o
 
 
 def clean(text):
+    """Game text: literal \\q is a quote, literal \\n is a line break."""
     if text is None:
         return ''
-    return text.replace('\\q', '"').strip()
+    return text.replace('\\q', '"').replace('\\n', '\n').strip()
 
 
 def fold(text):

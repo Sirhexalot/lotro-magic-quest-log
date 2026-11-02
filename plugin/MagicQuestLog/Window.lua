@@ -97,6 +97,7 @@ function Window:Constructor(strings, catalogs)
 	-- never the same as "nothing done". A real value is used, not nil: a class
 	-- whose unknown fields resolve to methods must not be asked about nil.
 	self.completed = false;
+	self.progressExact = false;
 	-- The built tree is cached; expanding a node must not rebuild and re-sort
 	-- 15k records again.
 	self.treeCacheKey = nil;
@@ -324,19 +325,24 @@ function Window:Rebuild(force)
 	for _, child in ipairs(self.root.order) do self:AddNode(child, 0, "|"); end
 end
 
---- Headline count. With progress it reports finished of total, and says so.
+--- Headline count. With progress it reports finished of total, and says so. A set
+--- that only holds live completions cannot know older history, so it is labelled
+--- as partial instead of claiming a full count.
 function Window:CountText()
 	local finished = self.completed and self.root.done or nil;
 	if finished == nil then
 		return self.strings.results .. ": " .. tostring(self.root.total);
 	end
-	return self.strings.finished .. ": " .. tostring(finished) .. " / " .. tostring(self.root.total)
+	local label = self.progressExact and self.strings.finished or self.strings.finishedknown;
+	return label .. ": " .. tostring(finished) .. " / " .. tostring(self.root.total)
 		.. " " .. self.strings.results;
 end
 
 --- Finished ids of the logged-in character. false means unknown, never "none done".
-function Window:SetProgress(completed)
+--- "exact" tells whether that set can be complete; a live session alone cannot.
+function Window:SetProgress(completed, exact)
 	self.completed = completed or false;
+	self.progressExact = exact == true;
 	self.treeCacheKey = nil;
 	if self.root ~= nil then self:Rebuild(); end
 end

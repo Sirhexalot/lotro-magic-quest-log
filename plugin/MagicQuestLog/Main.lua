@@ -6,6 +6,7 @@ import "MagicQuestLog.Class";
 import "MagicQuestLog.Strings";
 import "MagicQuestLog.Settings";
 import "MagicQuestLog.Model";
+import "MagicQuestLog.Live";
 import "MagicQuestLog.Icon";
 import "MagicQuestLog.Window";
 
@@ -47,6 +48,61 @@ local function loadProgress(characterName)
 	return progress.completed;
 end
 
+-- Completions seen while playing are stored per character, in the client's own
+-- plugin data. The Progress.lua file is only ever read: a live session must not
+-- overwrite an export, and an export must not overwrite a live session.
+local LIVE_KEY = "MagicQuestLogLive";
+
+local function loadLive(characterName)
+	local stored = nil;
+	if Turbine.PluginData ~= nil then
+		local ok, data = pcall(Turbine.PluginData.Load, Turbine.DataScope.Character, LIVE_KEY);
+		if ok and type(data) == "table" then stored = data; end
+	end
+	local live = { version = "1", character = characterName, completed = {}, unresolved = {} };
+	if stored ~= nil then
+		if type(stored.completed) == "table" then
+			for id, value in pairs(stored.completed) do
+				if value == true then live.completed[id] = true; end
+			end
+		end
+		if type(stored.unresolved) == "table" then
+			for name, count in pairs(stored.unresolved) do
+				live.unresolved[name] = tostring(count);
+			end
+		end
+	end
+	return live;
+end
+
+local function saveLive(live)
+	if Turbine.PluginData == nil or live == nil then return; end
+	local stored = {
+		version = "1",
+		character = live.character,
+		completed = live.completed,
+		unresolved = live.unresolved,
+	};
+	pcall(Turbine.PluginData.Save, Turbine.DataScope.Character, LIVE_KEY, stored);
+end
+
+--- Baseline from a file plus what was seen live. "exact" says whether the set can
+--- be complete: a live session alone starts at zero and cannot know older history,
+--- so the headline must not claim a full count then.
+local function mergeProgress(baseline, live)
+	local merged, count = {}, 0;
+	for id in pairs(baseline or {}) do
+		if merged[id] ~= true then merged[id] = true; count = count + 1; end
+	end
+	local liveCount = 0;
+	for id in pairs((live or {}).completed or {}) do
+		liveCount = liveCount + 1;
+		if merged[id] ~= true then merged[id] = true; count = count + 1; end
+	end
+	if baseline == nil and liveCount == 0 then return false, nil; end
+	return baseline ~= nil, merged;
+end
+
 function MagicQuestLog.SetVisible(visible)
 	local window = MagicQuestLog.window;
 	if window == nil then return; end
@@ -79,7 +135,25 @@ function MagicQuestLog.Load(plugin)
 	MagicQuestLog.catalogs = { quests = quests, deeds = deeds };
 	MagicQuestLog.window = MagicQuestLog.Window(strings, MagicQuestLog.catalogs);
 	MagicQuestLog.window:SetContext(context);
-	MagicQuestLog.window:SetProgress(loadProgress(context.name));
+	local live = loadLive(context.name);
+	MagicQuestLog.live = live;
+	local exact, merged = mergeProgress(loadProgress(context.name), live);
+	MagicQuestLog.window:SetProgress(merged, exact);
+	MagicQuestLog.tracker = MagicQuestLog.Live.New({
+		index = MagicQuestLog.Live.Index(quests, deeds),
+		completed = live.completed,
+		unresolved = live.unresolved,
+		onChange = function()
+			saveLive(live);
+			local nowExact, nowMerged = mergeProgress(loadProgress(context.name), live);
+			MagicQuestLog.window:SetProgress(nowMerged, nowExact);
+		end,
+		onAmbiguous = function(name, candidates)
+			Turbine.Shell.WriteLine("<rgb=#D6B35A>Magic Quest Log: </rgb>" .. name .. " — "
+				.. string.format(strings.liveshared, candidates));
+		end,
+	});
+	MagicQuestLog.Live.Attach(MagicQuestLog.tracker);
 	MagicQuestLog.icon = MagicQuestLog.Icon(function() MagicQuestLog.Toggle(); end);
 	local left = settings.iconLeft or (Turbine.UI.Display:GetWidth() - 44);
 	local top = settings.iconTop or 230;

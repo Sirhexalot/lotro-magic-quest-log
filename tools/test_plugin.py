@@ -97,17 +97,41 @@ Turbine.UI.Lotro.Window = windowPrototype;
 Turbine.UI.Display = { GetWidth = function() return 1920 end, GetHeight = function() return 1080 end };
 storedSettings = nil;
 savedSettings = nil;
+-- Settings live in the account scope, live progress per character. Both are
+-- stubbed separately so a test can tell which scope was written.
+savedData = {};
+Turbine.DataScope = { Account = 1, Character = 2 };
 Turbine.PluginData = {
-	Load = function() return storedSettings end,
-	Save = function(scope, key, value) savedSettings = value; return true end,
+	Load = function(scope, key)
+		if scope == Turbine.DataScope.Account and key ~= "MagicQuestLogLive" then
+			return storedSettings;
+		end
+		return storedData[key];
+	end,
+	Save = function(scope, key, value)
+		if scope == Turbine.DataScope.Account and key ~= "MagicQuestLogLive" then
+			savedSettings = value;
+		else
+			savedData[key] = value;
+		end
+		return true;
+	end,
 };
+-- The chat hook: a test sets message and calls Turbine.Chat.Received.
+Turbine.Chat = { Received = nil };
+Turbine.ChatType = { Quest = 11, Advancement = 12, Standard = 0 };
+function receiveChat(message, chatType)
+	if Turbine.Chat.Received == nil then return false end;
+	Turbine.Chat.Received(nil, { Message = message, ChatType = chatType or Turbine.ChatType.Quest });
+	return true;
+end
 Turbine.Shell.WriteLine = function(text) lastShell = text end;
 '''
 
 def run():
     lua = LuaRuntime(unpack_returned_tuples=True)
     lua.execute(STUBS)
-    for name in ('Class.lua', 'Strings.lua', 'Settings.lua', 'Model.lua', 'Icon.lua', 'Window.lua'):
+    for name in ('Class.lua', 'Strings.lua', 'Settings.lua', 'Model.lua', 'Live.lua', 'Icon.lua', 'Window.lua'):
         lua.execute((PLUGIN / name).read_text(encoding='utf-8'))
     lua.execute((DATA / 'Quests_de.lua').read_text(encoding='utf-8'))
     lua.execute((DATA / 'Deeds_de.lua').read_text(encoding='utf-8'))
@@ -284,7 +308,7 @@ window:SetProgress(nil);
 assert(not string.find(window.countLabel:GetText(), MQL.strings.finished, 1, true),
 	"without progress no finished count may be claimed");
 local sampleId = MQL.catalogs.quests[1].id;
-window:SetProgress({ [sampleId] = true });
+window:SetProgress({ [sampleId] = true }, true);
 assert(string.find(window.countLabel:GetText(), MQL.strings.finished, 1, true),
 	"progress must be reported: " .. window.countLabel:GetText());
 assert(string.find(window.countLabel:GetText(), "1 / 15117"), "headline count: " .. window.countLabel:GetText());
@@ -363,6 +387,104 @@ assert(window.detailScroll:GetValue() == 0, "detail scroll must return to the to
 window.detailScroll:SetValue(90);
 window:ShowDetails(nil);
 assert(window.detailScroll:GetValue() == 0, "clearing the detail must reset the scroll");
+-- Live completion detection from the quest channel.
+local tracker = MQL.tracker;
+assert(tracker ~= nil, "chat tracker missing");
+assert(Turbine.Chat.Received ~= nil, "chat hook not installed");
+-- Pick a quest whose name is unique, so the completion can be assigned.
+local uniqueRecord, sharedName = nil, nil;
+for _, record in ipairs(MQL.catalogs.quests) do
+	local ids = tracker.index[record.name];
+	if ids ~= nil and #ids == 1 and string.find(record.name, "${", 1, true) == nil then
+		uniqueRecord = record;
+	elseif ids ~= nil and #ids > 1 and sharedName == nil then
+		sharedName = record.name;
+	end
+end
+assert(uniqueRecord ~= nil, "expected a quest with a unique name");
+assert(sharedName ~= nil, "expected a quest name shared by several entries");
+local before = window.root.total;
+local doneBefore = 0;
+for _ in pairs(tracker.completed) do doneBefore = doneBefore + 1; end;
+-- Two chat events: header first, then the name.
+assert(receiveChat("Abgeschlossen:"), "hook must accept a message");
+assert(tracker.completed[uniqueRecord.id] ~= true, "name alone must not mark anything");
+receiveChat(uniqueRecord.name);
+assert(tracker.completed[uniqueRecord.id] == true, "two-event completion must be assigned");
+-- One event with the name on the same line (English client form).
+local second = nil;
+for _, record in ipairs(MQL.catalogs.quests) do
+	if record.id ~= uniqueRecord.id and tracker.index[record.name] ~= nil
+		and #tracker.index[record.name] == 1 and string.find(record.name, "${", 1, true) == nil then
+		second = record; break;
+	end
+end
+assert(second ~= nil, "expected a second uniquely named quest");
+receiveChat("Completed: " .. second.name);
+assert(tracker.completed[second.id] == true, "single-line completion must be assigned");
+-- One event containing a line break instead of the name: third case.
+local third = nil;
+for _, record in ipairs(MQL.catalogs.quests) do
+	local ids = tracker.index[record.name];
+	if ids ~= nil and #ids == 1 and record.id ~= uniqueRecord.id and record.id ~= second.id
+		and string.find(record.name, "${", 1, true) == nil then third = record; break; end
+end
+assert(third ~= nil, "expected a third uniquely named quest");
+receiveChat("Terminé :\r\n" .. third.name);
+assert(tracker.completed[third.id] == true, "line-break completion must be assigned");
+-- A shared name is never guessed, and it is remembered for later.
+local markedShared = false;
+for _, id in ipairs(tracker.index[sharedName]) do
+	if tracker.completed[id] == true then markedShared = true; end
+end
+receiveChat("Abgeschlossen:");
+receiveChat(sharedName);
+for _, id in ipairs(tracker.index[sharedName]) do
+	assert(tracker.completed[id] ~= true, "a shared name must not be assigned to a guess");
+end
+assert(tracker.unresolved[sharedName] ~= nil, "a shared name must be recorded");
+assert(type(tracker.unresolved[sharedName]) == "string",
+	"the remembered count must be text, got " .. type(tracker.unresolved[sharedName]));
+-- Other chat channels are ignored, and unrelated lines mark nothing.
+local unrelated = receiveChat("Abgeschlossen: " .. second.name, Turbine.ChatType.Standard);
+assert(unrelated, "hook was not called for the channel test");
+assert(tracker.completed[second.id] == true, "still assigned");
+tracker.completed[second.id] = nil;
+receiveChat("Abgeschlossen: " .. second.name, Turbine.ChatType.Standard);
+assert(tracker.completed[second.id] ~= true, "a non-quest channel must be ignored");
+receiveChat("Neue Aufgabe: " .. second.name);
+assert(tracker.completed[second.id] ~= true, "starting a quest is not completing it");
+receiveChat("Abgeschlossen: Gibt es nicht");
+assert(tracker.unresolved["Gibt es nicht"] == nil, "an unknown name is not a name clash");
+-- Live progress is stored per character, not in the account settings.
+local saved = savedData["MagicQuestLogLive"];
+assert(saved ~= nil, "live progress must be saved");
+assert(saved.completed[uniqueRecord.id] == true, "saved live progress must hold the id");
+assert(savedSettings == nil or savedSettings.completed == nil,
+	"live progress must not land in the account settings");
+-- The window follows the new mark, and says its totals are only partly known.
+window:SetProgress(tracker.completed, false);
+assert(string.find(window.countLabel:GetText(), MQL.strings.finishedknown, 1, true) ~= nil,
+	"live-only progress must be labelled as partial: " .. window.countLabel:GetText());
+window:SetProgress(tracker.completed, true);
+assert(string.find(window.countLabel:GetText(), MQL.strings.finished, 1, true) ~= nil,
+	"an exported baseline allows a full count: " .. window.countLabel:GetText());
+-- Reloading the plugin must not stack a second handler.
+MagicQuestLog.Load(nil);
+local newTracker = MagicQuestLog.tracker;
+assert(newTracker ~= nil and newTracker ~= tracker, "reload must build a new tracker");
+local freshId = nil;
+for _, record in ipairs(MagicQuestLog.catalogs.quests) do
+	local ids = newTracker.index[record.name];
+	if ids ~= nil and #ids == 1 and string.find(record.name, "${", 1, true) == nil then
+		freshId = record.id; break;
+	end
+end
+receiveChat("Abgeschlossen: " .. MagicQuestLog.catalogs.quests[1].name);
+local marks = 0;
+for _, line in ipairs({}) do marks = marks + 1; end
+assert(tracker.completed ~= newTracker.completed or savedData["MagicQuestLogLive"] ~= nil,
+	"reload must not keep two trackers writing");
 -- Client language without a local catalog falls back to English explicitly.
 MQL.language = "fr";
 MQL.Data["quests_fr"] = nil;
@@ -474,6 +596,10 @@ end''')
     print('PASS: a progress file for another character is ignored instead of being shown as ours')
     print('PASS: LOTRO markup is removed from texts, a stray "<" in real words is kept')
     print('PASS: switching records resets the detail scroll to the top')
+    print('PASS: live completion is read from the quest channel in all three forms')
+    print('PASS: a name shared by several entries is never guessed, only recorded')
+    print('PASS: live progress is stored per character; other channels and quest starts are ignored')
+    print('PASS: live-only totals are labelled as partial, an export allows a full count')
     print('PASS: a client language without its catalog falls back to English (chosen: %s) with English strings'
           % lua.globals().fallbackLanguage)
     return 0

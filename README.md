@@ -17,10 +17,12 @@ A character's own progress file also stays local.
 - **Search** by name or part of a name, ignoring case and accents.
 - On the right, the **description** and the objectives split into steps. Known
   objective counts read "required: 10"; live counters are never invented.
-- **Progress** from an optional status file (`Data/Progress.lua`): the tree and
-  the headline then show "finished / total" (e.g. `(163/276)`) and the details a
-  green check. If the file is missing, or belongs to another character, only
-  plain totals are shown — never an invented zero.
+- **Progress** from two sources: an optional status file (`Data/Progress.lua`)
+  for everything done before, and the quest chat channel for what you finish
+  while playing. The tree and the headline then show "finished / total" (e.g.
+  `(163/276)`) and the details a green check. With no file at all the totals are
+  labelled as partial ("finished (known)"), because a live session cannot know
+  older history — never an invented full count.
 - **Show in MoorMap** through a quickslot with an alias shortcut, whenever a
   position has been verified.
 - Window in the client's own style: title bar, close button, draggable.
@@ -40,6 +42,26 @@ Not included: items, crafting, equipment, an own map and character export.
 - To pick up a new catalog after a game update, reload the plugin
   (`/plugins unload MagicQuestLog`, `/plugins load MagicQuestLog`) or restart the
   game.
+
+## Watching your progress
+
+The client announces completions in the quest channel as a header line plus the
+name (`Completed:`, `Abgeschlossen:`, `Terminé :`). The plugin listens there, so a
+quest you finish shows up immediately — no export, no restart.
+
+What that means in practice:
+
+- Ids seen live are stored **per character** in the client's own plugin data, not
+  in `Data/Progress.lua`. A live session never overwrites an export and an export
+  never overwrites a live session; both are merged for display.
+- Deeds use the same header, so one handler covers quests and deeds.
+- The message carries a **name, not an id**. 639 quest names and 237 deed names in
+  the German catalog belong to more than one entry (race and class variants,
+  repeatable lines). A shared name is **never** assigned to a guess: nothing is
+  marked and the chat names what could not be assigned. Those stay in a list, so a
+  later version or a manual decision can resolve them.
+- Because a live session starts at zero, the headline says "finished (known)"
+  until a `Progress.lua` supplies the older history.
 
 ## Licence
 
@@ -169,9 +191,10 @@ the catalog from their own installation instead of taking a copy.
   next step.
 - **MoorMap needs one click** on the quickslot. A slash command cannot be run
   from inside a plugin.
-- **Progress** only shows what the status file proves. It comes from a journal
-  export taken at one point in time; it does not update itself and is no
-  substitute for a new export.
+- **Progress** is only as complete as its sources. A `Progress.lua` is a journal
+  export from one point in time; live tracking only knows what happened since the
+  plugin was loaded with that character. Neither replaces the other, and nothing
+  here can know what was done before either of them existed.
 - **The same name can appear more than once** — 381 of the 15,117 quests sit
   twice in the same group (for example "Das letzte Wort" or "Einleitung
   überspringen"). These are not duplicates from our build: 15,117 entries were
