@@ -43,6 +43,11 @@ REGIONS = {
                'Lebennin', 'Ringló Vale'],
     'Mordor': ['Mordor', 'Imlad Morgul', 'Agarnaith', 'Lhingris'],
     'Tales of Yore': ['Mordor Besieged', 'Tales of Yore: Azanulbizar'],
+    'Haradwaith': ['The Shield Isles', 'Umbar', 'Umbar-môkh', 'Ambarûl', 'Khûd Zagin', 'Imhûlar',
+                   'Urash Dâr', 'Ikorbân Valley', 'An Shêru, the Height of the Sky',
+                   'Sûg Nidar, the Fearwater', 'Kighân, the Shornvale', 'Idagâl, the Dry-whelm',
+                   'Adagím, the Moulder-wood', 'The Hatokáli Fells'],
+    'Rhûn': ['Parth Rhavas, the Lothfold', 'Heledhris, Rift of Shornshards', 'Nan Ogol, the Fell-vale'],
 }
 ALIASES = {
     'Shire': 'The Shire', 'Trollshaws': 'The Trollshaws', 'Ettenmoors': 'The Ettenmoors',
@@ -157,7 +162,35 @@ class Source:
         self.quests = json.loads((directory / 'quests.json').read_text(encoding='utf-8'))
         self.deeds = json.loads((directory / 'deeds.json').read_text(encoding='utf-8'))
         self.areas = json.loads((directory / 'areas.json').read_text(encoding='utf-8'))
+        self.area_by_id = {r['id']: r for r in self.areas}
         self.locations = json.loads((directory / 'locations.json').read_text(encoding='utf-8'))
+
+    def load_landblocks(self, path):
+        """Landblock -> area id, so a target position can be tied to a territory.
+
+        Only used as a fallback for entries whose category is not a zone. The table
+        is a plain index; nothing about a quest is invented from it.
+        """
+        if path is None:
+            return {}
+        import xml.etree.ElementTree as ET
+        index = {}
+        for block in ET.parse(path).getroot():
+            index[(block.get('region'), block.get('blockX'), block.get('blockY'))] = block.get('areaId')
+        return index
+
+    def territory_name(self, area_id):
+        record = self.area_by_id.get('%08X' % (int(area_id) & 0xffffffff))
+        if record is None:
+            return None
+        props = record.get('properties') or {}
+        parent = props.get('Area_Territory')
+        if parent is not None:
+            record = self.area_by_id.get('%08X' % (parent & 0xffffffff))
+            if record is None:
+                return None
+            props = record.get('properties') or {}
+        return (props.get('Area_Name') or {}).get('texts', {}).get('en')
 
     def area_of_territory(self):
         """Sub-area name -> set of territory names it belongs to.
@@ -185,7 +218,7 @@ class Source:
         return parents
 
 
-def build(export_dir, enums_path, output, moormap_path=None, overrides=None):
+def build(export_dir, enums_path, output, moormap_path=None, overrides=None, landblocks_path=None):
     source = Source(export_dir)
     overrides = overrides or {}
     hidden = set(overrides.get('hidden_ids', []))
@@ -194,6 +227,7 @@ def build(export_dir, enums_path, output, moormap_path=None, overrides=None):
     quest_categories = enums['QuestCategory']
     deed_categories = enums['AccomplishmentUITab']
     maps = moor_map_table(moormap_path)
+    landblocks = source.load_landblocks(landblocks_path)
 
     if len(source.quests) < 1000 or len(source.deeds) < 100:
         raise ValueError('Implausibly small export; refusing to replace a working catalog')
@@ -274,7 +308,24 @@ def build(export_dir, enums_path, output, moormap_path=None, overrides=None):
         lat, lon, region = position.get('latitude'), position.get('longitude'), position.get('region')
         if lat is None or lon is None or region is None:
             continue
-        positions[row['id']].append((row.get('objective_index'), lat, lon, region))
+        block = None
+        if position.get('block_x') is not None and position.get('block_y') is not None:
+            block = (str(region), str(position['block_x']), str(position['block_y']))
+        positions[row['id']].append((row.get('objective_index'), lat, lon, region, block))
+
+    # Territory of a target position, from the landblock index. Used only where the
+    # category is not a zone, and only when every position agrees: a quest whose
+    # objectives lie in several territories gets no invented zone.
+    def territory_for(ident):
+        found = set()
+        for _, lat, lon, region, block in positions.get(ident, []):
+            area_id = landblocks.get(block) if block is not None else None
+            if area_id is None:
+                continue
+            name = source.territory_name(area_id)
+            if name:
+                found.add(name)
+        return found.pop() if len(found) == 1 else None
 
     def make_record(entry, kind, locale, stats, fallback):
         ident = entry['id']
@@ -295,6 +346,10 @@ def build(export_dir, enums_path, output, moormap_path=None, overrides=None):
             return None
 
         zone, area = place(category_en)
+        if zone is None:
+            derived = territory_for(ident)
+            if derived is not None and derived in region_of:
+                zone, area, stats[kind + '_zone_from_position'] = derived, None, stats[kind + '_zone_from_position'] + 1
         if zone in HIDDEN_ZONES or (area and any(word in area for word in HIDDEN_AREA_WORDS)):
             stats[kind + '_hidden'] += 1
             return None
@@ -362,7 +417,7 @@ def build(export_dir, enums_path, output, moormap_path=None, overrides=None):
 
         indexes = {step['i'] for step in steps}
         targets, seen = [], set()
-        for objective_index, lat, lon, region in positions.get(ident, []):
+        for objective_index, lat, lon, region, _ in positions.get(ident, []):
             step_index = str(objective_index)
             if step_index not in indexes:
                 continue
@@ -396,6 +451,8 @@ def build(export_dir, enums_path, output, moormap_path=None, overrides=None):
     manifest['sources']['enums/enum-names.json'] = hashlib.sha256(Path(enums_path).read_bytes()).hexdigest()
     if moormap_path is not None:
         manifest['sources']['MoorMap/Defaults.lua'] = hashlib.sha256(Path(moormap_path).read_bytes()).hexdigest()
+    if landblocks_path is not None:
+        manifest['sources']['landblocks.xml'] = hashlib.sha256(Path(landblocks_path).read_bytes()).hexdigest()
     manifest['source_manifest'] = {'created_utc': source.manifest.get('created_utc'),
                                    'backend': source.manifest.get('backend'),
                                    'languages': source.manifest.get('languages')}
@@ -441,11 +498,14 @@ def main():
     parser.add_argument('--export', type=Path, required=True, help='Export directory (quests.json, ...)')
     parser.add_argument('--enums', type=Path, required=True, help='enum-names.json from the enum export')
     parser.add_argument('--moormap', type=Path, default=None, help='MoorMap Defaults.lua')
+    parser.add_argument('--landblocks', type=Path, default=None,
+                        help='landblocks.xml: ties target positions to a territory')
     parser.add_argument('--output', type=Path, default=ROOT / 'plugin/MagicQuestLog/Data')
     parser.add_argument('--overrides', type=Path, default=ROOT / 'tools/overrides.json')
     options = parser.parse_args()
     data = json.loads(options.overrides.read_text(encoding='utf-8')) if options.overrides.is_file() else {}
-    report = build(options.export, options.enums, options.output, options.moormap, data)
+    report = build(options.export, options.enums, options.output, options.moormap, data,
+                   options.landblocks)
     print(json.dumps({k: v['counts'] for k, v in report['locales'].items()}, ensure_ascii=False, indent=2))
 
 

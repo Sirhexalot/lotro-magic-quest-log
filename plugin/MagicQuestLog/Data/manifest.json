@@ -1,52 +1,71 @@
 {
-  "schema": 1,
+  "schema": 2,
   "sources": {
-    "quests.xml": "c834387b0c045130e6aa47cb00944faafe45d01681df7d186b225b03e1c0540e",
-    "deeds.xml": "b49976dd25cf853c03f234d306546c4c0ea3cdc5eada421f31aa3ac5a97c4b0d",
-    "geoAreas.xml": "f693f4c66b338a7f126ab861b71bf1b3365b89ecb97ed75281e3fb75e98ac46f",
-    "maps/maps/maps.xml": "10824a23607e1e2e7c909e8fa76f471e079c030b02de2c80ae2992ddc1c22c0c",
-    "MoorMap/Defaults.lua": "6dae9cbc72d4e8798aa1eb03a67fd2e60f66a9092d781d9a2de4022c9e8eead0"
+    "quests.json": "8e20d49566b8fce8eac2dbdef66d73db965c545da28191b0c785160ff21799cb",
+    "deeds.json": "feed49652f24f13388c0e353d4bf2caebde6cad0d62ca881984e7217c6a83766",
+    "areas.json": "d2a1436dc11f925a3b2edd9c20f926bf6ffbe689c20cbdf06d07a22fd49501e4",
+    "locations.json": "0f6183617fe6b0a82e2e01a35c57da9657a1d40ffb4db6d249b9a3b802d268e0",
+    "enums/enum-names.json": "a3dd8a909226af000b49be0d5c331f99c93562ee9ed7ed011734fd49e47bccce",
+    "MoorMap/Defaults.lua": "6dae9cbc72d4e8798aa1eb03a67fd2e60f66a9092d781d9a2de4022c9e8eead0",
+    "landblocks.xml": "5d89c150e6dff6c3717ed5b8db796f7200234bde5d9604aac7ce81953f8bb56d"
   },
   "locales": {
     "en": {
       "counts": {
-        "quests": 15117,
-        "quests_with_targets": 10051,
-        "quests_targets": 71189,
-        "quests_hidden": 372,
+        "quests": 15209,
+        "quests_with_targets": 8402,
+        "quests_targets": 98954,
+        "quests_zone_from_position": 4804,
+        "quests_hidden": 483,
+        "deeds_zone_from_position": 680,
         "deeds": 5534,
-        "deeds_with_targets": 456,
-        "deeds_targets": 4975
+        "deeds_with_targets": 468,
+        "deeds_targets": 4366
       },
-      "english_fallback_texts": {},
-      "zones_without_region": {}
+      "english_fallback_texts": {}
     },
     "de": {
       "counts": {
-        "quests": 15117,
-        "quests_with_targets": 10051,
-        "quests_targets": 71189,
-        "quests_hidden": 372,
+        "quests": 15209,
+        "quests_with_targets": 8403,
+        "quests_targets": 98955,
+        "quests_zone_from_position": 4804,
+        "quests_hidden": 483,
+        "deeds_zone_from_position": 680,
         "deeds": 5534,
-        "deeds_with_targets": 456,
-        "deeds_targets": 4975
+        "deeds_with_targets": 468,
+        "deeds_targets": 4366
       },
-      "english_fallback_texts": {},
-      "zones_without_region": {}
+      "english_fallback_texts": {
+        "quests": 6,
+        "deeds": 137
+      }
     },
     "fr": {
       "counts": {
-        "quests": 15117,
-        "quests_with_targets": 10051,
-        "quests_targets": 71189,
-        "quests_hidden": 372,
+        "quests": 15209,
+        "quests_with_targets": 8403,
+        "quests_targets": 98955,
+        "quests_zone_from_position": 4804,
+        "quests_hidden": 483,
+        "deeds_zone_from_position": 680,
         "deeds": 5534,
-        "deeds_with_targets": 456,
-        "deeds_targets": 4975
+        "deeds_with_targets": 468,
+        "deeds_targets": 4366
       },
-      "english_fallback_texts": {},
-      "zones_without_region": {}
+      "english_fallback_texts": {
+        "quests": 1,
+        "deeds": 77
+      }
     }
   },
-  "coverage": {}
+  "source_manifest": {
+    "created_utc": "2026-11-01T22:00:16.706850+00:00",
+    "backend": "java-dat-utils",
+    "languages": [
+      "en",
+      "de",
+      "fr"
+    ]
+  }
 }

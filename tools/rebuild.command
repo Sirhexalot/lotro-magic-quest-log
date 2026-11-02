@@ -1,6 +1,10 @@
 #!/bin/bash
-# Magic Quest Log: rebuild the catalog, check it, install it.
+# Magic Quest Log: rebuild the catalog from a LOTRO Companion lore directory.
 # Reads game data only; it never writes to the game files. Double-clickable in Finder.
+#
+# This is the OLD XML way. The shipped catalog is built from our own DAT export:
+# use rebuild-from-export.command instead. This script stays for comparison and
+# for anyone who only has a Companion lore directory.
 #
 # Usage:  rebuild.command [LORE_DIR] [PLUGIN_DIR]
 #
