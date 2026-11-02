@@ -1,25 +1,61 @@
-# Journal reader – questions and answers
+# Loading your older quests and deeds
 
-You do not need this page to use the tool. [`START-HERE.txt`](START-HERE.txt) has
-the four steps. This page answers what people ask afterwards.
+Magic Quest Log counts what you finish from the moment it is installed. Everything
+you did **before** that is not in the game's chat, so the plugin cannot know it by
+itself.
 
-## Do I have to use LOTRO Companion?
+This little tool reads the quest journal of the character you are playing and
+writes it into the plugin. Run it once and your old progress is there. If you do
+not care about the old entries, ignore this folder — the plugin works without it.
 
-No. You only have to **install** it once. The tool borrows two files from its
-program folder that can read the game's memory; those files are not ours to give
-away. Companion itself never starts, and you do not import anything in it.
+## What you need
 
-## Why does it need the game running?
+- The plugin, already installed.
+- **LOTRO Companion**, free, from
+  <https://sourceforge.net/projects/lotrocompanion/>. Install it and leave it
+  installed. You do **not** have to start it and you do not have to import
+  anything — this tool only borrows two files from its program folder.
+- The game, running, with your character **in the world**. Being at the launcher
+  or the character selection is not enough.
 
-The quest journal exists only while the game is open: the client keeps it in
-memory and nowhere else. So the tool has to look while your character stands in
-the world. Being at the launcher or the character selection is not enough.
+## Windows: step by step
 
-## Which character does it read?
+1. Log in your character and enter the world.
+2. Open this folder in Explorer.
+3. Double-click **`read-journal.bat`**.
+4. A black window opens and prints a few lines. Windows may ask for administrator
+   rights — allow it, reading the game's memory needs that.
+5. Wait until it says `Done`.
+6. Close the game completely and start it again.
+7. Type `/mql`. The headline now shows your real numbers instead of
+   "finished (known)".
 
-The one that is logged in. There is nothing to choose, because the game only
-holds that one in memory. For a second character, log it in and run the tool
-again — each character keeps its own progress file.
+## macOS: step by step
+
+LOTRO runs through Wine on the Mac. `read-journal.command` knows that setup and
+finds the game and its Wine prefix by itself.
+
+1. Log in your character and enter the world.
+2. Open this folder in Finder.
+3. Double-click **`read-journal.command`**.
+
+   macOS may block the file the first time because it came from a download. Then
+   right-click it, choose **Open**, and confirm once. After that a double-click is
+   enough.
+4. A terminal window opens and prints a few lines. Wait until it says `Done`.
+5. Close the game completely and start it again.
+6. Type `/mql` — your old progress is counted.
+
+**Why a restart?** The plugin reads the file when it loads. Unloading and loading
+it again inside a running game usually fails because the catalog is large; a
+restart always works.
+
+## A second character
+
+Log that character in and run the tool again. Each character keeps its own
+progress file, and the plugin shows the one that belongs to the character you
+play. There is nothing to choose, because the game only holds the logged-in
+character in memory.
 
 If two game windows are open, close one first. The tool refuses to guess.
 
@@ -27,23 +63,17 @@ If two game windows are open, close one first. The tool refuses to guess.
 
 Yes. It reads the list of finished and running quests and deeds — nothing else.
 No inventory, no money, no mail, no chat, no account data. It never writes into
-the game and never sends anything anywhere; it only writes one file inside the
+the game and never sends anything anywhere; it only creates one file inside the
 plugin folder: `Data/Progress.lua`.
 
-## Can I undo it?
+## Undo
 
 Delete `MagicQuestLog/Data/Progress.lua`. The plugin then shows plain totals
 again, as if the tool had never run.
 
-## It said `Done`, but nothing changed
+## If it does not work
 
-The file is read when the plugin loads, so the game has to be restarted. Unloading
-and loading the plugin inside a running game usually fails because the catalog is
-large; a restart always works.
-
-## The tool stops and writes nothing
-
-It tells you why. The usual causes:
+It stops, tells you why and writes nothing. The usual causes:
 
 | What it says | What to do |
 |---|---|
@@ -56,12 +86,7 @@ After a big game update the read can fail until LOTRO Companion ships an update.
 That only affects this tool. The plugin keeps working; it just will not add older
 progress until then.
 
-## On a Mac
-
-LOTRO runs through Wine there. `read-journal.command` knows that setup and finds
-the game and its Wine prefix by itself; nothing has to be configured.
-
-## Something for developers?
+## For developers
 
 [`TECHNICAL.md`](TECHNICAL.md) has the internals: what exactly is read, exit
 codes, rebuilding the prebuilt class and the alternative route through
