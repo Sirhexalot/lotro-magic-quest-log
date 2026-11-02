@@ -208,6 +208,12 @@ the catalog from their own installation instead of taking a copy.
 - Gender-dependent wording is shown as "mein Freund / meine Freundin"; the public
   player interface exposes no gender.
 
+## Publishing
+
+Ready-to-paste values for a LOTROInterface download — category, description,
+changelog and the `.plugincompendium` file for the LOTRO Plugin Compendium — are
+in [`packaging/lotrointerface.md`](packaging/lotrointerface.md).
+
 ## State and checks
 
 Generated: 15,117 quests (372 test entries hidden) and 5,534 deeds per language,
