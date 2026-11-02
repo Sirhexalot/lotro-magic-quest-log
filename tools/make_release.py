@@ -58,6 +58,7 @@ def main():
             archive.write(path, arcname=str(Path('MagicQuestLog') / relative))
             count += 1
         archive.write(ROOT / 'README.md', arcname='MagicQuestLog/README.md')
+        archive.write(ROOT / 'LICENSE', arcname='MagicQuestLog/LICENSE.txt')
         archive.write(ROOT / 'icon-sources/NOTICE', arcname='MagicQuestLog/icons-NOTICE.txt')
     digest = hashlib.sha256(target.read_bytes()).hexdigest()
     print('%s  %d files  %.1f MiB'
