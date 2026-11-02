@@ -155,9 +155,25 @@ function M.Context(player, classEnum, raceEnum)
 	return context;
 end
 
+--- LOTRO marks up some game text: "<rgb=#FF0000>…</rgb>", "<b>", "<u>". A label
+--- cannot render that, so the tags are removed and the words stay. Only these tags
+--- are touched: the data also contains single stray "<" inside real words
+--- ("<Armund sighs"), and removing those would lose text.
+local MARKUP = {
+	"<%s*/?%s*rgb[^>]*>",   -- colour tag, with or without value, opening or closing
+	"<%s*/?%s*[bui]%s*>",   -- bold, underline, italics
+	"</%s*[a-zA-Z]+%s*>",   -- a stray closing tag; the text carries "</sit>"
+};
+
+function M.CleanMarkup(text)
+	text = tostring(text or "");
+	for _, pattern in ipairs(MARKUP) do text = string.gsub(text, pattern, ""); end
+	return text;
+end
+
 --- Replace game text placeholders. Current counters are never invented.
 function M.Resolve(text, context, strings, total)
-	text = tostring(text or "");
+	text = M.CleanMarkup(text);
 	text = string.gsub(text, "\\n", "\n");
 	text = string.gsub(text, "\\q", "\"");
 	local needsCounter = false;

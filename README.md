@@ -41,6 +41,13 @@ Not included: items, crafting, equipment, an own map and character export.
   (`/plugins unload MagicQuestLog`, `/plugins load MagicQuestLog`) or restart the
   game.
 
+## Licence
+
+The plugin and its tools are MIT licensed; see `LICENSE`. The icons are a
+separate case: they come from Lucide under the ISC licence (see
+`icon-sources/NOTICE`). The quest and deed texts in the release archive are game
+content and are not covered by either licence.
+
 ## Icons
 
 All icons come from [Lucide](https://lucide.dev) (ISC licence, see
@@ -167,12 +174,13 @@ Generated: 15,117 quests (372 test entries hidden) and 5,534 deeds per language,
 71,189 verified quest positions. A progress file with 3,657 entries finished
 (3,177 quests + 480 deeds), 579 running, 3 listed twice (repeatable) and 3
 unknown ids. Data check: identical id sets and an identical tree structure in all
-three languages, child totals add up. Plugin test: 15 checks green, among them a
+three languages, child totals add up. Plugin test: 17 checks green, among them a
 collapsed start, name search including "ker izel" → "Kêr Izel", details without
 raw placeholders, an honest display without a position, the English fallback when
 a language catalog is missing, the header below the title bar, a labelled search
 field, "n/total" counters, the cached tree when expanding, an ignored status file
-of another character, resolved placeholders, and that every icon texture named in
+of another character, resolved placeholders, LOTRO markup removed from texts, the
+detail scroll reset when switching records, and that every icon texture named in
 the Lua really exists.
 
 **Fixed after the second play test** (not re-checked in game since): no rebuild
@@ -187,7 +195,10 @@ status circles, map pin), description and step text one size larger (Verdana14
 instead of Verdana12, title Verdana16), and documented that quest names can
 repeat as separate entries.
 
-**Done after the fourth play test (2 Nov), not checked in game since:** tree and
+**Done after the fourth play test (2 Nov), not checked in game since:** LOTRO
+markup such as `<rgb=#FF0000>…</rgb>`, `<b>` and `<u>` is stripped from texts
+instead of showing as tags, and switching records scrolls the detail pane back to
+the top. Tree and
 row text one size larger as well (Verdana14, like the description; row heights
 20 and 18 px). The MoorMap slot no longer shows the alias: the map pin lies on
 top of it as a click-through cover (`mapCover`/`mapIcon` with

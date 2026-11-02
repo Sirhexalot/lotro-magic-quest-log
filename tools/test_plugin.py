@@ -42,6 +42,8 @@ local function controlFactory()
 		if key == "GetBackground" then return function(s) return s.background end end
 		if key == "SetMouseVisible" then return function(s, v) s.mouseVisible = v end end
 		if key == "SetFont" then return function(s, v) s.font = v end end
+		if key == "SetValue" then return function(s, v) s.value = tonumber(v) end end
+		if key == "GetValue" then return function(s) return s.value or 0 end end
 		if key == "SetVisible" then return function(s, v) s.visible = v end end
 		if key == "IsVisible" then return function(s) return s.visible ~= false end end
 		return function() end
@@ -333,6 +335,34 @@ assert(string.find(filled, "Feldobar", 1, true) ~= nil,
 assert(string.find(filled, MQL.strings.value, 1, true) == nil,
 	"placeholder fell back to the value marker: " .. string.sub(filled, 1, 120));
 window:ShowDetails(sample);
+-- Game text carries LOTRO markup ("<rgb=#FF0000>…</rgb>", "<b>", "<u>"), which a
+-- label cannot render. The tags must go, the words must stay.
+assert(MQL.Model.CleanMarkup("<rgb=#FF0000>Erwerbt das Rezept</rgb>") == "Erwerbt das Rezept",
+	"colour tag not removed");
+assert(MQL.Model.CleanMarkup("<b>fett</b> und <u>unterstrichen</u>") == "fett und unterstrichen",
+	"bold/underline not removed");
+assert(MQL.Model.CleanMarkup("Pack <rgb>Sorciere</rgb>") == "Pack Sorciere",
+	"malformed tag not removed");
+assert(MQL.Model.CleanMarkup("Asseyez-vous</sit> avec lui") == "Asseyez-vous avec lui",
+	"stray closing tag not removed");
+assert(MQL.Model.CleanMarkup("<Armund sighs") == "<Armund sighs",
+	"a stray < inside real text must stay");
+local marked = nil;
+for _, record in ipairs(MQL.catalogs.quests) do
+	if string.find(record.d or "", "<rgb", 1, true) ~= nil then marked = record; break; end
+end
+assert(marked ~= nil, "expected a quest whose text carries markup");
+window:ShowDetails(marked);
+local clean = window.detailText:GetText();
+assert(string.find(clean, "<rgb", 1, true) == nil, "markup leaked into the detail text");
+assert(string.find(clean, "</rgb>", 1, true) == nil, "closing markup leaked");
+-- Switching records must start at the top again, not keep the old offset.
+window.detailScroll:SetValue(120);
+window:ShowDetails(sample);
+assert(window.detailScroll:GetValue() == 0, "detail scroll must return to the top");
+window.detailScroll:SetValue(90);
+window:ShowDetails(nil);
+assert(window.detailScroll:GetValue() == 0, "clearing the detail must reset the scroll");
 -- Client language without a local catalog falls back to English explicitly.
 MQL.language = "fr";
 MQL.Data["quests_fr"] = nil;
@@ -442,6 +472,8 @@ end''')
     print('PASS: counters show "%s" with progress and claim nothing without it' % values['counterSample'])
     print('PASS: MoorMap runs through a quickslot alias shortcut, not by printing the command')
     print('PASS: a progress file for another character is ignored instead of being shown as ours')
+    print('PASS: LOTRO markup is removed from texts, a stray "<" in real words is kept')
+    print('PASS: switching records resets the detail scroll to the top')
     print('PASS: a client language without its catalog falls back to English (chosen: %s) with English strings'
           % lua.globals().fallbackLanguage)
     return 0

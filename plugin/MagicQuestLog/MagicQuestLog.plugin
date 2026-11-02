@@ -4,7 +4,7 @@
 		<Name>Magic Quest Log</Name>
 		<Author>Adrian</Author>
 		<Version>0.1.0</Version>
-		<Description>Aufgaben- und Tatenatlas: Baum, Namenssuche, Details und MoorMap.</Description>
+		<Description>Quest and deed atlas: tree by area and epic story, name search, details and MoorMap.</Description>
 	</Information>
 	<Package>MagicQuestLog.Main</Package>
 	<Configuration Apartment="MagicQuestLog" />

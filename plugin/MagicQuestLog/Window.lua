@@ -433,6 +433,7 @@ function Window:ShowDetails(record)
 		self.detailTitle:SetText(self.strings.choose);
 		self.detailStatus:SetVisible(false);
 		self.detailText:SetText("");
+		self.detailScroll:SetValue(0);
 		self.mapSlot:SetVisible(false);
 		self.mapCover:SetVisible(false);
 		self.mapLabel:SetVisible(false);
@@ -448,6 +449,8 @@ function Window:ShowDetails(record)
 		self.detailStatus:SetVisible(false);
 	end
 	self.detailText:SetText(Model.Detail(record, self.strings, self.context));
+	-- A new record starts at the top; keeping the old offset looked broken.
+	self.detailScroll:SetValue(0);
 	local target = (record.t or {})[1];
 	local command = Model.MapCommand(target, record.displayName or record.name);
 	self.command = command or false;
