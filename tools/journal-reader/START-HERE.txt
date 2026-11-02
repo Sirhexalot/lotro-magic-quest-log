@@ -25,15 +25,11 @@ The character has to be **in the world**, not only at the launcher.
 Windows may ask for administrator rights. Allow it — reading the game's memory
 needs it. A black window opens and prints a few lines; that is normal.
 
-**4. In game, reload the plugin:**
+**4. Close the game and start it again.**
 
-```
-/plugins unload MagicQuestLog
-/plugins load MagicQuestLog
-```
-
-German client: the commands are called `Zusatzmodule` there, so type
-`/zusatzmodule entfernen MagicQuestLog` and `/zusatzmodule laden MagicQuestLog`.
+That is the whole trick: the plugin reads this file when it loads. Reloading the
+plugin inside a running game often fails because the catalog is large; a restart
+always works.
 
 The tree now counts what you have really done.
 

@@ -102,14 +102,9 @@ rem --- 5. Read and write ----------------------------------------------------
 set "RESULT=%ERRORLEVEL%"
 echo.
 if "%RESULT%"=="0" (
-	echo Done. Reload the plugin in game:
-	echo     /plugins unload MagicQuestLog
-	echo     /plugins load MagicQuestLog
-	echo   German client: /zusatzmodule entfernen MagicQuestLog
-	echo                  /zusatzmodule laden MagicQuestLog
-	echo.
-	echo Note: a running plugin session may overwrite the file when it unloads.
-	echo Running this tool again rewrites it.
+	echo Done. Close the game and start it again - the plugin reads
+	echo the file when it loads. Reloading inside a running session
+	echo usually fails because the catalog is large.
 ) else (
 	echo Nothing was written ^(code %RESULT%^).
 	echo Usual causes: the game is not running, the character is not in the world,

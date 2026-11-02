@@ -65,7 +65,8 @@ installation, only for its memory library and Windows Java. The page describes i
 as an optional section with the steps, and the tool's `START-HERE.txt` repeats
 them. The page links Companion's SourceForge download.
 
-The email to ask for it is ready: [mail-to-companion-author.txt](mail-to-companion-author.txt).
+The permission email was not sent and is no longer needed: the tool ships the
+dependency openly instead of bundling foreign libraries.
 
 Why not rebuild it ourselves: LOTRO's Lua API has no quest access at all — the
 only gameplay objects it exposes are `LocalPlayer`, `Class`, `Race` and

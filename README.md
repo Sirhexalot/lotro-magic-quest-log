@@ -39,12 +39,13 @@ Not included: items, crafting, equipment, an own map and character export.
   detail pane. A plugin cannot run a slash command itself; MoorMap can only be
   driven by a quickslot shortcut. That is the documented way (as Compendium does
   it), which is why it is a quickslot and not a plain button.
-- To pick up a new catalog after a game update, reload the plugin
-  (`/plugins unload MagicQuestLog`, `/plugins load MagicQuestLog`) or restart the
-  game. In a **German client** every plugin command is called `Zusatzmodule`
-  instead, so `/plugins` answers "Unbekannter Befehl": use
-  `/zusatzmodule entfernen MagicQuestLog` and `/zusatzmodule laden MagicQuestLog`,
-  or open the manager with `/zusatzmodule manager`.
+- To pick up a new catalog after a game update, **restart the game**. Unloading
+  and loading the plugin again in the same session can fail — the client is
+  32-bit and does not manage to import the large catalog a second time; it then
+  answers "Laden von 'MagicQuestLog' nicht möglich" and writes nothing to
+  `Script.log`. A restart always loads the files from disk. In a **German
+  client** every plugin command is called `Zusatzmodule` instead of `/plugins`
+  (use `/zusatzmodule manager` for the manager).
 
 ## Watching your progress
 
@@ -105,8 +106,9 @@ the repository. The archive is ready to install:
 unzip MagicQuestLog-<version>.zip -d '<Plugins folder>'
 ```
 
-In game: `/plugins unload MagicQuestLog`, `/plugins load MagicQuestLog`, `/mql`
-(German client: `/zusatzmodule entfernen MagicQuestLog`, `/zusatzmodule laden MagicQuestLog`).
+In game: `/plugins load MagicQuestLog`, then `/mql` — or simply start the game,
+which loads it by itself. To fetch a **new** catalog later, restart the game; a
+reload in the same session can fail because of the catalog size.
 
 ## Building and checking
 
@@ -241,15 +243,9 @@ Import the character in LOTRO Companion first — that step is Companion's job a
 on Windows it works natively. The LOTRO Compendium import reads the same two
 files, which is why the format can be relied on.
 
-Either way, afterwards reload the plugin in game:
-
-```
-/plugins unload MagicQuestLog
-/plugins load MagicQuestLog
-```
-
-German client: `/zusatzmodule entfernen MagicQuestLog`, then
-`/zusatzmodule laden MagicQuestLog`.
+Either way, afterwards **restart the game**: the progress file is read at plugin
+load, and reloading the plugin in a running session is not reliable with the
+large catalog.
 
 `tools/journal-reader/verify_progress.py` checks a written file without any game
 data.
@@ -445,5 +441,4 @@ elsewhere; it is reset after every selection so the same row stays clickable.
 **Fixed after the first play test:** missing window frame (now
 `Turbine.UI.Lotro.Window`), missing start icon (now a Lucide texture) and rows
 that did not react (now through the list selection). One requirement remains: the
-client has to learn about the plugin folder — reload the plugin or restart the
-game, then `/mql`.
+client has to learn about the plugin folder — restart the game, then `/mql`.

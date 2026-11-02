@@ -121,15 +121,9 @@ Plugins\MagicQuestLog\Optional-Progress-Tool\
 4. A black window opens and prints a few lines. Windows may ask for administrator
    rights — allow it, reading the game's memory needs that.
 5. Wait until it says `Done`.
-6. Back in the game, reload the plugin:
-
-   ```
-   /plugins unload MagicQuestLog
-   /plugins load MagicQuestLog
-   ```
-
-   German client: `/zusatzmodule entfernen MagicQuestLog`, then
-   `/zusatzmodule laden MagicQuestLog`.
+6. Close the game completely and start it again. The plugin reads the file while
+   it loads; reloading the plugin inside a running game often fails because the
+   catalog is large. A restart always works.
 7. Type `/mql`. The headline now shows your real numbers instead of
    "finished (known)".
 
@@ -146,12 +140,11 @@ launcher already knows how to reach into it. It is made for exactly this setup.
    right-click it, choose **Open**, and confirm once. After that a double-click is
    enough.
 4. A terminal window opens and prints a few lines. Wait until it says `Done`.
-5. Back in the game, reload the plugin as in step 6 above.
+5. Close the game and start it again, as in step 6 above.
 6. Type `/mql` — your old progress is now counted.
 
-[Screenshot: the terminal window after a successful run, showing `Done` and the
-two reload commands. Caption: "When it says Done, only the plugin reload is
-missing."]
+[Screenshot: the terminal window after a successful run, showing `Done`. Caption:
+"When it says Done, only a game restart is missing."]
 
 **One character at a time**
 

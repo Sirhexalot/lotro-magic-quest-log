@@ -34,15 +34,8 @@ in the normal case. If the search fails, the error message names the variable to
 set: `COMPANION_DIR` and `LOTRO_DIR` in the `.bat`, `MQL_COMPANION`,
 `MQL_LOTRO_APP` and `MQL_OUTPUT` for the `.command`.
 
-Afterwards, in game:
-
-```
-/plugins unload MagicQuestLog
-/plugins load MagicQuestLog
-```
-
-German client: `/zusatzmodule entfernen MagicQuestLog`, then
-`/zusatzmodule laden MagicQuestLog`.
+Afterwards, restart the game. The plugin reads the file at load; a reload inside
+a running session is not reliable with the large catalog.
 
 The result lands in `Plugins/MagicQuestLog/Data/Progress.lua`; the headline then
 reads the full count instead of "finished (known)".
@@ -107,8 +100,8 @@ a temporary file, so a failed run cannot leave half a file behind.
   own LOTRO Companion installation. LOTRO Companion as a distribution is
   Apache-2.0, while the repositories of the `delta-*` libraries carry no licence
   file — ask the author (lotrocompanion@gmail.com) before passing the jars on.
-- A running plugin session can rewrite `Progress.lua` when it unloads. Running
-  this tool again is the fix.
+- The plugin only ever reads `Progress.lua`; its live data goes to the client's
+  per-character plugin data. Running the tool again simply replaces the file.
 
 ## Alternative without any memory access
 
