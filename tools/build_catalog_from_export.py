@@ -32,15 +32,15 @@ REGIONS = {
     'Eriador': ['Bree-land', 'The Shire', 'The Ettenmoors', 'Ered Luin', 'The Lone-lands', 'Angmar',
                 'The North Downs', 'The Misty Mountains', 'The Trollshaws', 'Evendim', 'Forochel',
                 'Eregion', 'Dunland', 'Enedwaith', 'Festival Grounds', 'Cardolan', 'Swanfleet', 'Hithaeglir'],
-    'Rhovanion': ['Moria', 'Lothlorien', 'Mirkwood', 'Erebor', 'Strongholds of the North',
+    'Rhovanion': ['Moria', 'Lothlórien', 'Mirkwood', 'Erebor', 'Strongholds of the North',
                   'The Dwarf-holds', 'The Vales of Anduin', 'Wells of Langflood', 'Elderslade',
                   'Gundabad', 'Rhovanion'],
     'Rohan': ['Great River', 'Rohan - Eastemnet', 'Rohan - Wildermore', 'Rohan - Westemnet', 'Entwash',
               'Wold', 'Croftlands', 'Eastfold', 'Fangorn', 'Westfold', 'Wildermore'],
-    'Gondor': ['Western Gondor', 'Central Gondor', 'Eastern Gondor', 'Osgiliath', 'Old Anorien',
-               'Far Anorien', 'Anorien', 'Anorien (After Battle)', 'Ithilien', 'The Wastes',
+    'Gondor': ['Western Gondor', 'Central Gondor', 'Eastern Gondor', 'Osgiliath', 'Old Anórien',
+               'Far Anórien', 'Anórien', 'Anórien (After Battle)', 'Ithilien', 'The Wastes',
                "King's Gondor", 'Anfalas', 'Pinnath Gelin', 'Belfalas & Dor-en-Ernil', 'Lossarnach',
-               'Lebennin', 'Ringlo Vale'],
+               'Lebennin', 'Ringló Vale'],
     'Mordor': ['Mordor', 'Imlad Morgul', 'Agarnaith', 'Lhingris'],
     'Tales of Yore': ['Mordor Besieged', 'Tales of Yore: Azanulbizar'],
 }
@@ -50,7 +50,7 @@ ALIASES = {
     'Lone-lands': 'The Lone-lands', 'Vales of Anduin': 'The Vales of Anduin',
     'Dwarf-holds': 'The Dwarf-holds', 'Azanulbizar': 'Tales of Yore: Azanulbizar',
     'Outer Gondor': "King's Gondor", 'Bree-town': 'Bree-land',
-    'Umbar Baharbel': 'Umbar', 'The Cape of Umbar': 'Umbar', 'Cape of Umbar': 'Umbar',
+    'Umbar Baharbêl': 'Umbar', 'The Cape of Umbar': 'Umbar', 'Cape of Umbar': 'Umbar',
     'The Great River': 'Great River', 'Morgul Vale': 'Imlad Morgul', 'Gorgoroth': 'Mordor',
 }
 STORY_VOLUME = re.compile(r'^Epic - Vol\. ([IVX]+)')

@@ -173,6 +173,13 @@ launcher. It reads the journal of the character that is logged in and writes
 `Progress.lua` directly. Start it with `read-journal.bat` (Windows) or
 `read-journal.command` (macOS); both find the game and Companion themselves.
 
+There is **no character list to pick from**: the client only holds the character
+that is logged in, so that is the one read, and the tool refuses to guess when two
+clients run at once. For another character, log it in and run the tool again —
+each character keeps its own file, and the plugin shows the one matching the
+character you play. Way B is different: it lists every character Companion has
+imported and takes the name as an argument.
+
 It needs a local **LOTRO Companion installation**, but only for its memory
 library and its Windows Java — Companion does not have to run, and its interface
 is never used. The library is not part of this repository; see

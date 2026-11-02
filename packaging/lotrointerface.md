@@ -47,9 +47,11 @@ It does not need a browser tab, an overlay or a second monitor.
 - **Details** with the description and the objectives split into steps. Counts
   that the game states are shown as "required: 10"; live counters are never made
   up.
-- **Progress**: drop in a status file and every node shows finished of total,
-  e.g. `(163/276)`, with a green check on what is done. Without that file the
-  plugin shows plain totals and claims nothing about your character.
+- **Progress**: what you finish is picked up from the quest channel while you
+  play, without any setup, and every node shows finished of total, e.g.
+  `(163/276)`, with a green check on what is done. Quest played before installing
+  can be added with one optional step (see below). Without either, the plugin
+  shows plain totals and claims nothing about your character.
 - **Show in MoorMap** jumps to a verified position. Positions are only offered
   when they were checked against the map's own texture id and MoorMap's bounds;
   doubtful ones show no button instead of a wrong pin.
@@ -68,7 +70,10 @@ Not included: items, crafting, equipment, an own map and character export.
   verified map positions.
 - Tree by area and epic story, accent-insensitive name search, detail pane with
   steps and counts, start icon, remembered window placement.
-- Optional progress file for finished, running, repeatable and unknown ids.
+- Progress from the quest channel while playing, so nothing has to be exported to
+  see what you just finished.
+- Optional import of older progress from the running client or from LOTRO
+  Companion's character files.
 - MoorMap integration through a quickslot, because a plugin cannot run a slash
   command itself.
 
@@ -79,13 +84,47 @@ Not included: items, crafting, equipment, an own map and character export.
 2. Start the game, or type `/plugins load MagicQuestLog` in game.
 3. `/mql` opens or hides the window; `/mql show` and `/mql hide` are explicit.
 
-To use your own progress, write your finished ids into
-`MagicQuestLog/Data/Progress.lua`; `Progress.example.lua` in the same folder
-shows the format. A file that belongs to another character is ignored on
-purpose.
-
 MoorMap (by Garan) is optional but needed for the map button. The plugin reads
 its own files only; nothing is written back into the game.
+
+### Optional: bring your older progress along
+
+Everything you finish from now on is tracked by itself — no setup at all. What
+you completed **before** installing is not, because the game never tells a plugin
+about the past. If you want that in the tree too, there is one optional step.
+
+You need the separate tool from the project page
+(<https://github.com/Sirhexalot/lotro-magic-quest-log>, folder
+`tools/journal-reader`). No Python, no command line.
+
+1. Install **LOTRO Companion** (free) and leave it installed. It is only needed
+   for its libraries — it must not be running, and you never open it for this.
+2. Start the game and **log in the character** whose progress you want. Being in
+   the world matters, the launcher is not enough.
+3. Double-click `read-journal.bat` (Windows) or `read-journal.command` (macOS) in
+   that folder. Windows may ask for administrator rights — that is the read.
+4. In game: `/plugins unload MagicQuestLog`, then `/plugins load MagicQuestLog`.
+   The tree then counts what you have really done.
+
+**What the tool reads:** only the quest journal of the logged-in character — the
+ids of finished and running quests and deeds. Nothing else. No inventory, no
+money, no mail, no chat, no account data, and it never writes into the game. It
+produces one file, `Data/Progress.lua`, next to the plugin.
+
+**One character, no list to choose from.** The client only holds the character
+that is logged in, so that is the one read. For a second character, log it in and
+run the tool again; each character keeps its own file and the plugin shows the
+one that matches the character you play.
+
+**If it cannot read, it says so and writes nothing** — game not running,
+character not in the world, a different character logged in, or no read
+permission. Nothing is half-written and nothing is guessed. After a major game
+update the read can fail until the libraries catch up; the plugin itself keeps
+working.
+
+Prefer no extra software? A small script reads the XML files LOTRO Companion
+writes per imported character instead. That needs Python, and Companion has to
+import the character first. Both ways produce the same file.
 
 ## After the first upload
 
