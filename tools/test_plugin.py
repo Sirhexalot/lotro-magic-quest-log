@@ -42,7 +42,11 @@ local function controlFactory()
 		if key == "GetBackground" then return function(s) return s.background end end
 		if key == "SetMouseVisible" then return function(s, v) s.mouseVisible = v end end
 		if key == "SetFont" then return function(s, v) s.font = v end end
-		if key == "SetValue" then return function(s, v) s.value = tonumber(v) end end
+		if key == "SetValue" then return function(s, v)
+			if s.scrollbar ~= nil then s.boundSetValue = true end
+			s.value = tonumber(v)
+		end end
+		if key == "SetVerticalScrollBar" then return function(s, v) s.scrollbar = v end end
 		if key == "GetValue" then return function(s) return s.value or 0 end end
 		if key == "SetVisible" then return function(s, v) s.visible = v end end
 		if key == "IsVisible" then return function(s) return s.visible ~= false end end
@@ -380,13 +384,16 @@ window:ShowDetails(marked);
 local clean = window.detailText:GetText();
 assert(string.find(clean, "<rgb", 1, true) == nil, "markup leaked into the detail text");
 assert(string.find(clean, "</rgb>", 1, true) == nil, "closing markup leaked");
--- Switching records must start at the top again, not keep the old offset.
-window.detailScroll:SetValue(120);
+-- Switching records must start at the top again. A bar bound to a label may not be
+-- set directly, so the pane must be rebound after every text change.
 window:ShowDetails(sample);
-assert(window.detailScroll:GetValue() == 0, "detail scroll must return to the top");
-window.detailScroll:SetValue(90);
+assert(window.detailText.scrollbar == window.detailScroll, "detail bar must stay bound");
+assert(window.detailText.boundSetValue ~= true, "SetValue on a bound bar must never happen");
+window:ShowDetails(without);
+assert(window.detailText.boundSetValue ~= true, "SetValue on a bound bar must never happen");
 window:ShowDetails(nil);
-assert(window.detailScroll:GetValue() == 0, "clearing the detail must reset the scroll");
+assert(window.detailText.boundSetValue ~= true, "SetValue on a bound bar must never happen");
+assert(window.detailText:GetText() == "", "clearing must empty the detail text");
 -- Live completion detection from the quest channel.
 local tracker = MQL.tracker;
 assert(tracker ~= nil, "chat tracker missing");
@@ -516,7 +523,9 @@ assert(MagicQuestLog.language == "en", "still English without a local catalog");
 
     lua.execute(r'''
 -- Stored values can come back as text: they must be coerced and honoured.
-storedSettings = { windowLeft = "300", windowTop = "180", windowVisible = false, useIcon = false };
+-- A damaged file once carried stray numeric keys; they must not be loaded back.
+storedSettings = { windowLeft = "300", windowTop = "180", windowVisible = false, useIcon = false,
+	[1] = 0, [2] = 0, junk = "x" };
 local settings = MagicQuestLog.Settings.Load();
 assert(settings.windowLeft == 300 and settings.windowTop == 180, "numeric settings must be coerced");
 assert(settings.windowVisible == false and settings.useIcon == false, "stored switches must win");
@@ -527,6 +536,16 @@ assert(type(saved.windowLeft) == "string" and type(saved.windowTop) == "string",
 	"saved placement must be text, got " .. type(saved.windowLeft));
 assert(type(saved.windowVisible) == "boolean" and type(saved.useIcon) == "boolean",
 	"switches stay booleans");
+assert(saved[1] == nil and saved[2] == nil and saved.junk == nil,
+	"unknown keys must not be written back");
+local known = 0;
+for key in pairs(saved) do
+	assert(key == "windowLeft" or key == "windowTop" or key == "iconLeft"
+		or key == "iconTop" or key == "windowVisible" or key == "useIcon",
+		"unexpected key in the settings file: " .. tostring(key));
+	known = known + 1;
+end
+assert(known >= 2 and known <= 6, "settings file has " .. known .. " keys");
 for _, name in ipairs({ "windowLeft", "windowTop", "iconLeft", "iconTop" }) do
 	assert(saved[name] == nil or type(saved[name]) == "string",
 		"saved " .. name .. " must be text, got " .. type(saved[name]));

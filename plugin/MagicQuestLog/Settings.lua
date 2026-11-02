@@ -13,6 +13,8 @@ local DEFAULTS = { windowVisible = true, useIcon = true };
 -- the locale's decimal separator ("239,000000" on a German client), which is not
 -- valid Lua and makes the whole settings file unreadable. Load coerces them back.
 local PLACEMENTS = { "windowLeft", "windowTop", "iconLeft", "iconTop" };
+-- Placement plus the two switches: the only keys this plugin ever stores.
+local KNOWN = { "windowLeft", "windowTop", "iconLeft", "iconTop", "windowVisible", "useIcon" };
 
 function S.Load()
 	local stored = nil;
@@ -20,10 +22,15 @@ function S.Load()
 		local ok, data = pcall(Turbine.PluginData.Load, Turbine.DataScope.Account, KEY);
 		if ok and type(data) == "table" then stored = data; end
 	end
+	-- Only known keys are taken over. A damaged file once carried stray numeric
+	-- entries; copying everything turned them into part of the settings, and every
+	-- later save wrote them again.
 	local settings = {};
 	for key, value in pairs(DEFAULTS) do settings[key] = value; end
 	if stored ~= nil then
-		for key, value in pairs(stored) do settings[key] = value; end
+		for _, name in ipairs(KNOWN) do
+			if stored[name] ~= nil then settings[name] = stored[name]; end
+		end
 	end
 	for _, name in ipairs(PLACEMENTS) do
 		if settings[name] ~= nil then settings[name] = tonumber(settings[name]); end
@@ -48,8 +55,12 @@ end
 
 function S.Save()
 	if Turbine.PluginData == nil or S.current == nil then return; end
+	-- Built from known keys only, positions as text: numbers would come back with
+	-- the client's decimal comma and make the file unreadable.
 	local stored = {};
-	for key, value in pairs(S.current) do stored[key] = value; end
+	for _, name in ipairs(KNOWN) do
+		if S.current[name] ~= nil then stored[name] = S.current[name]; end
+	end
 	for _, name in ipairs(PLACEMENTS) do
 		if stored[name] ~= nil then stored[name] = S.Placement(stored[name]); end
 	end

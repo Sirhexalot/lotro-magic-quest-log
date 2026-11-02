@@ -357,6 +357,17 @@ row text one size larger as well (Verdana14, like the description; row heights
 top of it as a click-through cover (`mapCover`/`mapIcon` with
 `SetMouseVisible(false)`) so the click still reaches the quickslot underneath.
 
+**Two more errors from the fifth play test, both fixed:**
+
+1. **`Window.lua: SetValue: Invalid operation while the scroll bar is bound.`**
+   The scroll reset set the value on a bar that a label drives. The client refuses
+   that. The pane is now unbound, filled and rebound — the same way Compendium does
+   it — which resets the offset without touching the bar.
+2. **`MagicQuestLogSettings.plugindata: '}' expected near ','`** again. Stray
+   numeric keys (`[1,000000] = 0,000000`) had got into the settings table at some
+   point and were copied back on every save. Loading and saving now take only the
+   six known keys, so junk cannot persist, and the file on disk was repaired.
+
 **Four real bugs fixed during this round:**
 
 1. **Placeholders were not replaced but became "[value]".** In `Resolve` the

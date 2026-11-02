@@ -431,6 +431,15 @@ function Window:AddNode(node, depth, parentPath)
 	end
 end
 
+--- Set the detail text and put the pane back at the top.
+--- A scroll bar bound to a label is driven by the label; the client rejects
+--- SetValue on it. Unbinding, setting and rebinding resets the offset instead.
+function Window:SetDetailText(text)
+	self.detailText:SetVerticalScrollBar(nil);
+	self.detailText:SetText(text);
+	self.detailText:SetVerticalScrollBar(self.detailScroll);
+end
+
 function Window:ShowDetails(record)
 	-- Every field gets a real value: leaving a key unset would fall through to the
 	-- object's own lookup and could look like a set value.
@@ -438,8 +447,7 @@ function Window:ShowDetails(record)
 	if record == nil then
 		self.detailTitle:SetText(self.strings.choose);
 		self.detailStatus:SetVisible(false);
-		self.detailText:SetText("");
-		self.detailScroll:SetValue(0);
+		self:SetDetailText("");
 		self.mapSlot:SetVisible(false);
 		self.mapCover:SetVisible(false);
 		self.mapLabel:SetVisible(false);
@@ -454,9 +462,9 @@ function Window:ShowDetails(record)
 	else
 		self.detailStatus:SetVisible(false);
 	end
-	self.detailText:SetText(Model.Detail(record, self.strings, self.context));
-	-- A new record starts at the top; keeping the old offset looked broken.
-	self.detailScroll:SetValue(0);
+	-- Unbinding, setting and rebinding is how a scrolled label is reset to the top.
+	-- SetValue on a bound scroll bar is refused by the client and threw an error.
+	self:SetDetailText(Model.Detail(record, self.strings, self.context));
 	local target = (record.t or {})[1];
 	local command = Model.MapCommand(target, record.displayName or record.name);
 	self.command = command or false;
