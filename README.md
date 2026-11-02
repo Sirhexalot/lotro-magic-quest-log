@@ -191,6 +191,13 @@ Schritttexte eine Schriftgröße größer (Verdana14 statt Verdana12, Titel
 Verdana16), doppelt vorkommende Aufgabennamen als eigenständige Einträge
 dokumentiert.
 
+**Nach der vierten Spielprüfung (02.11.) umgesetzt, im Spiel noch nicht
+nachgeprüft:** Baum- und Zeilenschrift eine Größe größer (Verdana14 wie der
+Beschreibungstext, Zeilenhöhen 20 bzw. 18 px). Der MoorMap-Slot zeigt den Alias
+nicht mehr an: das Karten-Symbol liegt als klickdurchlässige Abdeckung darüber
+(`mapCover`/`mapIcon` mit `SetMouseVisible(false)`), damit der Klick weiterhin den
+Quickslot darunter trifft.
+
 **Vier Fehler aus dieser Prüfung behoben:**
 
 1. **Platzhalter wurden nicht ersetzt, sondern zu „[Spielwert]“.** In `Resolve`

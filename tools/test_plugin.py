@@ -40,6 +40,8 @@ local function controlFactory()
 		if key == "SetShortcut" then return function(s, v) s.shortcut = v end end
 		if key == "SetBackground" then return function(s, v) s.background = v end end
 		if key == "GetBackground" then return function(s) return s.background end end
+		if key == "SetMouseVisible" then return function(s, v) s.mouseVisible = v end end
+		if key == "SetFont" then return function(s, v) s.font = v end end
 		if key == "SetVisible" then return function(s, v) s.visible = v end end
 		if key == "IsVisible" then return function(s) return s.visible ~= false end end
 		return function() end
@@ -166,6 +168,21 @@ assert(ping ~= nil and tonumber(map) > 0 and tonumber(lat) ~= nil and tonumber(l
 -- The command must reach MoorMap through the shortcut, not by printing it.
 assert(window.mapShortcut.data == window.command, "shortcut must carry the ping command");
 assert(window.mapSlot.shortcut == window.mapShortcut, "shortcut must be attached to the slot");
+-- The quickslot prints the alias inside itself ("/MO…"), which looks like a broken
+-- button. A cover with the pin hides that, but it must let the click through to
+-- the slot: both cover and icon ignore the mouse.
+assert(window.mapCover.mouseVisible == false, "cover must not swallow the click");
+assert(window.mapIcon.mouseVisible == false, "pin must not swallow the click");
+assert(window.mapIcon.parent == window.mapCover, "pin must sit on the cover");
+assert(window.mapCover.visible == true, "cover must show with a verified position");
+-- Tree text is one size up as well; nodes and rows share the detail body font.
+local nodeRow = nil;
+for _, row in ipairs(window.rows) do
+	if row.control.label and row.control.label.font ~= nil then nodeRow = row; break; end
+end
+assert(nodeRow ~= nil, "expected a tree node row");
+assert(nodeRow.control.label.font == window.body, "tree node font must be the body font");
+assert(nodeRow.control:GetHeight() >= 20, "tree rows must be taller for the bigger font");
 -- A record without a verified position must not pretend to have one.
 local without = nil;
 for _, record in ipairs(MQL.catalogs.quests) do if #record.t == 0 then without = record; break end end

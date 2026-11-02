@@ -207,22 +207,27 @@ function Window:Constructor(strings, catalogs)
 	self.detailScroll:SetWidth(12);
 	self.detailText:SetVerticalScrollBar(self.detailScroll);
 
-	-- MoorMap cannot be called by printing a command: /moormap only runs through
-	-- a quickslot shortcut. The documented way for another plugin is an alias
-	-- shortcut that is updated per selection, as Compendium does it.
+	-- The pin sits on top of the quickslot as a click-through cover: the slot has to
+	-- stay clickable (it is what fires MoorMap), but it also prints the alias text
+	-- inside itself, which looks like a broken button. Both cover and icon ignore
+	-- the mouse, so the click reaches the slot underneath.
 	self.mapSlot = Turbine.UI.Lotro.Quickslot();
 	self.mapSlot:SetParent(self);
-	self.mapSlot:SetSize(28, 28);
+	self.mapSlot:SetSize(22, 22);
 	self.mapSlot:SetAllowDrop(false);
-	self.mapSlot:SetBackColor(Turbine.UI.Color(0.18, 0.19, 0.29));
 	self.mapSlot:SetVisible(false);
 	self.mapShortcut = Turbine.UI.Lotro.Shortcut(Turbine.UI.Lotro.ShortcutType.Alias, "");
 	self.mapShortcut:SetData("");
 	self.mapSlot:SetShortcut(self.mapShortcut);
 	self.mapSlot.DragDrop = function() self.mapSlot:SetShortcut(self.mapShortcut); end;
-	-- The pin sits next to the slot as a visible hint; the slot itself carries the
-	-- alias, which the client prints inside it.
-	self.mapIcon = makeImage(self, "mappin");
+	self.mapCover = Turbine.UI.Control();
+	self.mapCover:SetParent(self);
+	self.mapCover:SetSize(22, 22);
+	self.mapCover:SetBackColor(self.back);
+	self.mapCover:SetMouseVisible(false);
+	self.mapCover:SetVisible(false);
+	self.mapIcon = makeImage(self.mapCover, "mappin");
+	self.mapIcon:SetPosition(2, 2);
 	self.mapLabel = makeLabel(self, self.small, self.gold);
 	self.mapLabel:SetText(strings.showmap);
 	self.mapInfo = makeLabel(self, self.small, self.trim);
@@ -282,11 +287,12 @@ function Window:Layout()
 	self.detailScroll:SetPosition(detailLeft + detailWidth - 14, bodyTop + 52);
 	self.detailScroll:SetHeight(textHeight);
 	self.mapSlot:SetPosition(detailLeft, self.detailButtonTop);
-	self.mapIcon:SetPosition(detailLeft + 32, self.detailButtonTop + 5);
-	self.mapLabel:SetPosition(detailLeft + 54, self.detailButtonTop + 5);
+	self.mapCover:SetPosition(detailLeft, self.detailButtonTop);
+	self.mapIcon:SetPosition(2, 2);
+	self.mapLabel:SetPosition(detailLeft + 30, self.detailButtonTop + 5);
 	self.mapLabel:SetSize(140, 18);
-	self.mapInfo:SetPosition(detailLeft + 198, self.detailButtonTop + 5);
-	self.mapInfo:SetSize(math.max(60, detailWidth - 206), 18);
+	self.mapInfo:SetPosition(detailLeft + 174, self.detailButtonTop + 5);
+	self.mapInfo:SetSize(math.max(60, detailWidth - 182), 18);
 	for _, row in ipairs(self.rows) do self:Sizes(row.control, row.depth); end
 end
 
@@ -340,7 +346,7 @@ function Window:Sizes(control, depth)
 	control:SetSize(width, control:GetHeight());
 	local indent = depth * 14;
 	if control.marker then
-		control.marker:SetPosition(3 + indent, 4);
+		control.marker:SetPosition(3 + indent, 5);
 	end
 	if control.label then
 		local left = (control.marker and 18 or 6) + indent;
@@ -348,12 +354,12 @@ function Window:Sizes(control, depth)
 		control.label:SetSize(math.max(20, width - left - 6), control:GetHeight());
 	end
 	if control.status then
-		control.status:SetPosition(3 + indent, 1);
+		control.status:SetPosition(3 + indent, 3);
 	end
 	if control.text then
 		local left = 20 + indent;
 		control.text:SetPosition(left, 0);
-		control.text:SetSize(math.max(20, width - left - 6), 16);
+		control.text:SetSize(math.max(20, width - left - 6), 18);
 	end
 end
 
@@ -369,7 +375,7 @@ function Window:AddNode(node, depth, parentPath)
 	local hasChildren = (#node.order > 0) or (#node.items > 0);
 	local open = self.expanded[path] == true;
 	local row = Turbine.UI.Control();
-	row:SetSize(1, 18);
+	row:SetSize(1, 20);
 	row:SetBackColor(self.back);
 	row:SetMouseVisible(true);
 	-- The expander is a chevron texture instead of "[+]"/"[-]" text.
@@ -378,9 +384,9 @@ function Window:AddNode(node, depth, parentPath)
 	else
 		row.marker = false;
 	end
-	local label = makeLabel(row, self.small, depth == 0 and self.gold or self.trim);
+	local label = makeLabel(row, self.body, depth == 0 and self.gold or self.trim);
 	label:SetText(node.name .. "   (" .. Model.Counter(node) .. ")");
-	label:SetSize(1, 18);
+	label:SetSize(1, 20);
 	row.label = label;
 	row.status, row.text = false, false;
 	self:AddRow(row, depth, function()
@@ -392,7 +398,7 @@ function Window:AddNode(node, depth, parentPath)
 	for _, child in ipairs(node.order) do self:AddNode(child, depth + 1, path); end
 	for _, record in ipairs(node.items) do
 		local item = Turbine.UI.Control();
-		item:SetSize(1, 16);
+		item:SetSize(1, 18);
 		item:SetBackColor(self.back);
 		item:SetMouseVisible(true);
 		-- A status mark only exists when progress is known: without it every row
@@ -406,9 +412,9 @@ function Window:AddNode(node, depth, parentPath)
 		end
 		item.label = false;
 		item.marker = false;
-		local text = makeLabel(item, self.small, self.trim);
+		local text = makeLabel(item, self.body, self.trim);
 		text:SetText(record.displayName or record.name);
-		text:SetSize(1, 16);
+		text:SetSize(1, 18);
 		item.text = text;
 		self:AddRow(item, depth + 1, function()
 			if self.selectedRow ~= nil then self.selectedRow:SetBackColor(self.back); end
@@ -428,7 +434,7 @@ function Window:ShowDetails(record)
 		self.detailStatus:SetVisible(false);
 		self.detailText:SetText("");
 		self.mapSlot:SetVisible(false);
-		self.mapIcon:SetVisible(false);
+		self.mapCover:SetVisible(false);
 		self.mapLabel:SetVisible(false);
 		self.mapInfo:SetText("");
 		self.command = false;
@@ -449,12 +455,12 @@ function Window:ShowDetails(record)
 		self.mapShortcut:SetData(command);
 		self.mapSlot:SetShortcut(self.mapShortcut);
 		self.mapSlot:SetVisible(true);
-		self.mapIcon:SetVisible(true);
+		self.mapCover:SetVisible(true);
 		self.mapLabel:SetVisible(true);
 		self.mapInfo:SetText(Model.Coordinate(target) .. " (" .. self.strings.maphint .. ")");
 	else
 		self.mapSlot:SetVisible(false);
-		self.mapIcon:SetVisible(false);
+		self.mapCover:SetVisible(false);
 		self.mapLabel:SetVisible(false);
 		self.mapInfo:SetText(self.strings.nomap);
 	end
