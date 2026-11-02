@@ -180,18 +180,18 @@ older progress until then.
 
 ### Screenshots
 
-Suggested order for the download page:
+Upload these in order; the files sit in `docs/screenshots/`.
 
-1. [Screenshot: the window with the tree and a detail pane open. Caption:
-   "Everything in one window: tree on the left, text and steps on the right."]
-2. [Screenshot: search for a partial name with several results. Caption:
-   "Search ignores case and accents."]
-3. [Screenshot: a branch with `(done/total)` counters and a green check. Caption:
-   "Every branch shows how much you have finished."]
-4. [Screenshot: the detail pane with the "Show in MoorMap" button. Caption:
-   "Verified positions open directly in MoorMap."]
-5. [Screenshot: the `Optional-Progress-Tool` folder. Caption:
-   "The optional tool for older quests ships with the plugin."]
+1. `tree-overview.png` — "Everything in one window: regions, the epic story and
+   the special branches, all collapsed at first."
+2. `quest-details.jpg` — "Description and objectives split into steps, with the
+   verified map position underneath."
+3. `quest-progress.jpg` — "Every branch counts what you have finished; finished
+   quests get a green check."
+4. `deed-progress.jpg` — "Deeds use the same tree and the same counters."
+
+Still to take: the `Optional-Progress-Tool` folder in Explorer and the terminal
+after a successful run, both for the optional section above.
 
 ### Good to know
 

@@ -32,6 +32,26 @@ A character's own progress file also stays local.
 
 Not included: items, crafting, equipment, an own map and character export.
 
+## Screenshots
+
+Tree by region, zone and area — with the epic story in its own branch. All nodes
+start collapsed:
+
+![The tree: regions, epic story and the special branches](docs/screenshots/tree-overview.png)
+
+Description and objectives split into steps, with the verified MoorMap position
+underneath:
+
+![Quest details with numbered steps and the MoorMap button](docs/screenshots/quest-details.jpg)
+
+Progress while playing — every branch counts what you have finished:
+
+![Quests with finished and open entries](docs/screenshots/quest-progress.jpg)
+
+Deeds use the same tree and the same counters:
+
+![Deeds by region and zone with finished entries](docs/screenshots/deed-progress.jpg)
+
 ## Using it
 
 - `/mql` opens or hides the window; `/mql show` and `/mql hide` are explicit.

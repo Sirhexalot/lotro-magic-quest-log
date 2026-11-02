@@ -62,6 +62,11 @@ def main():
             archive.write(path, arcname=str(Path('MagicQuestLog') / relative))
             count += 1
         archive.write(ROOT / 'README.md', arcname='MagicQuestLog/README.md')
+        # The README shows the screenshots, so an offline copy needs the files too.
+        for path in sorted((ROOT / 'docs/screenshots').glob('*')):
+            if path.is_file():
+                archive.write(path, arcname=str(Path('MagicQuestLog/docs/screenshots') / path.name))
+                count += 1
         archive.write(ROOT / 'LICENSE', arcname='MagicQuestLog/LICENSE.txt')
         archive.write(ROOT / 'icon-sources/NOTICE', arcname='MagicQuestLog/icons-NOTICE.txt')
         # The optional progress tool ships inside the plugin folder, so a player finds

@@ -92,6 +92,9 @@ function Window:Constructor(strings, catalogs)
 	self.expanded = {};
 	self.rows = {};
 	self.actions = {};
+	-- Last highlighted tree row. A real value, not nil: a class whose unknown
+	-- fields resolve to methods would hand back a function here.
+	self.highlighted = false;
 	self.context = {};
 	-- Finished ids for the logged-in character. false means "not known", which is
 	-- never the same as "nothing done". A real value is used, not nil: a class
@@ -301,6 +304,9 @@ function Window:SetKind(kind)
 	if self.kind == kind then return; end
 	self.kind = kind;
 	self.expanded = {};
+	-- The right pane belonged to the other kind: a quest left open next to a deed
+	-- tree reads like a wrong entry, so it goes back to the prompt.
+	self:ShowDetails(nil);
 	self:Rebuild();
 end
 
@@ -423,9 +429,9 @@ function Window:AddNode(node, depth, parentPath)
 		text:SetSize(1, 18);
 		item.text = text;
 		self:AddRow(item, depth + 1, function()
-			if self.selectedRow ~= nil then self.selectedRow:SetBackColor(self.back); end
+			if self.highlighted then self.highlighted:SetBackColor(self.back); end
 			item:SetBackColor(self.selectedBack);
-			self.selectedRow = item;
+			self.highlighted = item;
 			self:ShowDetails(record);
 		end);
 	end

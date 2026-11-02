@@ -241,16 +241,35 @@ window.expanded["|0/region:Gondor"] = true;
 window:Rebuild();
 assert(window.tree:GetItemCount() > before, "expanding must add rows");
 assert(window.root.total == questTotal, "totals must not change on expand");
--- Row clicks use the list selection path.
+-- Switching kinds must not leave the other kind's record in the detail pane.
+assert(window.record == false, "a kind switch must clear the detail pane");
+-- Row clicks use the list selection path. Open the path of one known quest so the
+-- row under test is a leaf; selecting it must show exactly that record.
+local target = nil;
+for _, record in ipairs(MQL.catalogs.quests) do
+	if record.searchText ~= nil and string.find(record.searchText, "zugellosen", 1, true) ~= nil then
+		target = record;
+		break;
+	end
+end
+assert(target ~= nil, "expected a quest matching Zügellosen");
 window.searchBox:SetText("Zügellosen");
 window.query = "Zügellosen";
+local path = "|";
+for depth, part in ipairs(target.p) do
+	path = path .. (depth - 1) .. "/" .. part.k;
+	window.expanded[path] = true;
+end
 window:Rebuild();
-local rows = window.tree:GetItemCount();
-assert(rows > 1, "expected a reduced tree, got " .. rows);
-window.tree.selected = rows;
+local leaf = nil;
+for index, row in ipairs(window.rows) do
+	if row.control.text and row.control.text:GetText() == target.displayName then leaf = index; break; end
+end
+assert(leaf ~= nil, "expected the matching quest as a visible row");
+window.tree.selected = leaf;
 window.tree.SelectedIndexChanged();
-assert(window.selectedRow ~= nil, "clicking a leaf must select it");
-assert(window.record ~= false and window.record ~= nil, "clicking a leaf must show its record");
+assert(window.highlighted ~= nil, "clicking a leaf must select it");
+assert(window.record == target, "clicking a leaf must show that record");
 assert(window.tree.selected == 0, "selection must reset so the same row is clickable again");
 assert(window.detailTitle:GetText() == window.record.name, "detail title follows the selection");
 window.searchBox:SetText("");
