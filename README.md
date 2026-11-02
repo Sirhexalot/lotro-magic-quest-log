@@ -119,6 +119,46 @@ A character's own status file does **not** belong in the repository:
 `Data/Progress.lua` is listed in `.gitignore`, `make_release.py` leaves it out of
 the archive, and `Data/Progress.example.lua` shows the format with sample data.
 
+## Where the catalog data comes from
+
+Building the catalog reads *extracted* game data. LOTRO Companion produces it;
+these tools only read the result. Two repositories are needed, because the map
+data is not in the first one:
+
+| Source | Provides | Belongs at |
+|---|---|---|
+| `LotroCompanion/lotro-data` | `quests.xml`, `deeds.xml`, `geoAreas.xml`, `enums/`, `labels/<language>/` | `<LORE_DIR>` |
+| `LotroCompanion/lotro-maps-db` | `maps/maps.xml` | `<LORE_DIR>/maps` |
+
+```sh
+git clone https://github.com/LotroCompanion/lotro-data.git     "<LORE_DIR>"
+git clone https://github.com/LotroCompanion/lotro-maps-db.git  "<LORE_DIR>/maps"
+```
+
+That is the same layout a LOTRO Companion installation has, where both sit under
+`app/data/lore/`. Files actually read: `quests.xml`, `deeds.xml`, `geoAreas.xml`,
+`maps/maps/maps.xml`, `enums/QuestCategory.xml`, `enums/DeedCategory.xml`, and per
+language the labels for quests, deeds, geoAreas, npc and both enums.
+
+### Rights, kept apart on purpose
+
+- **The plugin and its tools** are this repository's own work, MIT licensed (see
+  `LICENSE`).
+- **The data files** come from LOTRO Companion, which is Apache-2.0 licensed. No
+  Companion code is copied or linked; the extracted files are read locally and the
+  catalog is generated from them. The extraction work is credited to that project.
+- **The quest and deed texts** are game content. They belong to their rights
+  holders (Standing Stone Games and the Tolkien rights holders), not to LOTRO
+  Companion and not to this project. No licence here covers them.
+
+The generated catalog is therefore *data about the game*, not licensed source
+code. It never leaves a machine on its own: it is written into `plugin/…/Data/`
+locally, and it is the release archive at the top of this page that hands it to
+somebody else. Publishing plugins that carry game text is long-standing practice
+in this community, but tolerance is not permission — the only body that can grant
+that is the rights holder. `rebuild.command` exists precisely so anyone can build
+the catalog from their own installation instead of taking a copy.
+
 ## Limitations
 
 - The catalog reads **extracted game data in XML form**, not the binary LOTRO
