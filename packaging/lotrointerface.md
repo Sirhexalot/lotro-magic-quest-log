@@ -51,11 +51,12 @@ Not included: items, crafting, equipment, an own map and character export.
 
 **1.** Unzip the download into the game's `Plugins` folder.
 
-You should end up with
+That is the folder which already holds your other plugins — you will see
+`Compendium`, `GaranStuff` or similar in it. If you installed plugins with LOTRO
+Plugin Compendium before, use the path it shows in its settings.
 
-```
-Documents\The Lord of the Rings Online\Plugins\MagicQuestLog\MagicQuestLog.plugin
-```
+Check the result: `MagicQuestLog.plugin` must sit **directly** in
+`Plugins\MagicQuestLog\`, next to `Main.lua` and the `Data` folder.
 
 **2.** Start the game.
 
@@ -66,48 +67,15 @@ Documents\The Lord of the Rings Online\Plugins\MagicQuestLog\MagicQuestLog.plugi
 That is all. Enemy positions and the map button need [MoorMap](https://www.lotrointerface.com/downloads/info532-MoorMap.html)
 by Garan; everything else works without it.
 
-### Optional: your older progress
+### Older quests
 
-Everything you finish from now on is counted by itself. Quests you completed
-**before** installing are not — the game never tells a plugin about the past.
+The plugin counts what you finish from the moment it is installed. Quests
+completed before that are not in the game's journal messages, so they cannot be
+counted — no plugin can change that.
 
-If you want those too, there is one optional step, and it is included in the
-download:
-
-**1.** Install **LOTRO Companion** (free) from
-<https://sourceforge.net/projects/lotrocompanion/>. Do **not** start it and do not
-import anything in it — the tool only borrows two files from its program folder.
-
-**2.** Start LOTRO and log in the character whose old quests you want. The
-character has to be in the world, not just at the launcher.
-
-**3.** Double-click
-
-| Your system | File |
-|---|---|
-| Windows | `MagicQuestLog\Optional-Progress-Tool\read-journal.bat` |
-| macOS | `MagicQuestLog\Optional-Progress-Tool\read-journal.command` |
-
-Windows may ask for administrator rights; allow it. A console window prints a few
-lines and closes when you press a key.
-
-**4.** In game:
-
-```
-/plugins unload MagicQuestLog
-/plugins load MagicQuestLog
-```
-
-The tree now counts what you have really completed.
-
-There is no character to choose: the tool reads the character that is logged in.
-For a second character, log that one in and repeat steps 3 and 4 — each character
-keeps its own file.
-
-The tool reads **only** the quest journal of the logged-in character: finished and
-running quests and deeds. No inventory, no money, no mail, no chat, no account
-data, and nothing is written into the game. If it cannot read, it says why and
-writes nothing.
+There is an optional extra for it on the project page
+(<https://github.com/Sirhexalot/lotro-magic-quest-log>). It is not part of this
+download and is not needed to use the plugin.
 
 ### Changes
 
@@ -117,8 +85,8 @@ writes nothing.
   descriptions, step objectives and 71,189 verified map positions.
 - Tree by area and epic story, accent-insensitive search, detail pane with steps
   and counts, start icon, remembered window placement.
-- Progress from the quest channel while playing.
-- Optional import of older progress with the included tool.
+- Progress from the quest channel while playing, so what you just finished shows
+  up without any export or restart.
 - MoorMap integration through a quickslot, because a plugin cannot run a slash
   command itself.
 
@@ -167,6 +135,22 @@ writes nothing.
 
 2. **Screenshots**: two are enough — the tree with the detail pane, and a quest
    whose objectives show counts.
+
+## The old-progress question
+
+The plugin needs nothing but its own files. Older progress can only be read with
+software that knows the client's memory, and that is not ours:
+
+| Option | Cost |
+|---|---|
+| ship the memory library (`delta-lotro-memory`) | needs the author's permission; his `delta-*` repositories carry no licence file |
+| require a local LOTRO Companion | works today, but a store page that says so loses most players |
+| no import at all | plugin is complete in itself; only quests from install time on are counted |
+
+Current state: the tool exists in the repository under `tools/journal-reader/`
+and is **not** part of the download, so the download has no dependency at all.
+If the permission is granted, the tool can go back into the archive and the page
+gets one step instead of a pointer.
 
 ## Before uploading
 

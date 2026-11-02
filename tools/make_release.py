@@ -64,14 +64,9 @@ def main():
         archive.write(ROOT / 'README.md', arcname='MagicQuestLog/README.md')
         archive.write(ROOT / 'LICENSE', arcname='MagicQuestLog/LICENSE.txt')
         archive.write(ROOT / 'icon-sources/NOTICE', arcname='MagicQuestLog/icons-NOTICE.txt')
-        # The optional progress tool ships inside the same folder, so a player needs
-        # one download and no second trip to GitHub. The client ignores folders
-        # without a .plugin file, so this cannot disturb loading.
-        for path in sorted(TOOLS.rglob('*')):
-            if not path.is_file() or '__pycache__' in path.parts:
-                continue
-            archive.write(path, arcname=str(Path(TOOL_FOLDER) / path.relative_to(TOOLS)))
-            count += 1
+        # The optional progress tool is deliberately NOT packaged: it needs a local
+        # LOTRO Companion installation, and a download whose page does not say so
+        # would be a trap. It lives in the repository for those who want it.
     digest = hashlib.sha256(target.read_bytes()).hexdigest()
     print('%s  %d files  %.1f MiB'
           % (target, count + 2, target.stat().st_size / 1024 / 1024))
