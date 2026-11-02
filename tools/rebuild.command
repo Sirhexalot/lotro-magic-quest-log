@@ -18,50 +18,50 @@ PLUGIN_DIR="${2:-${MQL_PLUGINS:-}}"
 VENV="$ROOT/.venv"
 
 if [ -z "$LORE" ]; then
-	echo "FEHLER: Keine Spieldaten angegeben." >&2
-	echo "Aufruf: $0 <LORE_DIR> [PLUGIN_DIR]" >&2
+	echo "ERROR: no game data given." >&2
+	echo "Usage: $0 <LORE_DIR> [PLUGIN_DIR]" >&2
 	exit 1
 fi
 if [ ! -f "$LORE/quests.xml" ] || [ ! -f "$LORE/deeds.xml" ]; then
-	echo "FEHLER: In dieser Quelle fehlen quests.xml / deeds.xml." >&2
-	echo "Ohne vollstaendige Daten wird nichts ersetzt." >&2
+	echo "ERROR: that source has no quests.xml / deeds.xml." >&2
+	echo "Without complete data nothing is replaced." >&2
 	exit 1
 fi
 MOORMAP=""
 if [ -n "$PLUGIN_DIR" ] && [ -f "$PLUGIN_DIR/GaranStuff/MoorMap/Defaults.lua" ]; then
 	MOORMAP="$PLUGIN_DIR/GaranStuff/MoorMap/Defaults.lua"
 else
-	echo "HINWEIS: MoorMap nicht gefunden. Ohne seine Grenzen entstehen keine Kartenpositionen." >&2
+	echo "NOTE: MoorMap not found. Without its bounds no map positions are produced." >&2
 fi
 
 if [ ! -x "$VENV/bin/python" ]; then
-	echo "Richte einmalig eine Python-Umgebung mit lupa ein ($VENV)..."
+	echo "Setting up a Python environment with lupa once ($VENV)..."
 	python3 -m venv "$VENV"
 	"$VENV/bin/python" -m pip install --quiet --upgrade pip lupa
 fi
 
-echo "1/4 Katalog erzeugen"
+echo "1/4 build the catalog"
 if [ -n "$MOORMAP" ]; then
 	python3 "$HERE/build_catalog.py" --lore "$LORE" --moormap "$MOORMAP"
 else
 	python3 "$HERE/build_catalog.py" --lore "$LORE"
 fi
 
-echo "2/4 Daten pruefen"
+echo "2/4 check the data"
 "$VENV/bin/python" "$HERE/verify_catalog.py"
 
-echo "3/4 Plugin pruefen"
+echo "3/4 check the plugin"
 "$VENV/bin/python" "$HERE/test_plugin.py"
 
 if [ -z "$PLUGIN_DIR" ]; then
-	echo "4/4 Uebersprungen: kein Plugin-Verzeichnis angegeben."
+	echo "4/4 skipped: no plugin directory given."
 elif [ ! -d "$PLUGIN_DIR" ]; then
-	echo "FEHLER: $PLUGIN_DIR gibt es nicht." >&2
+	echo "ERROR: $PLUGIN_DIR does not exist." >&2
 	exit 1
 else
-	echo "4/4 Installieren"
+	echo "4/4 install"
 	rm -rf "$PLUGIN_DIR/MagicQuestLog"
 	cp -R "$ROOT/plugin/MagicQuestLog" "$PLUGIN_DIR/"
 	echo
-	echo "Fertig. Im Spiel: /plugins unload MagicQuestLog, /plugins load MagicQuestLog, /mql"
+	echo "Done. In game: /plugins unload MagicQuestLog, /plugins load MagicQuestLog, /mql"
 fi

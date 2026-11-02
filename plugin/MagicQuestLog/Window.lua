@@ -194,7 +194,7 @@ function Window:Constructor(strings, catalogs)
 	self.detailTitle = makeLabel(self, self.font, self.gold);
 	self.detailTitle:SetSelectable(true);
 	self.detailTitle:SetMultiline(true);
-	-- One shared status mark for the shown record (the tree uses tiny dots).
+	-- One shared status mark for the shown record (the tree uses its own marks).
 	self.detailStatus = makeStatusMark(self, 18);
 	self.detailStatus:SetVisible(false);
 	self.detailText = makeLabel(self, self.body, self.trim);

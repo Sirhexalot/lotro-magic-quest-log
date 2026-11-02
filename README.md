@@ -1,230 +1,224 @@
 # Magic Quest Log
 
-Eigenständiges LOTRO-Plugin für Aufgaben und Taten. Der Katalog ist deutsch,
-englisch und französisch vorhanden; die Anzeige folgt der Spielsprache, mit
-englischem Rückfall.
+A standalone LOTRO plugin for quests and deeds. The catalog covers German,
+English and French; the plugin follows the client language and falls back to
+English.
 
-Enthalten sind Plugin, Werkzeuge und Symbole. **Nicht** im Repository liegt der
-erzeugte Katalog (rund 102 MB) – er kommt als Release-Archiv. Deine eigene
-Fortschrittsdatei bleibt ebenfalls lokal.
+The repository contains the plugin, the tools and the icons. The generated
+catalog (~102 MB) is **not** in the repository — it ships as a release archive.
+A character's own progress file also stays local.
 
-## Was das Plugin kann
+## What the plugin does
 
-- Baum links: **Epische Geschichte** nach Band/Buch, sonst **Obergebiet → Gebiet
-  → Untergebiet → Gruppe**, und eigene Zweige für Missionen, Instanzen, Handwerk,
-  Feste sowie nicht geografisch zugeordnete Einträge. Alle Knoten starten zugeklappt.
-- **Suche** nach Name oder Namensteil, Groß-/Kleinschreibung und Akzente egal.
-- Rechts **Beschreibung** und in Schritte gegliederte Ziele. Belegte Zielanzahlen
-  stehen als „benötigt: 10“; aktuelle Zähler werden nicht erfunden.
-- **Fortschritt** aus einer eigenen Statusdatei (`Data/Progress.lua`): Baum und
-  Kopfzeile zeigen dann „erledigt/gesamt“ (z. B. `(163/276)`), Details einen
-  grünen Haken. Fehlt die Datei oder gehört sie einem anderen Charakter, bleibt
-  es bei der reinen Gesamtzahl – nie bei einer erfundenen Null.
-- **In MoorMap zeigen** über einen Quickslot mit Alias-Shortcut, sofern eine
-  Position geprüft ist.
-- Fenster im Stil der Spieloberfläche: Titelleiste, Schließen-Kreuz, verschiebbar.
-- **Start-Icon** rechts am Bildschirmrand: Klick öffnet oder verbirgt das Fenster,
-  Ziehen verschiebt es. Fenster- und Icon-Position sowie Sichtbarkeit werden
-  gespeichert.
-- Test-/Entwicklerinhalte sind ausgeblendet; Tests schützen das.
+- Tree on the left: **Epic story** by volume/book, everything else as
+  **region → zone → area → group**, plus separate branches for missions,
+  instances, crafting, festivals and entries without a geographic assignment.
+  Every node starts collapsed.
+- **Search** by name or part of a name, ignoring case and accents.
+- On the right, the **description** and the objectives split into steps. Known
+  objective counts read "required: 10"; live counters are never invented.
+- **Progress** from an optional status file (`Data/Progress.lua`): the tree and
+  the headline then show "finished / total" (e.g. `(163/276)`) and the details a
+  green check. If the file is missing, or belongs to another character, only
+  plain totals are shown — never an invented zero.
+- **Show in MoorMap** through a quickslot with an alias shortcut, whenever a
+  position has been verified.
+- Window in the client's own style: title bar, close button, draggable.
+- **Start icon** at the right screen edge: a click opens or hides the window, a
+  drag moves it. Window and icon position as well as visibility are remembered.
+- Test and developer content is hidden, and the tests keep it that way.
 
-Nicht enthalten: Gegenstände, Handwerk, Ausrüstung, eigene Karte und Charakterexport.
+Not included: items, crafting, equipment, an own map and character export.
 
-## Bedienung
+## Using it
 
-- `/mql` öffnet oder verbirgt das Fenster; `/mql show` und `/mql hide` steuern es
-  ausdrücklich.
-- **MoorMap** öffnet sich über den kleinen Quickslot links neben „In MoorMap
-  zeigen“ im Detailbereich. Ein Plugin kann keinen Slash-Befehl ausführen;
-  MoorMap lässt sich nur über einen Quickslot-Shortcut steuern. Das ist der
-  dokumentierte Weg (wie bei Compendium), deshalb ist es ein Quickslot und kein
-  normaler Knopf.
-- Neuen Katalog nach einem Spielupdate einlesen: Plugin neu laden
-  (`/plugins unload MagicQuestLog`, `/plugins load MagicQuestLog`) oder Spiel neu starten.
+- `/mql` opens or hides the window; `/mql show` and `/mql hide` are explicit.
+- **MoorMap** opens through the small quickslot next to "Show in MoorMap" in the
+  detail pane. A plugin cannot run a slash command itself; MoorMap can only be
+  driven by a quickslot shortcut. That is the documented way (as Compendium does
+  it), which is why it is a quickslot and not a plain button.
+- To pick up a new catalog after a game update, reload the plugin
+  (`/plugins unload MagicQuestLog`, `/plugins load MagicQuestLog`) or restart the
+  game.
 
-## Symbole
+## Icons
 
-Alle Symbole kommen von [Lucide](https://lucide.dev) (ISC-Lizenz, siehe
-`icon-sources/NOTICE`). Der Client zeichnet kein SVG, deshalb liegen sie als
-32-Bit-Targa-Texturen in `Resources/`. Die SVGs liegen unverändert in
-`icon-sources/`; `tools/build_icons.py` färbt und skaliert sie nur.
+All icons come from [Lucide](https://lucide.dev) (ISC licence, see
+`icon-sources/NOTICE`). The client paints no SVG, so they ship as 32-bit Targa
+textures in `Resources/`. The SVGs sit unchanged in `icon-sources/`;
+`tools/build_icons.py` only recolours and sizes them.
 
-| Symbol | Verwendung |
+| Icon | Used for |
 |---|---|
-| `start.tga` (`mop-sparkles`) | Start-Icon am Bildschirmrand |
-| `quests.tga` (`scroll-text`), `deeds.tga` (`trophy`) | Reiter Aufgaben / Taten |
-| `search.tga`, `clear.tga` (`x`) | Suche und Leeren |
-| `closed.tga`, `open.tga` (`chevron-*`) | zugeklappte / offene Knoten |
-| `todo.tga` (`circle`), `done.tga` (`circle-check`) | offen / erledigt in der Liste |
-| `todobig.tga`, `donebig.tga` | dieselben Marken in der Detailansicht |
-| `mappin.tga` (`map-pin`) | Hinweis neben dem MoorMap-Quickslot |
+| `start.tga` (`mop-sparkles`) | start icon at the screen edge |
+| `quests.tga` (`scroll-text`), `deeds.tga` (`trophy`) | quests / deeds tab |
+| `search.tga`, `clear.tga` (`x`) | search field and clearing it |
+| `closed.tga`, `open.tga` (`chevron-*`) | collapsed / expanded nodes |
+| `todo.tga` (`circle`), `done.tga` (`circle-check`) | open / finished in the list |
+| `todobig.tga`, `donebig.tga` | the same marks in the detail pane |
+| `mappin.tga` (`map-pin`) | the hint covering the MoorMap quickslot |
 
-**Jedes Symbol wird in genau der Pixelgröße gerendert, in der es erscheint.** Der
-Client tastet Plugin-Texturen schlecht ab; ein herunterskaliertes 32-px-Symbol
-sieht kantig aus. Die Größe steht deshalb doppelt: in `build_icons.py` und in
-`ICON_SIZE` in `Window.lua`. Wer eine Größe ändert, ändert beide.
+**Every icon is rendered at exactly the pixel size it is drawn at.** The client
+samples plugin textures poorly, so a downscaled 32 px icon looks jagged. The size
+is therefore stated twice: in `build_icons.py` and in `ICON_SIZE` in
+`Window.lua`. Change a size in both.
 
-## Installieren
+## Installing
 
-Den Katalog gibt es als Release-Archiv, weil er rund 102 MB groß ist und deshalb
-nicht im Repository liegt. Das Archiv ist installationsfertig:
+The catalog ships as a release archive because it is about 102 MB and thus not in
+the repository. The archive is ready to install:
 
 ```sh
-# Archiv in den Plugins-Ordner entpacken; danach im Spiel /mql
-unzip MagicQuestLog-<version>.zip -d '<Plugins-Ordner>'
+# unpack into the game's Plugins folder, then /mql in game
+unzip MagicQuestLog-<version>.zip -d '<Plugins folder>'
 ```
 
-Im Spiel: `/plugins unload MagicQuestLog`, `/plugins load MagicQuestLog`, `/mql`.
+In game: `/plugins unload MagicQuestLog`, `/plugins load MagicQuestLog`, `/mql`.
 
-## Bauen und Prüfen
+## Building and checking
 
-Alle Beispiele gehen davon aus, dass `LORE_DIR` ein Verzeichnis mit den
-extrahierten Spieldaten ist (`quests.xml`, `deeds.xml`, `geoAreas.xml`,
-`labels/<sprache>/…`) und `PLUGIN_DIR` der `Plugins`-Ordner des Spiels.
+The examples assume `LORE_DIR` is a directory with extracted game data
+(`quests.xml`, `deeds.xml`, `geoAreas.xml`, `labels/<language>/…`) and
+`PLUGIN_DIR` is the game's `Plugins` folder.
 
 ```sh
-# Katalog erzeugen, prüfen und installieren (nur lesend gegenüber den Spieldaten)
+# build the catalog, check it, install it (reads game data, never writes it)
 MagicQuestLog/tools/rebuild.command "<LORE_DIR>" "<PLUGIN_DIR>"
 
-# Statusdatei aus einem Charakterexport erzeugen (nur lesend)
+# build a status file from a character export (read-only)
 python3 MagicQuestLog/tools/build_progress.py <export.json>
 
-# Symbole aus den Lucide-SVGs neu erzeugen (nur lesend)
+# re-render the icons from the Lucide SVGs (read-only)
 python3 MagicQuestLog/tools/build_icons.py
 
-# Release-Archiv mit Katalog bauen (schreibt nur nach dist/)
+# build the release archive with the catalog (writes only to dist/)
 python3 MagicQuestLog/tools/make_release.py
 ```
 
-Die beiden Prüfläufe brauchen eine Python-Umgebung mit `lupa` (Lua 5.1);
-`rebuild.command` legt sie beim ersten Aufruf unter `.venv/` selbst an:
+Both checks need a Python environment with `lupa` (Lua 5.1); `rebuild.command`
+creates it under `.venv/` on first use:
 
 ```sh
-.venv/bin/python MagicQuestLog/tools/verify_catalog.py   # Daten: IDs, Struktur, Zähler
-.venv/bin/python MagicQuestLog/tools/test_plugin.py      # Plugin-Logik mit echten Daten
+.venv/bin/python MagicQuestLog/tools/verify_catalog.py   # data: ids, structure, counts
+.venv/bin/python MagicQuestLog/tools/test_plugin.py      # plugin logic on real data
 ```
 
-`tools/overrides.json` enthält Handkorrekturen: `hidden_ids` und abweichende
-Pfade. Sie werden beim Neuerzeugen angewandt und nicht überschrieben. Dateien mit
-dem Generatorkopf `-- Generated by Magic Quest Log; do not edit.` werden ersetzt;
-alles andere wird ausdrücklich verweigert.
+`tools/overrides.json` holds manual corrections: `hidden_ids` and different
+paths. They are applied on every rebuild and never overwritten. Files carrying
+the generator header `-- Generated by Magic Quest Log; do not edit.` are
+replaced; anything else is refused.
 
-Eine eigene Statusdatei gehört **nicht** ins Repository: `Data/Progress.lua` ist
-in `.gitignore` eingetragen, `make_release.py` lässt sie aus dem Archiv weg und
-`Data/Progress.example.lua` zeigt das Format mit Beispieldaten.
+A character's own status file does **not** belong in the repository:
+`Data/Progress.lua` is listed in `.gitignore`, `make_release.py` leaves it out of
+the archive, and `Data/Progress.example.lua` shows the format with sample data.
 
-## Grenzen
+## Limitations
 
-- Der Katalog liest **extrahierte Spieldaten im XML-Format**, nicht die binären
-  LOTRO-Archive. Die XML-Extraktion ist nicht Teil dieses Projekts; ohne sie lässt
-  sich nach einem Spielupdate nichts erneuern.
-- Der Katalog liegt weiterhin in **je einer großen Datei pro Sprache und Art**
-  (rund 32 MB deutsch). Das kostet beim Laden Zeit. Aufteilen in kleinere Dateien
-  ist der nächste Schritt.
-- **MoorMap braucht einen Klick** auf den Quickslot. Innerhalb des Plugins lässt
-  sich kein Slash-Befehl ausführen.
-- **Fortschritt** zeigt nur, was die Statusdatei belegt. Sie stammt aus einem
-  gelesenen Journalexport zu einem Zeitpunkt; sie wird nicht automatisch
-  aktualisiert und ersetzt keinen neuen Export.
-- **Gleiche Namen kommen mehrfach vor** – 381 von 15.117 Aufgaben liegen in
-  derselben Gruppe doppelt (zum Beispiel „Das letzte Wort“ oder „Einleitung
-  überspringen“). Das sind keine Dubletten unseres Baus: geprüft wurden 15.117
-  Einträge mit 15.117 verschiedenen IDs. Es sind eigenständige Aufgaben desselben
-  Namens, etwa mit unterschiedlichem Auftraggeber (`7003783D` → Arcil,
-  `7003A67E` → Éothain) oder als Fassung für verschiedene Völker und Klassen. Das
-  Spiel zeigt nur die zutreffende; der Katalog kann das ohne
-  Voraussetzungsdaten nicht unterscheiden und lässt deshalb beide sichtbar.
-  Ein Auftraggeber-Feld im Katalog wäre die saubere Unterscheidung und ist noch
-  nicht eingebaut.
-- **Texte und Gruppennamen sind aufgelöst.** Platzhalter wie `${PLAYER}`,
-  `${CLASS}` oder `${PLAYERNAME:A[m]|B[f]}` werden ersetzt; erstere mit dem
-  Charakter, die Form „A / B“ als beide Möglichkeiten. Zähler (`${CURRENT}`)
-  bleiben als „Zähler im Spiel“ stehen, weil das Plugin sie nicht kennt. 16
-  Gruppennamen im deutschen Katalog enthalten solche Platzhalter und wären sonst
-  roh sichtbar.
-- **Gebietsnamen sind übersetzt**, solange die Sprachdateien sie enthalten
-  („Bree-land“ → „Breeland“, „The Shire“ → „Das Auenland“). Die Schlüssel
-  (`zone:Bree-land`) bleiben absichtlich englisch, weil die Baumstruktur in allen
-  Sprachen identisch sein muss. Fehlt eine Übersetzung, steht der englische Name –
-  nicht geraten.
-- **Gespeicherte Fensterpositionen sind Text**, nicht Zahlen. Der Client schreibt
-  Zahlen mit dem Dezimalkomma der Spielsprache (`239,000000`), und das ist kein
-  gültiges Lua: die ganze Einstellungsdatei wurde dadurch unlesbar.
-- Weltgebiete folgen einem ausdrücklichen Abgleich mit den Originalkarten.
-  `geoAreas.parentId` ist dafür unbrauchbar: es hängt Gondor und Mordor an Rhovanion.
-- Kartenpositionen werden nur angeboten, wenn sie über die **exakte Textur-ID**
-  der Karte und die MoorMap-Grenzen geprüft sind und der Regionencode passt.
-  Mehrdeutige oder fehlende Positionen zeigen keine Schaltfläche: 10.051 von
-  15.117 Aufgaben haben eine geprüfte Position.
-- Positionen stammen aus Originalkoordinaten von Zielen und Auftraggebern.
-  Sie sind nicht immer der Aufgabenbeginn.
-- Die Katalognenner sind Einträge, nicht „erreichbare“ Aufgaben. Klasse, Volk,
-  Alternativen und Wiederholbarkeit sind darin enthalten.
-- Geschlechtsabhängige Formulierungen werden als „mein Freund / meine Freundin“
-  gezeigt; die öffentliche Player-Schnittstelle liefert kein Geschlecht.
+- The catalog reads **extracted game data in XML form**, not the binary LOTRO
+  archives. Extracting that XML is not part of this project; without it nothing
+  can be refreshed after a game update.
+- The catalog is still **one large file per language and kind** (~32 MB for
+  German). That costs time when loading. Splitting it into smaller files is the
+  next step.
+- **MoorMap needs one click** on the quickslot. A slash command cannot be run
+  from inside a plugin.
+- **Progress** only shows what the status file proves. It comes from a journal
+  export taken at one point in time; it does not update itself and is no
+  substitute for a new export.
+- **The same name can appear more than once** — 381 of the 15,117 quests sit
+  twice in the same group (for example "Das letzte Wort" or "Einleitung
+  überspringen"). These are not duplicates from our build: 15,117 entries were
+  checked and all 15,117 have different ids. They are separate quests that share
+  a name, for instance with a different bestower (`7003783D` → Arcil,
+  `7003A67E` → Éothain), or one version per race and class. The game only shows
+  the applicable one; without prerequisite data the catalog cannot tell them
+  apart and therefore keeps both visible. A bestower field in the catalog would
+  be the clean distinction and is not implemented yet.
+- **Texts and group names are resolved.** Placeholders such as `${PLAYER}`,
+  `${CLASS}` or `${PLAYERNAME:A[m]|B[f]}` are replaced; the first with the
+  character, the `A / B` form with both alternatives. Counters (`${CURRENT}`)
+  stay as "counter in game" because the plugin does not know them. 16 group names
+  in the German catalog carry such placeholders and would otherwise show raw.
+- **Zone names are translated** as far as the language files provide them
+  ("Bree-land" → "Breeland", "The Shire" → "Das Auenland"). The keys
+  (`zone:Bree-land`) stay English on purpose, because the tree structure has to
+  be identical in every language. Where a translation is missing, the English
+  name is shown — never a guess.
+- **Stored window positions are text**, not numbers. The client writes numbers
+  with the decimal comma of the client language (`239,000000`), which is not
+  valid Lua: it made the whole settings file unreadable.
+- World regions follow an explicit comparison with the original maps.
+  `geoAreas.parentId` is unusable for that: it hangs Gondor and Mordor off
+  Rhovanion.
+- Map positions are only offered when they have been verified against the
+  **exact texture id** of the map and the MoorMap bounds, and the region code
+  matches. Ambiguous or missing positions show no button at all: 10,051 of the
+  15,117 quests have a verified position.
+- Positions come from the original coordinates of objectives and bestowers.
+  They are not always the start of the quest.
+- The catalog totals are entries, not "reachable" quests. Class, race,
+  alternatives and repeatability are part of them.
+- Gender-dependent wording is shown as "mein Freund / meine Freundin"; the public
+  player interface exposes no gender.
 
-## Stand und Prüfung
+## State and checks
 
-Erzeugt: 15.117 Aufgaben (372 Testeinträge ausgeblendet) und 5.534 Taten je
-Sprache, 71.189 geprüfte Aufgabenpositionen. Statusdatei für **Feldobar**:
-3.657 erledigt (3.177 Aufgaben + 480 Taten), 579 laufend, 3 doppelt geführt
-(wiederholbar), 3 unbekannte IDs. Datenprüfung: identische ID-Mengen
-und identische Baumstruktur in allen drei Sprachen, Kindersummen stimmig.
-Plugin-Test: 15 Prüfungen grün, darunter Start zugeklappt, Namenssuche inklusive
-„ker izel“ → „Kêr Izel“, Details ohne Rohplatzhalter, ehrliche Anzeige ohne
-Position, englischer Rückfall bei fehlendem Sprachkatalog, Kopfzeile unter der
-Titelleiste, Suche mit Beschriftung, Zähler „n/gesamt“, Zwischenspeicher beim
-Aufklappen, ignorierte Statusdatei eines fremden Charakters und die Prüfung,
-dass jede im Lua genannte Icon-Textur wirklich vorhanden ist.
+Generated: 15,117 quests (372 test entries hidden) and 5,534 deeds per language,
+71,189 verified quest positions. A progress file with 3,657 entries finished
+(3,177 quests + 480 deeds), 579 running, 3 listed twice (repeatable) and 3
+unknown ids. Data check: identical id sets and an identical tree structure in all
+three languages, child totals add up. Plugin test: 15 checks green, among them a
+collapsed start, name search including "ker izel" → "Kêr Izel", details without
+raw placeholders, an honest display without a position, the English fallback when
+a language catalog is missing, the header below the title bar, a labelled search
+field, "n/total" counters, the cached tree when expanding, an ignored status file
+of another character, resolved placeholders, and that every icon texture named in
+the Lua really exists.
 
-**Behoben nach der zweiten Spielprüfung** (noch nicht erneut im Spiel bestätigt):
-kein Neuaufbau und Neusortieren des ganzen Katalogs beim Aufklappen (Baum wird
-zwischengespeichert), nur noch eine Kontrolle je Zeile statt über 40 für das
-Statussymbol, Kopfzeile unter der Titelleiste, Suchfeld mit der Beschriftung
-„Suchen“, MoorMap über Quickslot-Alias statt wirkungslosem Ausgeben des Befehls,
-Fortschrittszähler je Knoten.
+**Fixed after the second play test** (not re-checked in game since): no rebuild
+and re-sort of the whole catalog when expanding (the tree is cached), one control
+per row instead of more than 40 for the status mark, the header below the title
+bar, the search field labelled "Suchen", MoorMap through a quickslot alias
+instead of printing a command that did nothing, and progress counters per node.
 
-**Nach der dritten Spielprüfung (02.11.) umgesetzt, im Spiel noch nicht
-nachgeprüft:** Symbole von Lucide (Start-Icon `mop-sparkles`, Reiter,
-Suchfeld, Leeren, Knotenpfeile, Status Kreise, Karten-Nadel), Beschreibung und
-Schritttexte eine Schriftgröße größer (Verdana14 statt Verdana12, Titel
-Verdana16), doppelt vorkommende Aufgabennamen als eigenständige Einträge
-dokumentiert.
+**Done after the third play test (2 Nov), not checked in game since:** icons from
+Lucide (start icon `mop-sparkles`, tabs, search field, clearing, node chevrons,
+status circles, map pin), description and step text one size larger (Verdana14
+instead of Verdana12, title Verdana16), and documented that quest names can
+repeat as separate entries.
 
-**Nach der vierten Spielprüfung (02.11.) umgesetzt, im Spiel noch nicht
-nachgeprüft:** Baum- und Zeilenschrift eine Größe größer (Verdana14 wie der
-Beschreibungstext, Zeilenhöhen 20 bzw. 18 px). Der MoorMap-Slot zeigt den Alias
-nicht mehr an: das Karten-Symbol liegt als klickdurchlässige Abdeckung darüber
-(`mapCover`/`mapIcon` mit `SetMouseVisible(false)`), damit der Klick weiterhin den
-Quickslot darunter trifft.
+**Done after the fourth play test (2 Nov), not checked in game since:** tree and
+row text one size larger as well (Verdana14, like the description; row heights
+20 and 18 px). The MoorMap slot no longer shows the alias: the map pin lies on
+top of it as a click-through cover (`mapCover`/`mapIcon` with
+`SetMouseVisible(false)`) so the click still reaches the quickslot underneath.
 
-**Vier Fehler aus dieser Prüfung behoben:**
+**Four real bugs fixed during this round:**
 
-1. **Platzhalter wurden nicht ersetzt, sondern zu „[Spielwert]“.** In `Resolve`
-   wurde das Ergebnis von `gsub` verworfen, sodass am Ende der Notfall-Zweig
-   jeden Platzhalter überschrieb. `${PLAYER}` heißt jetzt „Feldobar“, `${CLASS}`
-   die Klasse, `${PLAYERNAME:A[m]|B[f]}` wird „A / B“. Ein Test prüft, dass der
-   Charaktername im Text steht und die Ersatzmarke nirgends mehr auftaucht.
-2. **Gruppennamen mit Platzhaltern blieben roh** (`${PLAYERNAME:…}` im Baum).
-   Beschriftungen gehen jetzt durch dieselbe Auflösung wie Texte.
-3. **Gebietsnamen blieben englisch.** Der Generator suchte einen Gebietsnamen in
-   einer nach ID sortierten Tabelle und fand nie etwas. Jetzt „Breeland“,
-   „Das Auenland“, „Pays de Bree“; die Schlüssel bleiben englisch, damit die
-   Struktur in allen Sprachen gleich bleibt.
-4. **Die Einstellungsdatei war unlesbar** (`'}' expected near ','`): der Client
-   schreibt Zahlen mit Dezimalkomma. Positionen werden jetzt als Text gespeichert.
-   Die beschädigte Datei wurde von Hand repariert.
+1. **Placeholders were not replaced but became "[value]".** In `Resolve` the
+   result of `gsub` was discarded, so the fallback branch overwrote every
+   placeholder. `${PLAYER}` now reads the character name, `${CLASS}` the class,
+   and `${PLAYERNAME:A[m]|B[f]}` becomes "A / B". A test asserts the character
+   name appears in the text and the fallback marker does not.
+2. **Group names with placeholders stayed raw** (`${PLAYERNAME:…}` in the tree).
+   Captions now go through the same resolution as the texts.
+3. **Zone names stayed English.** The generator looked a zone name up in a table
+   keyed by id, so it never found anything. Now "Breeland", "Das Auenland",
+   "Pays de Bree"; the keys stay English so the structure is identical in every
+   language.
+4. **The settings file was unreadable** (`'}' expected near ','`): the client
+   writes numbers with a decimal comma. Positions are now stored as text. The
+   damaged file was repaired by hand.
 
-**Symbole:** neu in exakter Anzeigegröße gerendert. Vorher lagen sie in 32 px vor
-und wurden im Spiel auf 11–18 px verkleinert; der Client tastet Plugin-Texturen
-schlecht ab, deshalb sahen sie kantig aus.
+**Icons:** re-rendered at their exact display size. They used to be 32 px and
+were shrunk to 11–18 px in game; the client samples plugin textures poorly, which
+made them look jagged.
 
-Zeilenklicks laufen über die Listenauswahl, denselben Weg, den der Client an
-anderer Stelle nutzt; nach jeder Auswahl wird sie zurückgesetzt, damit dieselbe
-Zeile erneut klickbar bleibt.
+Row clicks go through the list selection, the same path the client uses
+elsewhere; it is reset after every selection so the same row stays clickable.
 
-**Behoben nach der ersten Spielprüfung:** fehlender Fensterrahmen
-(jetzt `Turbine.UI.Lotro.Window`), fehlendes Start-Icon (jetzt eigenes, aus Pixeln
-gezeichnetes Icon) und nicht reagierende Zeilen (jetzt über die Listenauswahl).
-Voraussetzung bleibt: Der Client muss den Plugin-Ordner kennen – Plugin neu laden
-oder Spiel neu starten, dann `/mql`.
+**Fixed after the first play test:** missing window frame (now
+`Turbine.UI.Lotro.Window`), missing start icon (now a Lucide texture) and rows
+that did not react (now through the list selection). One requirement remains: the
+client has to learn about the plugin folder — reload the plugin or restart the
+game, then `/mql`.
