@@ -19,6 +19,17 @@ Not for the download page. The text that goes there is in
   quest and deed database. Rights position: “Where the catalog data comes from”
   in the README.
 
+## Submission state
+
+Submitted on 2 November 2026 through `downloads/upload.php?op=fileupload&catid=29`
+(LotRO Stand-Alone Plugins → Other), version 0.1.0, with all four screenshots.
+The site answered: "Your interface or update has been submitted to our database
+and is now awaiting approval from one of our file administrators." Nothing is
+public until that approval.
+
+Next once approved: take the numeric id from the download URL and add the
+`.plugincompendium` file with the next upload.
+
 ## After the first upload
 
 1. **`.plugincompendium`** so LPC can install and update. Needs the numeric id
