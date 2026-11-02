@@ -111,5 +111,6 @@ else
 	rm -rf "$PLUGIN_DIR/MagicQuestLog"
 	cp -R "$ROOT/plugin/MagicQuestLog" "$PLUGIN_DIR/"
 	echo
-	echo "Done. In game: /plugins refresh, then /mql"
+	echo "Done. In game: /plugins unload MagicQuestLog, /plugins load MagicQuestLog, /mql"
+	echo "German client: /zusatzmodule entfernen MagicQuestLog, /zusatzmodule laden MagicQuestLog"
 fi

@@ -41,7 +41,10 @@ Not included: items, crafting, equipment, an own map and character export.
   it), which is why it is a quickslot and not a plain button.
 - To pick up a new catalog after a game update, reload the plugin
   (`/plugins unload MagicQuestLog`, `/plugins load MagicQuestLog`) or restart the
-  game.
+  game. In a **German client** every plugin command is called `Zusatzmodule`
+  instead, so `/plugins` answers "Unbekannter Befehl": use
+  `/zusatzmodule entfernen MagicQuestLog` and `/zusatzmodule laden MagicQuestLog`,
+  or open the manager with `/zusatzmodule manager`.
 
 ## Watching your progress
 
@@ -102,7 +105,8 @@ the repository. The archive is ready to install:
 unzip MagicQuestLog-<version>.zip -d '<Plugins folder>'
 ```
 
-In game: `/plugins unload MagicQuestLog`, `/plugins load MagicQuestLog`, `/mql`.
+In game: `/plugins unload MagicQuestLog`, `/plugins load MagicQuestLog`, `/mql`
+(German client: `/zusatzmodule entfernen MagicQuestLog`, `/zusatzmodule laden MagicQuestLog`).
 
 ## Building and checking
 
@@ -242,6 +246,9 @@ Either way, afterwards reload the plugin in game:
 /plugins unload MagicQuestLog
 /plugins load MagicQuestLog
 ```
+
+German client: `/zusatzmodule entfernen MagicQuestLog`, then
+`/zusatzmodule laden MagicQuestLog`.
 
 `tools/journal-reader/verify_progress.py` checks a written file without any game
 data.
