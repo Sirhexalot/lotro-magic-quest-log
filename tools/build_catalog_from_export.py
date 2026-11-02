@@ -49,6 +49,11 @@ REGIONS = {
                    'Adagím, the Moulder-wood', 'The Hatokáli Fells'],
     'Rhûn': ['Parth Rhavas, the Lothfold', 'Heledhris, Rift of Shornshards', 'Nan Ogol, the Fell-vale'],
 }
+# Our own grouping labels, not game area names, so they need their own translations.
+# Everything else in REGIONS is spelled the same in all three languages.
+REGION_NAMES = {
+    'Tales of Yore': {'de': 'Alte Geschichten', 'fr': 'Contes des temps jadis'},
+}
 ALIASES = {
     'Shire': 'The Shire', 'Trollshaws': 'The Trollshaws', 'Ettenmoors': 'The Ettenmoors',
     'North Downs': 'The North Downs', 'Misty Mountains': 'The Misty Mountains',
@@ -266,6 +271,10 @@ def build(export_dir, enums_path, output, moormap_path=None, overrides=None, lan
         return ((zone_locales.get(zone) or {}).get(locale)
                 or (region_locales.get(zone) or {}).get(locale) or zone)
 
+    def region_local(region, locale):
+        return ((REGION_NAMES.get(region) or {}).get(locale)
+                or (region_locales.get(region) or {}).get(locale) or region)
+
     def area_local(area, category_loc):
         entry = area_locales.get(area) or {}
         if entry.get('en'):
@@ -369,7 +378,7 @@ def build(export_dir, enums_path, output, moormap_path=None, overrides=None, lan
                 path.append({'k': 'category:' + str(code), 'n': category_loc})
         elif zone and zone in region_of:
             region = region_of[zone]
-            path.append({'k': 'region:' + region, 'n': region})
+            path.append({'k': 'region:' + region, 'n': region_local(region, locale)})
             path.append({'k': 'zone:' + zone, 'n': zone_local(zone, locale)})
             if area:
                 names = area_local(area, category_loc)
