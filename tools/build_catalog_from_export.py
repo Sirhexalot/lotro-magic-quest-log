@@ -146,6 +146,19 @@ def moor_map_table(path):
     return maps
 
 
+def attribute_closest(maps, lat, lon, region):
+    """Like attribute(), but two maps of the same detail do not cancel each other:
+    the smaller one wins. Used for quest-giver dots only, which are a hint where to
+    start, not an objective."""
+    hits = [m for m in maps
+            if m['south'] <= lat <= m['north'] and m['west'] <= lon <= m['east']
+            and m['region'] == region]
+    if not hits:
+        return None
+    hits.sort(key=lambda m: (-m['tier'], (m['north'] - m['south']) * (m['east'] - m['west'])))
+    return hits[0]
+
+
 def attribute(maps, lat, lon, region):
     hits = [m for m in maps
             if m['south'] <= lat <= m['north'] and m['west'] <= lon <= m['east']
@@ -441,6 +454,10 @@ def build(export_dir, enums_path, output, moormap_path=None, overrides=None, lan
         return 'other'
 
     positions = defaultdict(list)
+    # Where an NPC stands: every objective that names it as its target (talk to,
+    # bring back to …) carries its position. An NPC seen at one place only gives
+    # its quests a giver position ("gt"); one seen at places far apart gives none.
+    npc_places = defaultdict(set)
     for row in source.locations:
         position = row.get('position') or {}
         lat, lon, region = position.get('latitude'), position.get('longitude'), position.get('region')
@@ -450,6 +467,8 @@ def build(export_dir, enums_path, output, moormap_path=None, overrides=None, lan
         if position.get('block_x') is not None and position.get('block_y') is not None:
             block = (str(region), str(position['block_x']), str(position['block_y']))
         positions[row['id']].append((row.get('objective_index'), lat, lon, region, block))
+        if row.get('target_id'):
+            npc_places[row['target_id']].add((region, round(lat, 2), round(lon, 2)))
 
     # Territory of a target position, from the landblock index. Used only where the
     # category is not a zone, and only when every position agrees: a quest whose
@@ -597,6 +616,21 @@ def build(export_dir, enums_path, output, moormap_path=None, overrides=None, lan
         if props.get('Quest_ChallengeLevelOverrideProperty'):
             record['ls'] = 1
             stats[kind + '_scaling'] += 1
+        npc = giver_of.get(ident) if kind == 'quests' else None
+        places = npc_places.get(npc) if npc else None
+        # Small differences are the same spot (an NPC pacing, objectives naming it
+        # from slightly different points): within 0.3 map units in one region the
+        # centre counts; anything wider stays without a giver dot.
+        if places and len({place[0] for place in places}) == 1 and \
+                max(place[1] for place in places) - min(place[1] for place in places) <= 0.3 and \
+                max(place[2] for place in places) - min(place[2] for place in places) <= 0.3:
+            region = next(iter(places))[0]
+            lat = round(sum(place[1] for place in places) / len(places), 2)
+            lon = round(sum(place[2] for place in places) / len(places), 2)
+            chosen = attribute_closest(maps, lat, lon, region)
+            if chosen is not None:
+                record['gt'] = {'map': chosen['map'], 'lat': lat, 'lon': lon}
+                stats['quests_with_giver_position'] += 1
         # rf: the faction this gives reputation with and the game's reward tier
         # (1-6, a relative size; the points per tier are not in the data).
         reward = props.get('Quest_PositiveFaction')
