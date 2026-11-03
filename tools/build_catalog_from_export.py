@@ -573,6 +573,11 @@ def build(export_dir, enums_path, output, moormap_path=None, overrides=None, lan
                   'd': clean(description.get(locale) or description.get('en')),
                   'l': level if level is not None else '',
                   'p': path, 's': steps, 't': targets}
+        # ls: the level follows the character (the game takes it from a property),
+        # so the stored level is only a floor, often 1.
+        if props.get('Quest_ChallengeLevelOverrideProperty'):
+            record['ls'] = 1
+            stats[kind + '_scaling'] += 1
         # rf: the faction this gives reputation with and the game's reward tier
         # (1-6, a relative size; the points per tier are not in the data).
         reward = props.get('Quest_PositiveFaction')
