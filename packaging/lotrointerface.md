@@ -1,7 +1,7 @@
 # Text for the LOTROInterface download
 
 Everything here is meant to be pasted into the download form — nothing else.
-Author-only notes live in [publish-notes.md](publish-notes.md).
+Author-only notes live in [publish-notes.md](publish-notes.md). The formatted text actually pasted (BBCode) is [lotrointerface.bbcode](lotrointerface.bbcode).
 
 ## Fields
 
