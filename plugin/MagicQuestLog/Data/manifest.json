@@ -5,17 +5,20 @@
     "deeds.json": "aea1cabbcf0494466d98bdc1ad8742a50802b07fe10bd45900550aff786b9942",
     "areas.json": "d2a1436dc11f925a3b2edd9c20f926bf6ffbe689c20cbdf06d07a22fd49501e4",
     "locations.json": "0f6183617fe6b0a82e2e01a35c57da9657a1d40ffb4db6d249b9a3b802d268e0",
-    "enums/enum-names.json": "a3dd8a909226af000b49be0d5c331f99c93562ee9ed7ed011734fd49e47bccce",
-    "MoorMap/Defaults.lua": "6dae9cbc72d4e8798aa1eb03a67fd2e60f66a9092d781d9a2de4022c9e8eead0",
+    "enums/enum-names.json": "eb0921718813b049ab7427f27c4731b756adac2abd10a5d516a45002e2551b72",
+    "parchmentMaps.xml": "3093091c6d9f91598f55ed7856a06757203ef8cc6c6b823193993533e87deb34",
+    "maps/maps/maps.xml": "10824a23607e1e2e7c909e8fa76f471e079c030b02de2c80ae2992ddc1c22c0c",
+    "maps/links.xml": "e9bfbefabcbd1fa28439e2ae8825cd675eef10d36bc466e892b1f1fa234d5e0d",
+    "MoorMap/Defaults.lua (map numbers only)": "6dae9cbc72d4e8798aa1eb03a67fd2e60f66a9092d781d9a2de4022c9e8eead0",
     "landblocks.xml": "5d89c150e6dff6c3717ed5b8db796f7200234bde5d9604aac7ce81953f8bb56d"
   },
   "locales": {
     "en": {
       "counts": {
         "quests": 15209,
-        "quests_with_targets": 12009,
-        "quests_targets": 151965,
-        "quests_with_giver_position": 6621,
+        "quests_with_targets": 12518,
+        "quests_targets": 159429,
+        "quests_with_giver_position": 6884,
         "quests_placed_targets": 1553,
         "quests_with_reputation": 8463,
         "quests_zone_from_position": 5564,
@@ -27,8 +30,8 @@
         "quests_session": 78,
         "deeds_zone_from_position": 680,
         "deeds": 5534,
-        "deeds_with_targets": 561,
-        "deeds_targets": 6391,
+        "deeds_with_targets": 638,
+        "deeds_targets": 6892,
         "deeds_with_reputation": 1598,
         "deeds_placed_targets": 22
       },
@@ -37,9 +40,9 @@
     "de": {
       "counts": {
         "quests": 15209,
-        "quests_with_targets": 12010,
-        "quests_targets": 151966,
-        "quests_with_giver_position": 6621,
+        "quests_with_targets": 12519,
+        "quests_targets": 159430,
+        "quests_with_giver_position": 6884,
         "quests_placed_targets": 1553,
         "quests_with_reputation": 8463,
         "quests_zone_from_position": 5564,
@@ -51,8 +54,8 @@
         "quests_session": 78,
         "deeds_zone_from_position": 680,
         "deeds": 5534,
-        "deeds_with_targets": 561,
-        "deeds_targets": 6391,
+        "deeds_with_targets": 638,
+        "deeds_targets": 6892,
         "deeds_with_reputation": 1598,
         "deeds_placed_targets": 22
       },
@@ -61,9 +64,9 @@
     "fr": {
       "counts": {
         "quests": 15209,
-        "quests_with_targets": 12010,
-        "quests_targets": 151966,
-        "quests_with_giver_position": 6621,
+        "quests_with_targets": 12519,
+        "quests_targets": 159430,
+        "quests_with_giver_position": 6884,
         "quests_placed_targets": 1553,
         "quests_with_reputation": 8463,
         "quests_zone_from_position": 5564,
@@ -75,8 +78,8 @@
         "quests_session": 78,
         "deeds_zone_from_position": 680,
         "deeds": 5534,
-        "deeds_with_targets": 561,
-        "deeds_targets": 6391,
+        "deeds_with_targets": 638,
+        "deeds_targets": 6892,
         "deeds_with_reputation": 1598,
         "deeds_placed_targets": 22
       },
