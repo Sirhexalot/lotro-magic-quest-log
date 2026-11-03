@@ -47,7 +47,11 @@ def check(locale, kind, records):
         # the game data and must read the same in every language.
         assert record.x is None or record.x == 1, '%s %s: bad session flag %r' % (locale, record.id, record.x)
         partners = tuple(sorted(record.ex.values())) if record.ex is not None else ()
-        marks[record.id] = (record.x or 0, partners)
+        # Goal numbering ("k") is what a character's running counter is matched by,
+        # so every language must carry the same goals with the same numbers.
+        goals = tuple((step.i, tuple(goal.k for goal in step.g.values())) for step in record.s.values()
+                      if len(step.g) > 0)
+        marks[record.id] = (record.x or 0, partners, goals)
         for part in record.p.values():
             if part.k.startswith('zone:'):
                 zones.add(part.k[len('zone:'):])
@@ -73,7 +77,7 @@ def check(locale, kind, records):
     assert not shared, '%s %s: name used as zone and as area: %s' % (locale, kind, ', '.join(shared))
     # A partner that is not in the catalog would be a dangling promise, and a
     # one-sided entry would silently take an entry out of the count for nobody.
-    for ident, (_, partners) in marks.items():
+    for ident, (_, partners, _goals) in marks.items():
         for partner in partners:
             assert partner in ids, '%s %s: %s points at unknown %s' % (locale, kind, ident, partner)
             assert ident in marks[partner][1], '%s %s: %s and %s are not mutual' % (locale, kind, ident, partner)
@@ -101,7 +105,7 @@ def main():
             assert structures[(kind, locale)] == reference_structure, \
                 '%s %s: path structure differs from English' % (kind, locale)
             assert marks[(kind, locale)] == reference_marks, \
-                '%s %s: session and exclusion flags differ from English' % (kind, locale)
+                '%s %s: session, exclusion or goal numbering differs from English' % (kind, locale)
     for kind, key in (('Quests', 'quests'), ('Deeds', 'deeds')):
         for locale in LOCALES:
             assert counts[kind][locale] == manifest['locales'][locale]['counts'][key], \

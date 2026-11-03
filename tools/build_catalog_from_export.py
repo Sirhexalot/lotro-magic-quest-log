@@ -448,22 +448,32 @@ def build(export_dir, enums_path, output, moormap_path=None, overrides=None, lan
                 narrative.append(line)
             seen_goals = set()
 
-            def collect(event):
-                override = event.get('QuestEvent_ProgressOverride')
-                if not isinstance(override, dict):
-                    return
-                texts = override.get('texts') or {}
-                text = clean(texts.get(locale) or texts.get('en'))
-                if not text or text in seen_goals:
-                    return
-                seen_goals.add(text)
-                goal = {'t': counters(text)}
-                number = event.get('QuestEvent_Number')
-                if isinstance(number, int) and number > 1:
-                    goal['c'] = number
-                goals.append(goal)
+            # Conditions in their own order, numbered the way the game and LOTRO
+            # Companion count them (objective index, then condition 0, 1, …), so a
+            # character's running counter can be matched to its goal ("k"). Goals with
+            # the same English label are shown once, decided on English so every
+            # language keeps the same goals.
+            conditions = []
+            for group in objective.get('Quest_CompletionConditionArray') or []:
+                conditions.extend(group if isinstance(group, list) else [group])
 
-            walk_events(objective.get('Quest_CompletionConditionArray') or [], collect)
+            for position, condition in enumerate(conditions):
+                found = []
+                walk_events(condition, lambda event: found.append(event)
+                            if isinstance(event.get('QuestEvent_ProgressOverride'), dict) else None)
+                for event in found:
+                    texts = event['QuestEvent_ProgressOverride'].get('texts') or {}
+                    english = clean(texts.get('en'))
+                    text = clean(texts.get(locale) or texts.get('en'))
+                    if not text or (english or text) in seen_goals:
+                        continue
+                    seen_goals.add(english or text)
+                    goal = {'t': counters(text), 'k': position}
+                    number = event.get('QuestEvent_Number')
+                    if isinstance(number, int) and number > 1:
+                        goal['c'] = number
+                    goals.append(goal)
+
             if narrative or goals:
                 steps.append({'i': str(objective.get('Quest_ObjectiveIndex', '')), 'n': narrative, 'g': goals})
 
