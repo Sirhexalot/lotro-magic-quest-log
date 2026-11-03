@@ -62,7 +62,8 @@ end
 local running = MagicQuestLog.Characters.Running({ ["70000CFB"] = "1:0:1:1;2:0:0:44" })
 local deed
 for _, r in ipairs(deeds) do if r.id == "70000CFB" then deed = r end end
-local deedText = M.Detail(deed, S, {}, { running = running["70000CFB"], deed = true })
+local deedText = M.Detail(deed, S, {}, { running = running["70000CFB"], deed = true, showSteps = true })
+assert(not string.find(M.Detail(deed, S, {}, { deed = true }), "[44/75", 1, true), "deed objectives hidden until asked")
 assert(string.find(deedText, "[44/75", 1, true), "counter 44/75 in the deed text")
 -- Facts and chain from the game data.
 local chained, daily, deedLp

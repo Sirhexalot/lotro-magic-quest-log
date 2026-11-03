@@ -458,8 +458,9 @@ function M.Detail(record, strings, context, opts)
 	if (string.gsub(description, "%s", "")) ~= "" then
 		table.insert(parts, strings.description .. "\n\n" .. description);
 	end
-	if not opts.showSteps and not opts.deed then
-		if record.s ~= nil and #record.s > 0 then table.insert(parts, strings.stepshidden); end
+	-- Hidden objectives: the text ends with the description, and the window puts
+	-- its "show objectives" button right under it.
+	if not opts.showSteps then
 		return table.concat(parts, "\n\n\n");
 	end
 	local running = opts.running;

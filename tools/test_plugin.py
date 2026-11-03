@@ -270,13 +270,18 @@ window:ShowDetails(sample);
 local hidden = window.detailText:GetText();
 assert(string.find(hidden, MQL.strings.description, 1, true), "description missing");
 assert(not string.find(hidden, MQL.strings.step .. " ", 1, true), "steps must stay hidden by default");
-assert(string.find(hidden, MQL.strings.stepshidden, 1, true), "hidden steps must be explained");
 assert(window.stepsButton:IsVisible(), "the show-objectives button must be offered");
+assert(window.stepsButton:GetText() == MQL.strings.showsteps and MQL.strings.showsteps == "Ziele einblenden", "button says Ziele einblenden");
+assert(window.stepsButton:GetTop() > window.detailText:GetTop() and window.stepsButton:GetTop() <= window.detailText:GetTop() + window.detailText:GetHeight() + 6,
+	"the button sits right under the description");
+assert(window.findButton == nil or type(window.findButton) == "function", "no requirement search button any more");
 if sample.gt ~= nil then
 	assert(string.find(window.command, string.format("%d:", sample.gt.map), 1, true), "MoorMap must point at the giver by default");
 end
 window.stepsButton.Click();
 assert(window.showObjectives == true, "the button switches objectives on");
+assert(not window.stepsButton:IsVisible(), "once shown the button goes away");
+assert(window.detailText:GetHeight() == window.detailMax, "shown objectives use the whole pane");
 local detail = window.detailText:GetText();
 assert(string.find(detail, MQL.strings.description, 1, true), "description missing");
 assert(string.find(detail, MQL.strings.step .. " ", 1, true), "step heading missing");

@@ -331,26 +331,12 @@ function Window:Constructor(strings, catalogs)
 	-- view right away. The choice is kept.
 	self.stepsButton = Turbine.UI.Lotro.Button();
 	self.stepsButton:SetParent(self);
-	self.stepsButton:SetSize(140, 20);
+	self.stepsButton:SetSize(160, 20);
 	self.stepsButton:SetFont(self.small);
 	self.stepsButton.Click = function()
 		-- Only for the entry on show; the next one starts hidden again.
-		self.showObjectives = not self.showObjectives;
+		self.showObjectives = true;
 		if self.record then self:ShowDetails(self.record, true); end
-	end
-
-	-- First unfinished requirement: puts its name into the search.
-	self.findButton = Turbine.UI.Lotro.Button();
-	self.findButton:SetParent(self);
-	self.findButton:SetSize(150, 20);
-	self.findButton:SetFont(self.small);
-	self.findButton:SetText(strings.findreq);
-	self.findButton:SetVisible(false);
-	self.findButton.Click = function()
-		if self.findName then
-			self.searchBox:SetText(self.findName);
-			self:Search(self.findName);
-		end
 	end
 
 	self:Layout();
@@ -447,8 +433,7 @@ function Window:Layout()
 	self.mapIcon:SetPosition(2, 2);
 	self.mapLabel:SetPosition(detailLeft + 30, self.detailButtonTop + 5);
 	self.mapLabel:SetSize(140, 18);
-	self.stepsButton:SetPosition(detailLeft + detailWidth - 140, self.detailButtonTop + 2);
-	self.findButton:SetPosition(detailLeft + detailWidth - 296, self.detailButtonTop + 2);
+	self.detailLeft, self.detailTop, self.detailMax = detailLeft, bodyTop + 52, textHeight;
 	self.mapInfo:SetPosition(detailLeft + 174, self.detailButtonTop + 5);
 	self.mapInfo:SetSize(math.max(60, detailWidth - 182 - 304), 18);
 	for _, row in ipairs(self.rows) do self:Sizes(row.control, row.depth); end
@@ -595,7 +580,7 @@ function Window:RowHeight(text, width)
 	local height = base;
 	-- Shorter than one column of 9 px characters: certainly one line, no ruler.
 	local characters = select(2, string.gsub(text, "[^\128-\191]", ""));
-	if characters < math.floor(width / 9) then
+	if characters < math.floor(width / 9) and not string.find(text, "\n", 1, true) then
 		self.heights[key] = base;
 		return base;
 	end
@@ -614,7 +599,11 @@ function Window:RowHeight(text, width)
 			+ MagicQuestLog.Perf.Now() - measureStarted;
 	else
 		local perLine = math.max(8, math.floor(width / 9));
-		local lines = math.min(4, math.max(1, math.ceil(#text / perLine)));
+		local lines = 0;
+		for part in string.gmatch(text .. "\n", "([^\n]*)\n") do
+			lines = lines + math.max(1, math.ceil(#part / perLine));
+		end
+		lines = math.min(4, math.max(1, lines));
 		height = base + (lines - 1) * LINE;
 	end
 	self.heights[key] = height;
@@ -690,7 +679,17 @@ function Window:AddNode(node, depth, parentPath)
 	label:SetMultiline(true);
 	local caption = node.name .. "   (" .. Model.Counter(node) .. ")";
 	-- Level range on areas (second level) only; deeper rows would double the tree.
-	if depth == 1 and node.range ~= nil then caption = caption .. "   " .. self.strings.level .. " " .. node.range; end
+	if depth == 1 and node.range ~= nil then
+		local level = self.strings.level .. " " .. node.range;
+		local width = math.max(20, math.max(80, self.tree:GetWidth() - 16) - (18 + depth * 14) - 6);
+		-- A row that wraps anyway puts the whole range on its own line, instead of
+		-- the client breaking "112-122" at the hyphen.
+		if self:RowHeight(caption .. "   " .. level, width) > self:LineHeight() then
+			caption = caption .. "\n" .. level;
+		else
+			caption = caption .. "   " .. level;
+		end
+	end
 	label:SetText(caption);
 	label:SetSize(1, LINE);
 	row.label = label;
@@ -824,7 +823,7 @@ function Window:ShowDetails(record, keepObjectives)
 		self.mapInfo:SetText("");
 		self.command = false;
 		self.stepsButton:SetVisible(false);
-		self.findButton:SetVisible(false);
+		self:FitDetail(false);
 		return;
 	end
 	self.detailTitle:SetText(record.displayName or record.name);
@@ -837,29 +836,22 @@ function Window:ShowDetails(record, keepObjectives)
 	-- Unbinding, setting and rebinding is how a scrolled label is reset to the top.
 	-- SetValue on a bound scroll bar is refused by the client and threw an error.
 	local deed = self.kind == "deeds";
-	local showSteps = self.showObjectives or deed;
+	local showSteps = self.showObjectives;
 	self:SetDetailText(Model.Detail(record, self.strings, self.context, {
 		completed = self.completed or nil, level = self.level or nil,
 		byId = self.root and self.root.byId or nil,
 		running = self.running and self.running[record.id] or nil,
 		showSteps = showSteps, deed = deed }));
-	self.stepsButton:SetText(self.showObjectives and self.strings.hidesteps or self.strings.showsteps);
-	self.stepsButton:SetVisible(not deed and record.s ~= nil and #record.s > 0);
-	-- First unfinished requirement, for the search button.
-	self.findName = false;
-	if self.completed then
-		local byId = self.root and self.root.byId or {};
-		for _, id in ipairs(record.v or {}) do
-			if not self.completed[id] and byId[id] ~= nil then
-				self.findName = byId[id].displayName or byId[id].name;
-				break;
-			end
-		end
-	end
-	self.findButton:SetVisible(self.findName ~= false);
+	-- Objectives on request, for quests and deeds: a button right under the
+	-- description. Once shown, the pane uses its full height again.
+	local hasSteps = record.s ~= nil and #record.s > 0;
+	self.stepsButton:SetText(self.strings.showsteps);
+	self.stepsButton:SetVisible(hasSteps and not showSteps);
+	self:FitDetail(hasSteps and not showSteps);
 	-- By default MoorMap points at the quest giver, not at the objective.
 	local target, which = nil, nil;
-	if showSteps then
+	if showSteps or (deed and record.gt == nil) then
+		-- A deed has no giver; its first objective places it, as on the map site.
 		target, which = (record.t or {})[1], self.strings.targetpos;
 	elseif record.gt ~= nil then
 		target, which = record.gt, self.strings.giverpos;
@@ -881,6 +873,32 @@ function Window:ShowDetails(record, keepObjectives)
 	end
 end
 
+--- With "button" the text shrinks to its content and the objectives button sits
+--- right under the description; otherwise the text gets the whole pane. The
+--- scroll bar bound to the text shows only while it overflows, which measures it.
+function Window:FitDetail(button)
+	local top, max = self.detailTop, self.detailMax;
+	if top == nil then return; end
+	if not button then
+		self.detailText:SetHeight(max);
+		self.detailScroll:SetHeight(max);
+		return;
+	end
+	local room = math.max(40, max - 28);
+	local height = room;
+	if self:IsVisible() then
+		for candidate = 28, room, 14 do
+			height = candidate;
+			self.detailText:SetHeight(candidate);
+			if not self.detailScroll:IsVisible() then break; end
+		end
+	end
+	height = math.min(height, room);
+	self.detailText:SetHeight(height);
+	self.detailScroll:SetHeight(height);
+	self.stepsButton:SetPosition(self.detailLeft, top + height + 6);
+end
+
 --- Right-hand pane for an area: level range and counts, no map button.
 function Window:ShowNode(node)
 	self.record = false;
@@ -893,7 +911,7 @@ function Window:ShowNode(node)
 	self.mapLabel:SetVisible(false);
 	self.mapInfo:SetText("");
 	self.stepsButton:SetVisible(false);
-	self.findButton:SetVisible(false);
+	self:FitDetail(false);
 	self.command = false;
 end
 

@@ -47,7 +47,7 @@ MagicQuestLog.Strings = {
 		from = "von %s", scaling = "wächst mit Eurer Stufe", requirements = "VORAUSSETZUNGEN",
 		reqdone = "erledigt", reqopen = "offen", reqlevel = "Stufe %s", reqoneof = "eine davon:",
 		reqother = "weitere Bedingung (Klasse, Volk, Ruf o. Ä.) – hier nicht prüfbar",
-		showsteps = "Ziele zeigen", hidesteps = "Ziele verbergen", findreq = "Voraussetzung suchen",
+		showsteps = "Ziele einblenden", hidesteps = "Ziele verbergen", findreq = "Voraussetzung suchen",
 		stepshidden = "Ziele und Schritte sind verborgen, damit Ihr nicht gleich die Lösung seht. „Ziele zeigen“ unten blendet sie ein.",
 		giverpos = "Auftraggeber", targetpos = "erstes Ziel", nogiver = "Wo diese Aufgabe vergeben wird, ist nicht belegt.",
 		total = "gesamt", inprogress = "in Arbeit", available = "annehmbar", choosehint = "Links einen Eintrag wählen.",
