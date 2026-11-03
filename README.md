@@ -70,6 +70,15 @@ Deeds use the same tree and the same counters:
 
 ![Deeds by region and zone with finished entries](docs/screenshots/deed-progress.jpg)
 
+Older progress comes from LOTRO Companion through the map site's Progress page —
+read in your browser, nothing is uploaded:
+
+![The Progress page with a loaded character and the export to the plugin](docs/screenshots/progress-characters.jpg)
+
+The same progress on the web map, with a character switch in the menu:
+
+![The web map with progress and the character switch](docs/screenshots/map-character-switch.jpg)
+
 ## Using it
 
 - `/mql` opens or hides the window; `/mql show` and `/mql hide` are explicit.

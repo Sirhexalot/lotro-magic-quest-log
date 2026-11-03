@@ -111,18 +111,19 @@ quests; both work side by side.
 
 ### Screenshots
 
-Upload these in order; the files sit in `docs/screenshots/`.
+Uploaded (four is the site's maximum), files in `docs/screenshots/`:
 
 1. `tree-overview.png` — "Everything in one window: regions, the epic story and
    the special branches, all collapsed at first."
 2. `quest-details.jpg` — "Description and objectives split into steps, with the
    verified map position underneath."
-3. `quest-progress.jpg` — "Every branch counts what you have finished; finished
-   quests get a green check."
-4. `deed-progress.jpg` — "Deeds use the same tree and the same counters."
+3. `progress-characters.jpg` — "Progress page: load LOTRO Companion's folder in
+   your browser, nothing is uploaded"
+4. `map-character-switch.jpg` — "The web map with your progress and a character
+   switch"
 
-Still to take: the character switch at the top right of the window, and the web
-page's character list.
+Not uploaded any more, but kept: `quest-progress.jpg`, `deed-progress.jpg`,
+`progress-page.jpg`. Still to take: the character switch inside the plugin window.
 
 ### Good to know
 
