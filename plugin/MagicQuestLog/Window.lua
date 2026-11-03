@@ -197,7 +197,7 @@ function Window:Constructor(strings, catalogs)
 	self.kindDeedIcon = makeImage(self, "deeds");
 
 	self.searchIcon = makeImage(self, "search");
-	self.searchLabel = makeLabel(self, self.small, self.gold);
+	self.searchLabel = makeLabel(self, self.body, self.gold);
 	self.searchLabel:SetText(strings.search);
 
 	self.searchBox = Turbine.UI.Lotro.TextBox();
@@ -240,7 +240,7 @@ function Window:Constructor(strings, catalogs)
 	end
 	self.clearIcon = makeImage(self, "clear");
 
-	self.countLabel = makeLabel(self, self.small, self.trim);
+	self.countLabel = makeLabel(self, self.body, self.trim);
 
 	-- Character switch: any character of this server that has progress. A click
 	-- moves to the next one; the label says whose numbers are shown and how old the
@@ -253,7 +253,7 @@ function Window:Constructor(strings, catalogs)
 	self.characterButton.Click = function()
 		if self.CharacterClicked then self.CharacterClicked(); end
 	end
-	self.characterLabel = makeLabel(self, self.small, self.trim);
+	self.characterLabel = makeLabel(self, self.body, self.trim);
 	self.characterLabel:SetTextAlignment(Turbine.UI.ContentAlignment.MiddleRight);
 
 	self.tree = Turbine.UI.ListBox();
@@ -312,9 +312,9 @@ function Window:Constructor(strings, catalogs)
 	self.mapCover:SetVisible(false);
 	self.mapIcon = makeImage(self.mapCover, "mappin");
 	self.mapIcon:SetPosition(2, 2);
-	self.mapLabel = makeLabel(self, self.small, self.gold);
+	self.mapLabel = makeLabel(self, self.body, self.gold);
 	self.mapLabel:SetText(strings.showmap);
-	self.mapInfo = makeLabel(self, self.small, self.trim);
+	self.mapInfo = makeLabel(self, self.body, self.trim);
 
 	-- List filter: four buttons side by side, the active one marked.
 	self.filterButtons = {};
@@ -392,7 +392,7 @@ function Window:Layout()
 	local labelLeft = MARGIN + 306;
 	self.searchIcon:SetPosition(labelLeft, ROW + 2);
 	self.searchLabel:SetPosition(labelLeft + 22, ROW + 2);
-	self.searchLabel:SetSize(60, 18);
+	self.searchLabel:SetSize(66, 20);
 	local boxLeft = labelLeft + 88;
 	self.clearButton:SetPosition(width - MARGIN - 80, ROW);
 	self.clearIcon:SetPosition(width - MARGIN - 72, ROW + 4);
@@ -403,11 +403,12 @@ function Window:Layout()
 		self.filterButtons[name]:SetPosition(filterLeft, ROW + 26);
 		filterLeft = filterLeft + 90;
 	end
-	self.countLabel:SetPosition(filterLeft + 8, ROW + 28);
-	self.countLabel:SetSize(math.max(160, width - MARGIN - filterLeft - 8 - 480), 18);
+	self.countLabel:SetPosition(filterLeft + 8, ROW + 27);
+	self.countLabel:SetSize(270, 20);
 	self.characterButton:SetPosition(width - MARGIN - 150, ROW + 26);
-	self.characterLabel:SetPosition(width - MARGIN - 470, ROW + 28);
-	self.characterLabel:SetSize(310, 18);
+	local characterLeft = filterLeft + 8 + 270 + 8;
+	self.characterLabel:SetPosition(characterLeft, ROW + 27);
+	self.characterLabel:SetSize(math.max(60, width - MARGIN - 150 - 8 - characterLeft), 20);
 
 	local bodyTop = HEADER + 22;
 	local bodyHeight = math.max(120, height - bodyTop - MARGIN - FOOTER);
@@ -432,10 +433,10 @@ function Window:Layout()
 	self.mapCover:SetPosition(detailLeft, self.detailButtonTop);
 	self.mapIcon:SetPosition(2, 2);
 	self.mapLabel:SetPosition(detailLeft + 30, self.detailButtonTop + 5);
-	self.mapLabel:SetSize(140, 18);
+	self.mapLabel:SetSize(150, 20);
 	self.detailLeft, self.detailTop, self.detailMax = detailLeft, bodyTop + 52, textHeight;
-	self.mapInfo:SetPosition(detailLeft + 174, self.detailButtonTop + 5);
-	self.mapInfo:SetSize(math.max(60, detailWidth - 182 - 304), 18);
+	self.mapInfo:SetPosition(detailLeft + 186, self.detailButtonTop + 4);
+	self.mapInfo:SetSize(math.max(60, detailWidth - 186), 20);
 	for _, row in ipairs(self.rows) do self:Sizes(row.control, row.depth); end
 end
 
@@ -731,7 +732,7 @@ function Window:AddNode(node, depth, parentPath)
 			header:SetMouseVisible(true);
 			header.marker = makeImage(header, "closed");
 			local caption = section == "" and self.strings.general or section;
-			local label = makeLabel(header, self.small, self.gold);
+			local label = makeLabel(header, self.body, self.gold);
 			label:SetMultiline(true);
 			label:SetText(caption .. "   (" .. tostring(counts[section]) .. ")");
 			label:SetSize(1, LINE);
