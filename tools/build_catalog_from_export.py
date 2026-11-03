@@ -355,6 +355,52 @@ def build(export_dir, enums_path, output, moormap_path=None, overrides=None, lan
             target = '%08X' % (int(requirement.get('Usage_QuestID', 0)) & 0xffffffff)
             if target != ident:
                 not_taken[ident].add(target)
+    # What a quest needs before it can be taken, as far as the data says it plainly:
+    #   v  quests that must be completed (operator 3 = equal, status 0x30000000),
+    #   vo of these, at least one (the game's OR list),
+    #   vl minimum character level,
+    #   vb 1 when anything else applies that we cannot check against a character
+    #      (class, race, faction, craft, trait, effect, another quest under way…).
+    COMPLETED = 0x30000000
+    OTHER = ('Usage_RequiredFaction', 'Usage_RequiredClassList', 'Usage_RequiredRaces',
+             'Usage_RequiredCraftProfession', 'Usage_RequiredTrait', 'Usage_RequiredCraftProficiency',
+             'Usage_RequiredTrait_OrList', 'Usage_RequiredNeighborRelationship', 'Usage_RequiredEffect',
+             'Usage_RequiredHobby', 'Usage_MinGloryRank', 'Usage_RequiredCraftProficiencyLocked',
+             'Usage_WorldEvent_AllConditionList', 'Usage_WorldEvent_AnyConditionList')
+    needs = {}
+    for entry in source.quests:
+        blob = (entry.get('properties') or {}).get('DefaultPermissionBlobStruct') or {}
+        if not blob:
+            continue
+        need = {}
+        must, other = [], any(blob.get(key) for key in OTHER)
+        for requirement in blob.get('Usage_QuestRequirements') or []:
+            target = '%08X' % (int(requirement.get('Usage_QuestID', 0)) & 0xffffffff)
+            operator, status = requirement.get('Usage_Operator'), requirement.get('Usage_QuestStatus')
+            if operator == 3 and status == COMPLETED:
+                must.append(target)
+            elif operator == 2:
+                continue  # "not taken / not finished": handled as exclusions and by state
+            else:
+                other = True
+        either = []
+        for requirement in blob.get('Usage_QuestRequirements_OrList') or []:
+            target = '%08X' % (int(requirement.get('Usage_QuestID', 0)) & 0xffffffff)
+            if requirement.get('Usage_Operator') == 3 and requirement.get('Usage_QuestStatus') == COMPLETED:
+                either.append(target)
+        if (blob.get('Usage_QuestRequirements_OrList') or []) and not either:
+            other = True
+        if must:
+            need['v'] = sorted(set(must))
+        if either:
+            need['vo'] = sorted(set(either))
+        if isinstance(blob.get('Usage_MinLevel'), int) and blob['Usage_MinLevel'] > 1:
+            need['vl'] = blob['Usage_MinLevel']
+        if other:
+            need['vb'] = 1
+        if need:
+            needs[entry['id']] = need
+
     exclusions = defaultdict(set)
     for ident, targets in not_taken.items():
         for target in targets:
@@ -563,6 +609,10 @@ def build(export_dir, enums_path, output, moormap_path=None, overrides=None, lan
                             if giver:
                                 record['g'] = giver
                                 stats['quests_with_giver'] += 1
+                        for key, value in needs.get(record['id'], {}).items():
+                            record[key] = value
+                        if record['id'] in needs:
+                            stats['quests_with_requirements'] += 1
                         if record['id'] in session_ids:
                             record['x'] = 1
                             stats['quests_session'] += 1
