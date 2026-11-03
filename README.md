@@ -19,9 +19,22 @@ Its **Progress** page also brings your older progress into the plugin (see below
   instances, crafting, festivals and entries without a geographic assignment.
   Every node starts collapsed. Long names wrap and the row grows with them
   instead of running into the row below.
-- **Search** by name or part of a name, ignoring case and accents.
-- On the right, the **description** and the objectives split into steps. Known
-  objective counts read "required: 10"; live counters are never invented.
+- **Search** by name or part of a name, ignoring case and accents. An area's
+  name finds the area with all its entries ("Breeland").
+- **Filter** button: all, open, done or *available* — open quests whose
+  requirements the character meets (level, earlier quests, one of several).
+- Areas show their **level range** ("Level 9-25", the middle half of their quest
+  levels); quests whose level follows the character read "~". Every entry shows
+  its level, and names that occur twice show their quest giver.
+- On the right, the **description**, the **quest giver** and the
+  **requirements**, each marked done or open. **No spoilers by default:** the
+  objectives and steps stay hidden until "Show objectives" is pressed (the choice
+  is kept), and MoorMap then points at the quest giver instead of the objective.
+  Known objective counts read "required: 10"; running counters ("44/75") come
+  from the LOTRO Companion import, matched by objective and condition number, and
+  say so. A button finds the first open requirement.
+- Clicking an area shows its level range and counts: total, finished, open, in
+  progress, available.
 - The counters show what a character can still do, not what merely exists: a
   **session play** is never written to the journal, and of two quests that rule
   each other out only one can be taken. Both are marked in the tree ("session
@@ -442,6 +455,16 @@ plugin's own loader. What a headless test cannot judge — row heights, how the
 list stacks rows — is checked in the game.
 
 ## Changes
+
+**0.3.0** — what the LOTRO Log Book shows, now in the plugin.
+- No spoilers by default: objectives and steps on request, MoorMap points at the
+  quest giver (5,743 quests have a known giver position).
+- Quest giver, requirements with their state, "available" filter with the live
+  character level, level ranges per area, "~" for scaling quests.
+- Running counters ("44/75") and the character level from the Companion import.
+- Search also finds areas; clicking an area shows a summary.
+- Catalogue rebuilt from the 3 November export: German and French names that
+  depend on gender ("Bezwinger / Bezwingerin") are whole again.
 
 **0.2.0** — progress from LOTRO Companion, several characters.
 - Older progress comes from LOTRO Companion through the map site's Progress page,

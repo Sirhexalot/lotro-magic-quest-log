@@ -226,7 +226,19 @@ for _, record in ipairs(MQL.catalogs.quests) do
 	if #record.t > 0 then withTarget = withTarget + 1; if sample == nil then sample = record; end end
 end
 assert(withTarget > 7000, "too few verified positions: " .. tostring(withTarget));
+-- No spoilers by default: description yes, objectives and steps only on request.
+window.showObjectives = false;
 window:ShowDetails(sample);
+local hidden = window.detailText:GetText();
+assert(string.find(hidden, MQL.strings.description, 1, true), "description missing");
+assert(not string.find(hidden, MQL.strings.step .. " ", 1, true), "steps must stay hidden by default");
+assert(string.find(hidden, MQL.strings.stepshidden, 1, true), "hidden steps must be explained");
+assert(window.stepsButton:IsVisible(), "the show-objectives button must be offered");
+if sample.gt ~= nil then
+	assert(string.find(window.command, string.format("%d:", sample.gt.map), 1, true), "MoorMap must point at the giver by default");
+end
+window.stepsButton.Click();
+assert(window.showObjectives == true, "the button switches objectives on");
 local detail = window.detailText:GetText();
 assert(string.find(detail, MQL.strings.description, 1, true), "description missing");
 assert(string.find(detail, MQL.strings.step .. " ", 1, true), "step heading missing");
@@ -312,7 +324,8 @@ end
 window:Rebuild();
 local leaf = nil;
 for index, row in ipairs(window.rows) do
-	if row.control.text and row.control.text:GetText() == target.displayName then leaf = index; break; end
+	-- The row reads "name   · level": the name comes first.
+	if row.control.text and string.find(row.control.text:GetText(), target.displayName, 1, true) == 1 then leaf = index; break; end
 end
 assert(leaf ~= nil, "expected the matching quest as a visible row");
 window.tree.selected = leaf;
@@ -353,7 +366,7 @@ end
 window:Rebuild();
 local tallRow = nil;
 for _, row in ipairs(window.rows) do
-	if row.control.text and row.control.text:GetText() == tallest.displayName then tallRow = row; break; end
+	if row.control.text and string.find(row.control.text:GetText(), tallest.displayName, 1, true) == 1 then tallRow = row; break; end
 end
 assert(tallRow ~= nil, "expected the longest name as a visible row");
 assert(tallRow.control:GetHeight() > 20,
@@ -438,8 +451,9 @@ end
 window:Rebuild();
 local interludeRow = nil;
 for _, row in ipairs(window.rows) do
-	if row.control.text and row.control.text:GetText() == interlude.displayName
-		.. "   (" .. MQL.strings.sessionplay .. ")" then interludeRow = row; break; end
+	local shown = row.control.text and row.control.text:GetText() or "";
+	if string.find(shown, interlude.displayName, 1, true) == 1
+		and string.find(shown, "(" .. MQL.strings.sessionplay .. ")", 1, true) then interludeRow = row; break; end
 end
 assert(interludeRow ~= nil, "the session play row must carry its label");
 assert(interludeRow.control.status == false, "a session play must not carry a status mark");
@@ -743,11 +757,12 @@ assert(saved[1] == nil and saved[2] == nil and saved.junk == nil,
 local known = 0;
 for key in pairs(saved) do
 	assert(key == "windowLeft" or key == "windowTop" or key == "iconLeft"
-		or key == "iconTop" or key == "windowVisible" or key == "useIcon",
+		or key == "iconTop" or key == "windowVisible" or key == "useIcon"
+		or key == "showObjectives" or key == "filter",
 		"unexpected key in the settings file: " .. tostring(key));
 	known = known + 1;
 end
-assert(known >= 2 and known <= 6, "settings file has " .. known .. " keys");
+assert(known >= 2 and known <= 8, "settings file has " .. known .. " keys");
 for _, name in ipairs({ "windowLeft", "windowTop", "iconLeft", "iconTop" }) do
 	assert(saved[name] == nil or type(saved[name]) == "string",
 		"saved " .. name .. " must be text, got " .. type(saved[name]));

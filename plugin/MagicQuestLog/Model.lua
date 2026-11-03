@@ -54,11 +54,58 @@ function M.SortKey(text)
 	end));
 end
 
---- Build the visible tree. Search matches the name only, as a literal substring.
+--- Level as shown: "5", or "~" / "~100" when the level follows the character.
+function M.LevelText(record)
+	local level = record.l;
+	if level == nil or level == "" then return nil; end
+	if record.ls == 1 then
+		local number = tonumber(level);
+		if number ~= nil and number > 1 then return "~" .. tostring(number); end
+		return "~";
+	end
+	return tostring(level);
+end
+
+--- Can the character take this quest now, as far as the data says? Open, not ruled
+--- out, level reached, every required quest finished (v), one of the alternatives
+--- finished (vo), and nothing we cannot check (vb). Without progress: unknown, false.
+function M.Available(record, completed, level)
+	if completed == nil or completed[record.id] == true then return false; end
+	if record.sessionPlay or record.excluded or record.vb == 1 then return false; end
+	if level ~= nil and tonumber(record.vl) ~= nil and tonumber(record.vl) > level then return false; end
+	for _, id in ipairs(record.v or {}) do
+		if completed[id] ~= true then return false; end
+	end
+	if record.vo ~= nil and #record.vo > 0 then
+		local any = false;
+		for _, id in ipairs(record.vo) do if completed[id] == true then any = true; end end
+		if not any then return false; end
+	end
+	return true;
+end
+
+--- Middle half of the levels below a node ("Stufe 9-25"), scaling entries left out.
+--- Only with at least five levels; a node made mostly of scaling content says "~".
+local function levelRange(levels, scaling)
+	if scaling >= 5 and scaling >= #levels then return "~"; end
+	if #levels < 5 then return nil; end
+	table.sort(levels);
+	local low = levels[math.floor((#levels - 1) * 0.25) + 1];
+	local high = levels[math.ceil((#levels - 1) * 0.75) + 1];
+	if low == high then return tostring(low); end
+	return tostring(low) .. "-" .. tostring(high);
+end
+
+--- Build the visible tree. Search matches the name and the names of the areas it
+--- lies in, so "Breeland" finds the area with all its entries.
 --- "completed" is an optional set of finished ids; when given, every node also
 --- counts how many of its entries are finished, so the tree can show "n/total".
 --- Without that set no count is invented: done stays nil.
-function M.Build(records, query, strings, completed, context)
+--- options.filter: "all", "open", "done" or "available"; options.level: the
+--- character's level for "available".
+function M.Build(records, query, strings, completed, context, options)
+	options = options or {};
+	local filter = options.filter or "all";
 	local root = { key = "root", name = "root", children = {}, order = {}, items = {}, total = 0 };
 	if completed ~= nil then root.done = 0; end
 	local key = M.ContextKey(context);
@@ -66,6 +113,9 @@ function M.Build(records, query, strings, completed, context)
 		if record.displayKey ~= key then
 			record.displayName = M.Display(record.name, context, strings);
 			record.searchText = M.Normalize(record.displayName);
+			local captions = {};
+			for _, part in ipairs(record.p or {}) do captions[#captions + 1] = M.Display(part.n, context, strings); end
+			record.pathText = M.Normalize(table.concat(captions, "\1"));
 			record.sortKey = M.SortKey(record.displayName);
 			record.displayKey = key;
 		end
@@ -101,7 +151,14 @@ function M.Build(records, query, strings, completed, context)
 		-- search keeps: a stale flag would otherwise be shown later.
 		local finished = completed ~= nil and completed[record.id] == true;
 		local counts = attainable(record, finished);
-		if needle == "" or string.find(record.searchText, needle, 1, true) ~= nil then
+		local shown = needle == "" or string.find(record.searchText, needle, 1, true) ~= nil
+			or string.find(record.pathText, needle, 1, true) ~= nil;
+		if shown and filter ~= "all" and completed ~= nil then
+			if filter == "done" then shown = finished;
+			elseif filter == "open" then shown = counts and not finished;
+			elseif filter == "available" then shown = M.Available(record, completed, options.level); end
+		end
+		if shown then
 			if counts then
 				root.total = root.total + 1;
 				if finished then root.done = root.done + 1; end
@@ -112,7 +169,7 @@ function M.Build(records, query, strings, completed, context)
 				if child == nil then
 					local caption = M.Display(part.n, context, strings);
 					child = { key = part.k, name = caption, sortKey = M.SortKey(caption),
-						children = {}, order = {}, items = {}, total = 0 };
+						children = {}, order = {}, items = {}, total = 0, levels = {}, scaling = 0 };
 					if completed ~= nil then child.done = 0; end
 					node.children[part.k] = child;
 					table.insert(node.order, child);
@@ -120,6 +177,10 @@ function M.Build(records, query, strings, completed, context)
 				if counts then
 					child.total = child.total + 1;
 					if finished then child.done = child.done + 1; end
+				end
+				if record.ls == 1 then child.scaling = child.scaling + 1;
+				elseif tonumber(record.l) ~= nil and tonumber(record.l) > 0 then
+					child.levels[#child.levels + 1] = tonumber(record.l);
 				end
 				node = child;
 			end
@@ -134,12 +195,21 @@ function M.Build(records, query, strings, completed, context)
 			record.excludedByName = other ~= nil and display(other) or record.excludedBy;
 		end
 	end
+	-- Names that occur more than once in one list get their quest giver beside them.
 	local function sort(node)
 		table.sort(node.order, function(a, b) return a.sortKey < b.sortKey; end);
 		table.sort(node.items, function(a, b) return a.sortKey < b.sortKey; end);
+		local seen = {};
+		for _, record in ipairs(node.items) do seen[record.displayName] = (seen[record.displayName] or 0) + 1; end
+		for _, record in ipairs(node.items) do record.twin = seen[record.displayName] > 1; end
+		if node.levels ~= nil then
+			node.range = levelRange(node.levels, node.scaling);
+			node.levels = nil;
+		end
 		for _, child in ipairs(node.order) do sort(child); end
 	end
 	sort(root);
+	root.byId = byId;
 	return root;
 end
 
@@ -255,12 +325,20 @@ function M.Resolve(text, context, strings, total)
 	return text, needsCounter;
 end
 
---- Right-hand pane text for one record: description, then numbered steps.
-function M.Detail(record, strings, context)
+--- Right-hand pane text for one record. opts: completed (set or nil), level,
+--- byId (all records), running (counters from the import for this id), showSteps
+--- (objectives and steps; off by default so the solution is not in view), deed.
+function M.Detail(record, strings, context, opts)
+	opts = opts or {};
+	local completed = opts.completed;
 	local parts = {};
-	if record.l ~= nil and record.l ~= "" then
-		table.insert(parts, strings.level .. ": " .. (record.l == "Scaling" and strings.scaled or tostring(record.l)));
+	local head = {};
+	local level = M.LevelText(record);
+	if level ~= nil then
+		head[#head + 1] = strings.level .. " " .. level .. (record.ls == 1 and (" (" .. strings.scaling .. ")") or "");
 	end
+	if record.g ~= nil and record.g ~= "" then head[#head + 1] = string.format(strings.from, record.g); end
+	if #head > 0 then table.insert(parts, table.concat(head, "  ·  ")); end
 	-- Why an entry is not counted. The row is dimmed in the tree; this says why.
 	if record.sessionPlay then
 		table.insert(parts, strings.sessionnote);
@@ -271,10 +349,42 @@ function M.Detail(record, strings, context)
 			tostring(record.excludedByName or record.excludedBy or "")), context, strings);
 		table.insert(parts, note);
 	end
+	-- Requirements, each with its state for the shown character.
+	local function state(id)
+		if completed == nil then return ""; end
+		return "  (" .. (completed[id] == true and strings.reqdone or strings.reqopen) .. ")";
+	end
+	local function nameOf(id)
+		local other = (opts.byId or {})[id];
+		if other == nil then return id; end
+		return other.displayName or M.Display(other.name, context, strings);
+	end
+	local requirements = {};
+	if tonumber(record.vl) ~= nil then
+		local line = "- " .. string.format(strings.reqlevel, tostring(record.vl));
+		if opts.level ~= nil then
+			line = line .. "  (" .. (opts.level >= tonumber(record.vl) and strings.reqdone or strings.reqopen) .. ")";
+		end
+		requirements[#requirements + 1] = line;
+	end
+	for _, id in ipairs(record.v or {}) do requirements[#requirements + 1] = "- " .. nameOf(id) .. state(id); end
+	if record.vo ~= nil and #record.vo > 0 then
+		requirements[#requirements + 1] = "- " .. strings.reqoneof;
+		for _, id in ipairs(record.vo) do requirements[#requirements + 1] = "    " .. nameOf(id) .. state(id); end
+	end
+	if record.vb == 1 then requirements[#requirements + 1] = "- " .. strings.reqother; end
+	if #requirements > 0 then
+		table.insert(parts, strings.requirements .. "\n" .. table.concat(requirements, "\n"));
+	end
 	local description = M.Resolve(record.d, context, strings);
 	if (string.gsub(description, "%s", "")) ~= "" then
 		table.insert(parts, strings.description .. "\n\n" .. description);
 	end
+	if not opts.showSteps and not opts.deed then
+		if record.s ~= nil and #record.s > 0 then table.insert(parts, strings.stepshidden); end
+		return table.concat(parts, "\n\n\n");
+	end
+	local running = opts.running;
 	local blocks, current, currentStep = {}, {}, nil;
 	local function flush()
 		if #current > 0 then
@@ -290,10 +400,51 @@ function M.Detail(record, strings, context)
 			current[#current + 1] = M.Resolve(line, context, strings);
 		end
 		for _, goal in ipairs(step.g or {}) do
-			current[#current + 1] = "\n- " .. M.Resolve(goal.t, context, strings, goal.c);
+			local line = "\n- " .. M.Resolve(goal.t, context, strings, goal.c);
+			-- Counter from the Companion import, matched by objective and condition
+			-- number; never by text, never invented.
+			local row = running ~= nil and goal.k ~= nil and running[tostring(step.i) .. ":" .. tostring(goal.k)] or nil;
+			if row ~= nil then
+				if row.done then
+					line = line .. "  (" .. strings.reqdone .. ")";
+				elseif row.count ~= nil and tonumber(goal.c) ~= nil and tonumber(goal.c) > 1 then
+					line = line .. "  [" .. tostring(math.min(row.count, tonumber(goal.c))) .. "/" .. tostring(goal.c)
+						.. ", " .. strings.imported .. "]";
+				end
+			end
+			current[#current + 1] = line;
 		end
 	end
 	flush();
 	for _, block in ipairs(blocks) do table.insert(parts, block); end
 	return table.concat(parts, "\n\n\n");
+end
+
+--- Right-hand pane for an area: its level range and counts.
+function M.NodeSummary(node, strings, completed, level, running)
+	local lines = {};
+	if node.range ~= nil then lines[#lines + 1] = strings.level .. " " .. node.range; end
+	lines[#lines + 1] = "";
+	lines[#lines + 1] = strings.total .. ": " .. tostring(node.total);
+	if completed ~= nil then
+		local open, inprogress, available = 0, 0, 0;
+		local function walk(current)
+			for _, record in ipairs(current.items) do
+				if completed[record.id] ~= true and not record.sessionPlay and not record.excluded then
+					open = open + 1;
+					if running ~= nil and running[record.id] ~= nil then inprogress = inprogress + 1; end
+					if M.Available(record, completed, level) then available = available + 1; end
+				end
+			end
+			for _, child in ipairs(current.order) do walk(child); end
+		end
+		walk(node);
+		lines[#lines + 1] = strings.finished .. ": " .. tostring(node.done or 0);
+		lines[#lines + 1] = strings.filteropen .. ": " .. tostring(open);
+		lines[#lines + 1] = strings.inprogress .. ": " .. tostring(inprogress);
+		lines[#lines + 1] = strings.available .. ": " .. tostring(available);
+	end
+	lines[#lines + 1] = "";
+	lines[#lines + 1] = strings.choosehint;
+	return table.concat(lines, "\n");
 end

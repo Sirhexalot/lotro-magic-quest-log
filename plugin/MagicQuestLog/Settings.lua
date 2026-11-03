@@ -7,14 +7,17 @@ local S = {};
 MagicQuestLog.Settings = S;
 
 local KEY = "MagicQuestLogSettings";
-local DEFAULTS = { windowVisible = true, useIcon = true };
+local DEFAULTS = { windowVisible = true, useIcon = true, showObjectives = false, filter = "all" };
 
 -- Positions are stored as text, never as numbers. The client writes numbers with
 -- the locale's decimal separator ("239,000000" on a German client), which is not
 -- valid Lua and makes the whole settings file unreadable. Load coerces them back.
 local PLACEMENTS = { "windowLeft", "windowTop", "iconLeft", "iconTop" };
--- Placement plus the two switches: the only keys this plugin ever stores.
-local KNOWN = { "windowLeft", "windowTop", "iconLeft", "iconTop", "windowVisible", "useIcon" };
+-- Placement, the switches, the list filter and whether objectives are shown (off by
+-- default, so a quest's solution is not in view right away): the only keys stored.
+local KNOWN = { "windowLeft", "windowTop", "iconLeft", "iconTop", "windowVisible", "useIcon",
+	"showObjectives", "filter" };
+local FILTERS = { all = true, open = true, done = true, available = true };
 
 function S.Load()
 	local stored = nil;
@@ -37,6 +40,8 @@ function S.Load()
 	end
 	settings.windowVisible = settings.windowVisible ~= false;
 	settings.useIcon = settings.useIcon ~= false;
+	settings.showObjectives = settings.showObjectives == true or settings.showObjectives == "true";
+	if not FILTERS[tostring(settings.filter)] then settings.filter = "all"; end
 	S.current = settings;
 	return settings;
 end

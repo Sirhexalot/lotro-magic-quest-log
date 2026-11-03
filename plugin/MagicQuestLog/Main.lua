@@ -64,7 +64,13 @@ function MagicQuestLog.ShowCharacter(name)
 	MagicQuestLog.shown = name;
 	MagicQuestLog.importStamp = imported and imported.stamp or false;
 	window:SetCharacter(name, imported and imported.date or nil, name == current);
-	window:SetProgress(merged, exact);
+	-- Level: live for the logged-in character, from the import for any other.
+	local level = imported and imported.level or nil;
+	if name == current then
+		local ok, value = pcall(function() return Turbine.Gameplay.LocalPlayer.GetInstance():GetLevel(); end);
+		if ok and tonumber(value) ~= nil then level = tonumber(value); end
+	end
+	window:SetProgress(merged, exact, imported and imported.running or nil, level);
 end
 
 --- Read the import again: the map site may have written a new one while the game

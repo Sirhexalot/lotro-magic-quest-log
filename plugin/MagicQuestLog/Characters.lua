@@ -97,9 +97,30 @@ function C.LoadImport(name)
 	return {
 		completed = completed,
 		count = count,
+		running = C.Running(data.running),
+		level = tonumber(data.level),
 		date = type(data.date) == "string" and data.date or nil,
 		stamp = tostring(data.date or "") .. "|" .. tostring(count),
 	};
+end
+
+--- Running counters of unfinished entries, as the map site wrote them from LOTRO
+--- Companion: id = "objective:condition:done:count;…", count "-" when unknown.
+--- Text, not numbers: the client writes numbers with a decimal comma. Result:
+--- running[id]["objective:condition"] = { done = bool, count = number or nil }.
+function C.Running(source)
+	local running = {};
+	if type(source) ~= "table" then return running; end
+	for id, text in pairs(source) do
+		if type(id) == "string" and string.find(id, HEX) ~= nil and type(text) == "string" then
+			local rows = {};
+			for objective, condition, done, count in string.gmatch(text, "(%d+):(%d+):([01]):([%d%-]+)") do
+				rows[objective .. ":" .. condition] = { done = done == "1", count = tonumber(count) };
+			end
+			running[string.upper(id)] = rows;
+		end
+	end
+	return running;
 end
 
 --- Live completions of a character. The logged-in character also takes over what

@@ -3,7 +3,7 @@
 	<Information>
 		<Name>Magic Quest Log</Name>
 		<Author>Adrian</Author>
-		<Version>0.2.0</Version>
+		<Version>0.3.0</Version>
 		<Description>Quest and deed atlas: tree by area and epic story, name search, details and MoorMap.</Description>
 	</Information>
 	<Package>MagicQuestLog.Main</Package>

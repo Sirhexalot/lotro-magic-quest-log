@@ -110,6 +110,13 @@ function Window:Constructor(strings, catalogs)
 	-- whose unknown fields resolve to methods must not be asked about nil.
 	self.completed = false;
 	self.progressExact = false;
+	-- Running counters from the import and the character's level, both false when
+	-- unknown. Settings decide the list filter and whether objectives show.
+	self.running = false;
+	self.level = false;
+	local stored = MagicQuestLog.Settings.Get();
+	self.filter = stored.filter or "all";
+	self.showObjectives = stored.showObjectives == true;
 	-- The built tree is cached; expanding a node must not rebuild and re-sort
 	-- 15k records again.
 	self.treeCacheKey = nil;
@@ -283,6 +290,47 @@ function Window:Constructor(strings, catalogs)
 	self.mapLabel:SetText(strings.showmap);
 	self.mapInfo = makeLabel(self, self.small, self.trim);
 
+	-- List filter: one button that steps through all, open, done and available.
+	self.filterButton = Turbine.UI.Lotro.Button();
+	self.filterButton:SetParent(self);
+	self.filterButton:SetSize(150, 20);
+	self.filterButton:SetFont(self.small);
+	self.filterButton.Click = function()
+		local order = { "all", "open", "done", "available" };
+		local nextFilter = "all";
+		for position, name in ipairs(order) do
+			if name == self.filter then nextFilter = order[position % #order + 1]; end
+		end
+		-- "available" means nothing for deeds or without progress: skip it there.
+		if nextFilter == "available" and (self.kind ~= "quests" or not self.completed) then nextFilter = "all"; end
+		self:SetFilter(nextFilter);
+	end
+
+	-- Objectives and steps stay hidden until asked for, so the solution is not in
+	-- view right away. The choice is kept.
+	self.stepsButton = Turbine.UI.Lotro.Button();
+	self.stepsButton:SetParent(self);
+	self.stepsButton:SetSize(140, 20);
+	self.stepsButton:SetFont(self.small);
+	self.stepsButton.Click = function()
+		self.showObjectives = not self.showObjectives;
+		local settingsNow = MagicQuestLog.Settings.Get();
+		settingsNow.showObjectives = self.showObjectives;
+		MagicQuestLog.Settings.Save();
+		if self.record then self:ShowDetails(self.record); end
+	end
+
+	-- First unfinished requirement: puts its name into the search.
+	self.findButton = Turbine.UI.Lotro.Button();
+	self.findButton:SetParent(self);
+	self.findButton:SetSize(150, 20);
+	self.findButton:SetFont(self.small);
+	self.findButton:SetText(strings.findreq);
+	self.findButton:SetVisible(false);
+	self.findButton.Click = function()
+		if self.findName then self.searchBox:SetText(self.findName); end
+	end
+
 	self:Layout();
 	self.SizeChanged = function() self:Layout(); end;
 	self.PositionChanged = function()
@@ -322,8 +370,9 @@ function Window:Layout()
 	self.clearIcon:SetPosition(width - MARGIN - 72, ROW + 4);
 	self.searchBox:SetPosition(boxLeft, ROW);
 	self.searchBox:SetSize(math.max(120, width - MARGIN - 80 - 8 - boxLeft), 20);
-	self.countLabel:SetPosition(MARGIN, ROW + 28);
-	self.countLabel:SetSize(math.max(200, width - MARGIN * 2 - 470), 18);
+	self.filterButton:SetPosition(MARGIN, ROW + 26);
+	self.countLabel:SetPosition(MARGIN + 160, ROW + 28);
+	self.countLabel:SetSize(math.max(200, width - MARGIN * 2 - 630), 18);
 	self.characterButton:SetPosition(width - MARGIN - 150, ROW + 26);
 	self.characterLabel:SetPosition(width - MARGIN - 470, ROW + 28);
 	self.characterLabel:SetSize(310, 18);
@@ -352,14 +401,25 @@ function Window:Layout()
 	self.mapIcon:SetPosition(2, 2);
 	self.mapLabel:SetPosition(detailLeft + 30, self.detailButtonTop + 5);
 	self.mapLabel:SetSize(140, 18);
+	self.stepsButton:SetPosition(detailLeft + detailWidth - 140, self.detailButtonTop + 2);
+	self.findButton:SetPosition(detailLeft + detailWidth - 296, self.detailButtonTop + 2);
 	self.mapInfo:SetPosition(detailLeft + 174, self.detailButtonTop + 5);
-	self.mapInfo:SetSize(math.max(60, detailWidth - 182), 18);
+	self.mapInfo:SetSize(math.max(60, detailWidth - 182 - 304), 18);
 	for _, row in ipairs(self.rows) do self:Sizes(row.control, row.depth); end
+end
+
+function Window:SetFilter(filter)
+	self.filter = filter;
+	local settingsNow = MagicQuestLog.Settings.Get();
+	settingsNow.filter = filter;
+	MagicQuestLog.Settings.Save();
+	self:Rebuild();
 end
 
 function Window:SetKind(kind)
 	if self.kind == kind then return; end
 	self.kind = kind;
+	if self.filter == "available" and kind ~= "quests" then self.filter = "all"; end
 	self.expanded = {};
 	-- The right pane belonged to the other kind: a quest left open next to a deed
 	-- tree reads like a wrong entry, so it goes back to the prompt.
@@ -375,9 +435,10 @@ function Window:Rebuild(force)
 	-- Only kind, query or progress change the tree. Expanding is a display
 	-- change, so it must not rebuild and re-sort the whole catalog.
 	local key = self.kind .. "\1" .. tostring(self.query) .. "\1" .. (self.completed and "known" or "?")
-		.. "\1" .. Model.ContextKey(self.context);
+		.. "\1" .. Model.ContextKey(self.context) .. "\1" .. self.filter .. "\1" .. tostring(self.level);
 	if force or self.treeCacheKey ~= key or self.root == nil then
-		self.root = Model.Build(self:Catalog(), self.query, self.strings, self.completed or nil, self.context);
+		self.root = Model.Build(self:Catalog(), self.query, self.strings, self.completed or nil, self.context,
+			{ filter = self.filter, level = self.level or nil });
 		self.treeCacheKey = key;
 	end
 	self.tree:SetSelectedIndex(0);
@@ -385,6 +446,7 @@ function Window:Rebuild(force)
 	self.rows = {};
 	self.actions = {};
 	self.countLabel:SetText(self:CountText());
+	self.filterButton:SetText(self.strings.filter .. ": " .. self.strings["filter" .. self.filter]);
 	for _, child in ipairs(self.root.order) do self:AddNode(child, 0, "|"); end
 end
 
@@ -403,9 +465,12 @@ end
 
 --- Finished ids of the logged-in character. false means unknown, never "none done".
 --- "exact" tells whether that set can be complete; a live session alone cannot.
-function Window:SetProgress(completed, exact)
+function Window:SetProgress(completed, exact, running, level)
 	self.completed = completed or false;
 	self.progressExact = exact == true;
+	self.running = running or false;
+	self.level = tonumber(level) or false;
+	if not self.completed and self.filter ~= "all" then self.filter = "all"; end
 	self.treeCacheKey = nil;
 	if self.root ~= nil then self:Rebuild(); end
 end
@@ -537,11 +602,15 @@ function Window:AddNode(node, depth, parentPath)
 	end
 	local label = makeLabel(row, self.body, depth == 0 and self.gold or self.trim);
 	label:SetMultiline(true);
-	label:SetText(node.name .. "   (" .. Model.Counter(node) .. ")");
+	local caption = node.name .. "   (" .. Model.Counter(node) .. ")";
+	-- Level range on areas (second level) only; deeper rows would double the tree.
+	if depth == 1 and node.range ~= nil then caption = caption .. "   " .. self.strings.level .. " " .. node.range; end
+	label:SetText(caption);
 	label:SetSize(1, LINE);
 	row.label = label;
 	row.status, row.text = false, false;
 	self:AddRow(row, depth, function()
+		self:ShowNode(node);
 		if not hasChildren then return; end
 		self.expanded[path] = not open;
 		self:Rebuild();
@@ -571,6 +640,12 @@ function Window:AddNode(node, depth, parentPath)
 		-- the game never records, or one the finished alternative rules out. Both
 		-- are dimmed so the eye skips them when reading the numbers.
 		local name = record.displayName or record.name;
+		if record.twin and record.g ~= nil then name = name .. "  –  " .. record.g; end
+		local levelText = Model.LevelText(record);
+		if levelText ~= nil then name = name .. "   · " .. levelText; end
+		if self.running and self.running[record.id] ~= nil and not (self.completed and self.completed[record.id]) then
+			name = name .. "   (" .. self.strings.inprogress .. ")";
+		end
 		if record.sessionPlay then
 			text:SetForeColor(self.dim);
 			name = name .. "   (" .. self.strings.sessionplay .. ")";
@@ -612,6 +687,8 @@ function Window:ShowDetails(record)
 		self.mapLabel:SetVisible(false);
 		self.mapInfo:SetText("");
 		self.command = false;
+		self.stepsButton:SetVisible(false);
+		self.findButton:SetVisible(false);
 		return;
 	end
 	self.detailTitle:SetText(record.displayName or record.name);
@@ -623,8 +700,34 @@ function Window:ShowDetails(record)
 	end
 	-- Unbinding, setting and rebinding is how a scrolled label is reset to the top.
 	-- SetValue on a bound scroll bar is refused by the client and threw an error.
-	self:SetDetailText(Model.Detail(record, self.strings, self.context));
-	local target = (record.t or {})[1];
+	local deed = self.kind == "deeds";
+	local showSteps = self.showObjectives or deed;
+	self:SetDetailText(Model.Detail(record, self.strings, self.context, {
+		completed = self.completed or nil, level = self.level or nil,
+		byId = self.root and self.root.byId or nil,
+		running = self.running and self.running[record.id] or nil,
+		showSteps = showSteps, deed = deed }));
+	self.stepsButton:SetText(self.showObjectives and self.strings.hidesteps or self.strings.showsteps);
+	self.stepsButton:SetVisible(not deed and record.s ~= nil and #record.s > 0);
+	-- First unfinished requirement, for the search button.
+	self.findName = false;
+	if self.completed then
+		local byId = self.root and self.root.byId or {};
+		for _, id in ipairs(record.v or {}) do
+			if not self.completed[id] and byId[id] ~= nil then
+				self.findName = byId[id].displayName or byId[id].name;
+				break;
+			end
+		end
+	end
+	self.findButton:SetVisible(self.findName ~= false);
+	-- By default MoorMap points at the quest giver, not at the objective.
+	local target, which = nil, nil;
+	if showSteps then
+		target, which = (record.t or {})[1], self.strings.targetpos;
+	elseif record.gt ~= nil then
+		target, which = record.gt, self.strings.giverpos;
+	end
 	local command = Model.MapCommand(target, record.displayName or record.name);
 	self.command = command or false;
 	if command ~= nil then
@@ -633,13 +736,29 @@ function Window:ShowDetails(record)
 		self.mapSlot:SetVisible(true);
 		self.mapCover:SetVisible(true);
 		self.mapLabel:SetVisible(true);
-		self.mapInfo:SetText(Model.Coordinate(target) .. " (" .. self.strings.maphint .. ")");
+		self.mapInfo:SetText(which .. ": " .. Model.Coordinate(target));
 	else
 		self.mapSlot:SetVisible(false);
 		self.mapCover:SetVisible(false);
 		self.mapLabel:SetVisible(false);
-		self.mapInfo:SetText(self.strings.nomap);
+		self.mapInfo:SetText(showSteps and self.strings.nomap or self.strings.nogiver);
 	end
+end
+
+--- Right-hand pane for an area: level range and counts, no map button.
+function Window:ShowNode(node)
+	self.record = false;
+	self.detailTitle:SetText(node.name);
+	self.detailStatus:SetVisible(false);
+	self:SetDetailText(Model.NodeSummary(node, self.strings, self.completed or nil, self.level or nil,
+		self.running or nil));
+	self.mapSlot:SetVisible(false);
+	self.mapCover:SetVisible(false);
+	self.mapLabel:SetVisible(false);
+	self.mapInfo:SetText("");
+	self.stepsButton:SetVisible(false);
+	self.findButton:SetVisible(false);
+	self.command = false;
 end
 
 --- Whose progress is shown. "date" is the day of the Companion import, if any;
