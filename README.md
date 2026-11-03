@@ -9,7 +9,7 @@ catalog (~102 MB) is **not** in the repository — it ships as a release archive
 Your progress never enters it: it lives in the game's own `PluginData` folder.
 
 **Companion site:** the same quests as a map, with your progress, at
-<https://mm.sirhexalot.de/> ([source](https://github.com/Sirhexalot/lotro-magic-quest-map)).
+<https://llb.sirhexalot.de/> ([source](https://github.com/Sirhexalot/lotro-log-book)).
 Its **Progress** page also brings your older progress into the plugin (see below).
 
 ## What the plugin does
@@ -279,7 +279,7 @@ by itself. **LOTRO Companion** knows them, and the map site hands them over:
    import your character: enter the world, then *Misc* → **Import from LOTRO…** →
    *Refresh* → *Start*. On a Mac, Companion runs in the same Wine environment as
    the game; the site has a ready command for that.
-2. Open <https://mm.sirhexalot.de/spielstand.html>, choose Companion's
+2. Open <https://llb.sirhexalot.de/spielstand.html>, choose Companion's
    `characters` folder. It is read **in your browser only** — nothing is uploaded.
 3. **Write into the LOTRO folder** (Chrome, Edge) or **download as zip** and unpack
    it into the game's `PluginData` folder.

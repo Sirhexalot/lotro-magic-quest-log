@@ -91,7 +91,7 @@ this; the plugin works fine without it.
 1. **LOTRO Companion** (free, <https://sourceforge.net/projects/lotrocompanion/>):
    log in your character and enter the world, then in Companion click
    **Import from LOTRO…** under *Misc*, then *Refresh* and *Start*.
-2. Open **<https://mm.sirhexalot.de/spielstand.html>** and choose Companion's
+2. Open **<https://llb.sirhexalot.de/spielstand.html>** and choose Companion's
    `characters` folder. It is read **only in your browser** — nothing is uploaded.
 3. Click **Write into the LOTRO folder** (Chrome, Edge) or **Download as zip** and
    unpack the zip into the game's `PluginData` folder.
