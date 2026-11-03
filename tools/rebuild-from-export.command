@@ -78,6 +78,9 @@ ARGS=(--export "$EXPORT" --enums "$ENUMS" --output "$ROOT/plugin/MagicQuestLog/D
 # Quest givers: export of the bestowing NPCs next to the main export (optional).
 NPCS="${MQL_NPCS:-$(dirname "$EXPORT")/npcs-2026-11-03}"
 [ -f "$NPCS/raw.jsonl" ] && ARGS+=(--npcs "$NPCS")
+# Where NPCs, creatures and objects stand (DidGeoExport.java), optional.
+DIDGEO="${MQL_DIDGEO:-$(dirname "$EXPORT")/did-positions-2026-11-03/positions.jsonl}"
+[ -f "$DIDGEO" ] && ARGS+=(--did-positions "$DIDGEO")
 
 echo "source:     $EXPORT"
 echo "enums:      $ENUMS"

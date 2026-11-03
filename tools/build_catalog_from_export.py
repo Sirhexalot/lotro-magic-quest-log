@@ -148,8 +148,7 @@ def moor_map_table(path):
 
 def attribute_closest(maps, lat, lon, region):
     """Like attribute(), but two maps of the same detail do not cancel each other:
-    the smaller one wins. Used for quest-giver dots only, which are a hint where to
-    start, not an objective."""
+    the smaller one wins. Used for objectives and quest givers alike."""
     hits = [m for m in maps
             if m['south'] <= lat <= m['north'] and m['west'] <= lon <= m['east']
             and m['region'] == region]
@@ -256,7 +255,7 @@ class Source:
 
 
 def build(export_dir, enums_path, output, moormap_path=None, overrides=None, landblocks_path=None,
-          npcs_dir=None):
+          npcs_dir=None, did_positions=None):
     source = Source(export_dir)
     overrides = overrides or {}
     hidden = set(overrides.get('hidden_ids', []))
@@ -470,6 +469,47 @@ def build(export_dir, enums_path, output, moormap_path=None, overrides=None, lan
         if row.get('target_id'):
             npc_places[row['target_id']].add((region, round(lat, 2), round(lon, 2)))
 
+    # Where every NPC, creature and object stands, read from the client's own geo
+    # state (DidGeoExport.java). Preferred over the guess from other quests'
+    # objectives, which only knows NPCs someone has to talk to.
+    did_places = defaultdict(set)
+    if did_positions and Path(did_positions).is_file():
+        for line in Path(did_positions).read_text(encoding='utf-8').splitlines():
+            row = json.loads(line)
+            did_places[row['did']].add((row['region'], round(row['latitude'], 2), round(row['longitude'], 2)))
+
+    def one_spot(places):
+        """Centre of places that are one spot (one region, within 0.3 map units), else None."""
+        if not places or len({place[0] for place in places}) != 1:
+            return None
+        if max(p[1] for p in places) - min(p[1] for p in places) > 0.3 or \
+                max(p[2] for p in places) - min(p[2] for p in places) > 0.3:
+            return None
+        return (next(iter(places))[0], round(sum(p[1] for p in places) / len(places), 2),
+                round(sum(p[2] for p in places) / len(places), 2))
+
+    # Objective events that name a placed thing: whom to talk to, what to kill or
+    # use, which landmark to find.
+    PLACED = ('QuestEvent_NPCTalk', 'QuestEvent_MonsterDID', 'QuestEvent_ItemDID',
+              'QuestEvent_LandmarkDID', 'QuestEvent_EmoteTargetDID', 'QuestEvent_Detect')
+
+    def placed_targets(objective):
+        """Up to six distinct spots (rounded to 0.5 units) of the things an objective
+        names, for objectives the target-location table leaves without a position."""
+        events = []
+        walk_events(objective.get('Quest_CompletionConditionArray') or [], events.append)
+        spots = []
+        for event in events:
+            for key in PLACED:
+                value = event.get(key)
+                if not isinstance(value, int):
+                    continue
+                for region, lat, lon in sorted(did_places.get('%08X' % (value & 0xffffffff), ())):
+                    rounded = (region, round(lat * 2) / 2, round(lon * 2) / 2)
+                    if rounded not in [spot[3] for spot in spots]:
+                        spots.append((lat, lon, region, rounded))
+        return [(lat, lon, region) for lat, lon, region, _ in spots[:6]]
+
     # Territory of a target position, from the landblock index. Used only where the
     # category is not a zone, and only when every position agrees: a quest whose
     # objectives lie in several territories gets no invented zone.
@@ -584,11 +624,22 @@ def build(export_dir, enums_path, output, moormap_path=None, overrides=None, lan
 
         indexes = {step['i'] for step in steps}
         targets, seen = [], set()
-        for objective_index, lat, lon, region, _ in positions.get(ident, []):
+        rows = list(positions.get(ident, []))
+        covered = {str(row[0]) for row in rows}
+        for objective in entry.get('objectives') or []:
+            index = str(objective.get('Quest_ObjectiveIndex', ''))
+            if index in covered or index not in indexes:
+                continue
+            for lat, lon, region in placed_targets(objective):
+                rows.append((index, lat, lon, region, None))
+                stats[kind + '_placed_targets'] += 1
+        for objective_index, lat, lon, region, _ in rows:
             step_index = str(objective_index)
             if step_index not in indexes:
                 continue
-            chosen = attribute(maps, lat, lon, region)
+            # Two equally detailed maps no longer cancel each other (that dropped about
+            # 3,300 entries): the smaller one wins, as for quest givers.
+            chosen = attribute_closest(maps, lat, lon, region)
             if chosen is None:
                 continue
             key = (chosen['map'], round(lat, 5), round(lon, 5), step_index)
@@ -617,16 +668,11 @@ def build(export_dir, enums_path, output, moormap_path=None, overrides=None, lan
             record['ls'] = 1
             stats[kind + '_scaling'] += 1
         npc = giver_of.get(ident) if kind == 'quests' else None
-        places = npc_places.get(npc) if npc else None
-        # Small differences are the same spot (an NPC pacing, objectives naming it
-        # from slightly different points): within 0.3 map units in one region the
-        # centre counts; anything wider stays without a giver dot.
-        if places and len({place[0] for place in places}) == 1 and \
-                max(place[1] for place in places) - min(place[1] for place in places) <= 0.3 and \
-                max(place[2] for place in places) - min(place[2] for place in places) <= 0.3:
-            region = next(iter(places))[0]
-            lat = round(sum(place[1] for place in places) / len(places), 2)
-            lon = round(sum(place[2] for place in places) / len(places), 2)
+        # Small differences are the same spot (an NPC pacing): within 0.3 map units in
+        # one region the centre counts; anything wider stays without a giver dot.
+        spot = (one_spot(did_places.get(npc)) or one_spot(npc_places.get(npc))) if npc else None
+        if spot is not None:
+            region, lat, lon = spot
             chosen = attribute_closest(maps, lat, lon, region)
             if chosen is not None:
                 record['gt'] = {'map': chosen['map'], 'lat': lat, 'lon': lon}
@@ -720,12 +766,14 @@ def main():
                         help='landblocks.xml: ties target positions to a territory')
     parser.add_argument('--npcs', type=Path, default=None,
                         help='export of the quest-giving NPCs (raw.jsonl): adds the giver per quest')
+    parser.add_argument('--did-positions', type=Path, default=None,
+                        help='positions.jsonl from DidGeoExport.java: where NPCs, creatures and objects stand')
     parser.add_argument('--output', type=Path, default=ROOT / 'plugin/MagicQuestLog/Data')
     parser.add_argument('--overrides', type=Path, default=ROOT / 'tools/overrides.json')
     options = parser.parse_args()
     data = json.loads(options.overrides.read_text(encoding='utf-8')) if options.overrides.is_file() else {}
     report = build(options.export, options.enums, options.output, options.moormap, data,
-                   options.landblocks, options.npcs)
+                   options.landblocks, options.npcs, options.did_positions)
     print(json.dumps({k: v['counts'] for k, v in report['locales'].items()}, ensure_ascii=False, indent=2))
 
 
