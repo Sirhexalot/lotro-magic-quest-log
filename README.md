@@ -172,6 +172,40 @@ reload in the same session can fail because of the catalog size.
 
 ## Building and checking
 
+### Performance baseline (03 November 2026, measurement pending)
+
+`/mql zeit` toggles timing output in the game chat. Startup samples are retained
+even before the command is enabled (at most 200 samples); enabling it prints
+those samples too. Timings use `Turbine.Engine.GetGameTime()` and report
+milliseconds for the catalog import, `Model.Build`, list clearing/refilling,
+row ruler measurements (count and total), and `LoadImport`.
+
+In-game result (03 November 2026, 64-bit client `x64/lotroclient64.exe`):
+
+- The client offers no `os.clock`; `GetGameTime()` stands still within a frame, so
+  every in-frame sample reads 0.0 ms. The useful number is the frame time after a
+  rebuild ("bis zum nächsten Bild").
+- Startup: **7,082 ms** until the first frame after the plugin's first rebuild
+  (catalog import plus login).
+- Opening the window, rebuilding the 14 root rows and reading the import:
+  **0.0 ms** frame delay, repeated; no stall visible to the player, who reported the
+  plugin "fast again" in the 64-bit client before any optimization.
+- Consequence for the plan: steps 2–5 remove repeated work as cheap insurance;
+  splitting the catalog (step 6) is not needed for speed.
+
+Earlier note: the in-game baseline was first not measurable. The player reported that the plugin
+was fast again after starting the client, before any optimization was applied.
+The running executable was `x64/lotroclient64.exe`; this alone does not establish
+the cause. An attempted unload/reload still failed with "Laden von 'MagicQuestLog'
+nicht möglich", so that limitation is not restricted to the old 32-bit client.
+The timing command's shell callback was corrected to accept `(self, command,
+arguments)`; a client restart is required to load that correction.
+Before optimizing, measure each action three
+times: fresh plugin load (restart the client between loads), opening the window,
+expanding Breeland, expanding a section, entering `bree`, and switching character.
+Keep the same character, filter and window size for the before/after comparison.
+Headless checks verify the instrumentation, not client rendering performance.
+
 The examples assume `LORE_DIR` is a directory with extracted game data
 (`quests.xml`, `deeds.xml`, `geoAreas.xml`, `labels/<language>/…`) and
 `PLUGIN_DIR` is the game's `Plugins` folder.
@@ -455,6 +489,15 @@ plugin's own loader. What a headless test cannot judge — row heights, how the
 list stacks rows — is checked in the game.
 
 ## Changes
+
+**0.3.1** — faster window, working chat command.
+- `/mql` works for the whole session again: the command was only held by a local
+  variable and could be collected, after which the client answered "unknown command".
+- Opening the window keeps measured row heights and reads the import at most every
+  30 seconds; expanding and folding reuse the existing rows; the search waits for a
+  pause in typing and ignores a single character; a live completion is added
+  directly instead of rereading the import; short names need no row measurement.
+- `/mql zeit` shows timing in the chat.
 
 **0.3.0** — what the LOTRO Log Book shows, now in the plugin.
 - No spoilers by default: objectives and steps only for the entry on show, after

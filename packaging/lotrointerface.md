@@ -140,6 +140,13 @@ Not uploaded any more, but kept: `quest-progress.jpg`, `deed-progress.jpg`,
 
 ### Changes
 
+0.3.1 - faster window, working chat command.
+
+- /mql works for the whole session again.
+- Expanding, folding, searching and opening the window do less work; live
+  completions show without rereading the import.
+- /mql zeit shows timing in the chat.
+
 0.3.0 - what the LOTRO Log Book shows, now in the plugin.
 
 - No spoilers: objectives per quest on request; MoorMap points at the quest giver.

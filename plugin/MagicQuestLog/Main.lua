@@ -2,6 +2,7 @@ import "Turbine";
 import "Turbine.Gameplay";
 import "Turbine.UI";
 import "Turbine.UI.Lotro";
+import "MagicQuestLog.Perf";
 import "MagicQuestLog.Class";
 import "MagicQuestLog.Strings";
 import "MagicQuestLog.Settings";
@@ -28,11 +29,13 @@ end
 
 --- A present table is the only reliable success signal for import().
 local function loadCatalog(language)
+	local started = MagicQuestLog.Perf.Now();
 	pcall(function()
 		import("MagicQuestLog.Data.Quests_" .. language);
 		import("MagicQuestLog.Data.Deeds_" .. language);
 	end);
 	local data = MagicQuestLog.Data or {};
+	MagicQuestLog.Perf.Record("Katalog-Import " .. language, started);
 	return data["quests_" .. language], data["deeds_" .. language];
 end
 
@@ -79,6 +82,11 @@ end
 function MagicQuestLog.Refresh()
 	local name = MagicQuestLog.shown;
 	if name == nil or MagicQuestLog.window == nil then return; end
+	-- Reading the import parses the whole file; once every 30 s is enough to see a
+	-- new one from the map site.
+	local now = Turbine.Engine.GetGameTime();
+	if MagicQuestLog.refreshedAt ~= nil and now - MagicQuestLog.refreshedAt < 30 then return; end
+	MagicQuestLog.refreshedAt = now;
 	local imported = Characters.LoadImport(name);
 	local stamp = imported and imported.stamp or false;
 	if stamp ~= MagicQuestLog.importStamp then MagicQuestLog.ShowCharacter(name); end
@@ -142,9 +150,17 @@ function MagicQuestLog.Load(plugin)
 		index = MagicQuestLog.Live.Index(quests, deeds),
 		completed = live.completed,
 		unresolved = live.unresolved,
-		onChange = function()
+		onChange = function(id)
 			Characters.SaveLive(live);
-			if MagicQuestLog.shown == context.name then MagicQuestLog.ShowCharacter(context.name); end
+			if MagicQuestLog.shown ~= context.name then return; end
+			-- Straight into the shown set: no new read of the import from disk.
+			local window = MagicQuestLog.window;
+			if id ~= nil and window.completed then
+				window.completed[id] = true;
+				window:SetProgress(window.completed, window.progressExact, window.running or nil, window.level or nil);
+			else
+				MagicQuestLog.ShowCharacter(context.name);
+			end
 		end,
 		onAmbiguous = function(name, candidates)
 			Turbine.Shell.WriteLine("<rgb=#D6B35A>Magic Quest Log: </rgb>" .. name .. " — "
@@ -165,10 +181,15 @@ function MagicQuestLog.Load(plugin)
 end
 
 if Turbine.Shell ~= nil and Turbine.Shell.AddCommand ~= nil then
+	-- Kept in a global table: a command held only by a local is collected and the
+	-- client then answers "unknown command".
 	local command = Turbine.ShellCommand();
-	command.Execute = function(_, arguments)
+	MagicQuestLog.command = command;
+	command.Execute = function(_, commandName, arguments)
 		local text = string.lower(tostring(arguments or ""));
-		if string.find(text, "hide") then
+		if text == "zeit" then
+			MagicQuestLog.Perf.Toggle();
+		elseif string.find(text, "hide") then
 			MagicQuestLog.SetVisible(false);
 		elseif string.find(text, "show") then
 			MagicQuestLog.SetVisible(true);

@@ -56,6 +56,8 @@ end
 
 local function windowBase() end
 Turbine = {};
+gameTime = 0;
+Turbine.Engine = { GetGameTime = function() return gameTime end };
 Turbine.DataScope = { Character = 3 };
 Turbine.UI = { Orientation = { Vertical = 1 } };
 Turbine.UI.Color = function(...) return { ... } end;
@@ -63,7 +65,7 @@ Turbine.Shell = {};
 languageCommand = "hilfe";
 Turbine.Shell.IsCommand = function(name) return name == languageCommand end;
 Turbine.Shell.WriteLine = function(text) lastShell = text end;
-Turbine.Shell.AddCommand = function() end;
+Turbine.Shell.AddCommand = function(name, command) shellCommand = command end;
 Turbine.ShellCommand = function() return {} end;
 Turbine.Gameplay = {};
 Turbine.Gameplay.LocalPlayer = { GetInstance = function()
@@ -148,7 +150,7 @@ Turbine.Shell.WriteLine = function(text) lastShell = text end;
 def run():
     lua = LuaRuntime(unpack_returned_tuples=True)
     lua.execute(STUBS)
-    for name in ('Class.lua', 'Strings.lua', 'Settings.lua', 'Model.lua', 'Live.lua', 'Characters.lua', 'Icon.lua', 'Window.lua'):
+    for name in ('Perf.lua', 'Class.lua', 'Strings.lua', 'Settings.lua', 'Model.lua', 'Live.lua', 'Characters.lua', 'Icon.lua', 'Window.lua'):
         lua.execute((PLUGIN / name).read_text(encoding='utf-8'))
     lua.execute((DATA / 'Quests_de.lua').read_text(encoding='utf-8'))
     lua.execute((DATA / 'Deeds_de.lua').read_text(encoding='utf-8'))
@@ -156,6 +158,38 @@ def run():
     lua.execute((DATA / 'Deeds_en.lua').read_text(encoding='utf-8'))
     lua.execute((DATA / 'Progress.lua').read_text(encoding='utf-8'))
     lua.execute((PLUGIN / 'Main.lua').read_text(encoding='utf-8'))
+    lua.execute(r'''
+local P = MagicQuestLog.Perf;
+assert(P.enabled == false and #P.samples > 0, "startup samples kept without chat spam");
+assert(MagicQuestLog.command == shellCommand, "shell command kept alive by a global reference");
+shellCommand:Execute("mql", "zeit");
+assert(P.enabled, "shell callback receives command name before arguments");
+shellCommand:Execute("mql", "zeit");
+assert(not P.enabled, "shell timing command toggles off");
+assert(P.clock == "os.clock", "CPU clock used when available");
+local realNow = P.Now;
+P.Now = function() return gameTime end;
+local started = P.Now();
+gameTime = gameTime + 0.125;
+P.Record("test", started, " (detail)");
+local sample = P.samples[#P.samples];
+assert(sample.ms == 125 and sample.detail == " (detail)", "seconds converted to milliseconds");
+P.Toggle();
+assert(P.enabled and string.find(lastShell, "125.0 ms", 1, true), "toggle prints retained samples");
+P.Toggle();
+assert(not P.enabled, "measurement output can be disabled");
+for i = 1, P.limit + 1 do P.Record("bounded", P.Now()); end
+assert(#P.samples == P.limit, "retained samples bounded");
+-- Frame timing: the watcher reports game time until the next Update.
+P.pending = nil;
+P.Frame("Rebuild");
+assert(P.pending ~= nil, "frame timing pending");
+gameTime = gameTime + 0.040;
+P.watcher.Update(P.watcher);
+assert(P.pending == nil and P.samples[#P.samples].ms > 39.9 and P.samples[#P.samples].ms < 40.1, "frame time measured");
+P.Now = realNow;
+''')
+    print('PASS: timing retains startup samples, reports milliseconds, toggles chat and bounds memory')
     # Every texture the plugin points at must exist next to it, or the client
     # silently draws nothing. The path is relative to the Plugins folder.
     referenced = set(re.findall(r'"(MagicQuestLog/Resources/[A-Za-z0-9_]+\.tga)"',
@@ -876,9 +910,55 @@ serverData["MagicQuestLog_Import_Feldobar"].date = "2026-11-04";
 window:SetVisible(false);
 window:SetVisible(true);
 window.VisibleChanged();
+assert(window.completed[quests[4].id] ~= true, "the import is read at most every 30 seconds");
+gameTime = gameTime + 31;
+window.VisibleChanged();
 assert(window.completed[quests[4].id] == true, "a new import must be picked up on opening");
 assert(builds >= 1, "a changed import rebuilds the tree");
 MQL.Model.Build = original;
+-- Search waits for a pause in typing; one character does not search.
+window.query = "";
+window:Rebuild();
+local searchBuilds = 0;
+MQL.Model.Build = function(...) searchBuilds = searchBuilds + 1; return original(...); end;
+window.searchBox:SetText("b");
+window.searchBox.TextChanged();
+window.searchBox:SetText("br");
+window.searchBox.TextChanged();
+window.searchBox:SetText("bree");
+window.searchBox.TextChanged();
+window.Update();
+assert(searchBuilds == 0, "typing does not search before the pause");
+gameTime = gameTime + 0.4;
+window.Update();
+assert(searchBuilds == 1 and window.query == "bree", "one search after the pause");
+window:Search("b");
+assert(window.query == "", "a single character is no search");
+window:Search("é");
+assert(window.query == "", "a single accented character is no search either");
+MQL.Model.Build = original;
+-- Expanding twice hands back the same row controls; no new labels.
+window:Rebuild();
+local first = window.tree:GetItem(1);
+window.tree.SelectedIndexChanged = window.tree.SelectedIndexChanged;
+window.tree:SetSelectedIndex(1); window.tree.SelectedIndexChanged();
+local opened = window.tree:GetItemCount();
+window.tree:SetSelectedIndex(1); window.tree.SelectedIndexChanged();
+window.tree:SetSelectedIndex(1); window.tree.SelectedIndexChanged();
+assert(window.tree:GetItem(1) == first and window.tree:GetItemCount() == opened, "rows reused on expanding again");
+local cachedChild = false;
+for _, control in pairs(window.rowCache) do if control == window.tree:GetItem(2) then cachedChild = true end end
+assert(cachedChild, "child rows come from the row cache");
+window.tree:SetSelectedIndex(1); window.tree.SelectedIndexChanged();
+-- Short names need no ruler.
+local measured = window.rulerWorks;
+window.rulerWorks = true;
+window.heights = {};
+window.perfRulerCount = 0;
+assert(window:RowHeight("Bree", 300) == window:LineHeight(), "short text is one line");
+assert(window.perfRulerCount == 0, "short text skips the ruler");
+window.rulerWorks = measured;
+window.heights = {};
 -- Without any import, live or old file there is no claim at all.
 serverData, characterData = {}, {};
 MagicQuestLog.Load(nil);

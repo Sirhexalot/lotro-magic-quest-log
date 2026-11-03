@@ -87,7 +87,7 @@ end
 
 --- What the map site imported from LOTRO Companion for this character, or nil.
 --- A file that names another character is ignored: showing it would be wrong.
-function C.LoadImport(name)
+local function readImport(name)
 	if not C.ValidName(name) then return nil; end
 	local data = load(scope("Server"), IMPORT .. name);
 	if data == nil then return nil; end
@@ -102,6 +102,13 @@ function C.LoadImport(name)
 		date = type(data.date) == "string" and data.date or nil,
 		stamp = tostring(data.date or "") .. "|" .. tostring(count),
 	};
+end
+
+function C.LoadImport(name)
+	local started = MagicQuestLog.Perf.Now();
+	local result = readImport(name);
+	MagicQuestLog.Perf.Record("LoadImport " .. tostring(name), started);
+	return result;
 end
 
 --- Running counters of unfinished entries, as the map site wrote them from LOTRO

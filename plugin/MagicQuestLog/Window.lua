@@ -121,6 +121,15 @@ function Window:Constructor(strings, catalogs)
 	-- 15k records again.
 	self.treeCacheKey = nil;
 	self.root = nil;
+	-- Finished row controls by tree path. Expanding, collapsing and folding put
+	-- the same controls back into the list instead of creating labels again.
+	self.rowCache = {};
+	-- Set when progress changed while the window was closed: the next opening
+	-- rebuilds once instead of every completion rebuilding a hidden window.
+	self.stale = false;
+	self.measuredVisible = false;
+	self.pendingQuery = false;
+	self.pendingAt = 0;
 
 	-- The description was too small at Verdana12. Title leads, body follows.
 	self.font = Turbine.UI.Lotro.Font.Verdana16;
@@ -197,12 +206,26 @@ function Window:Constructor(strings, catalogs)
 	self.searchBox:SetTextAlignment(Turbine.UI.ContentAlignment.MiddleLeft);
 	self.searchBox:SetMultiline(false);
 	self.searchBox:SetMouseVisible(true);
+	-- Typing only notes the text; Update searches 0.35 s after the last key. A single
+	-- character matches too much to be worth a rebuild.
 	self.searchBox.TextChanged = function()
 		local text = self.searchBox:GetText();
-		if text ~= self.query then
-			self.query = text;
-			self:Rebuild();
+		if text == self.query then
+			self.pendingQuery = false;
+			return;
 		end
+		self.pendingQuery = text;
+		self.pendingAt = Turbine.Engine.GetGameTime();
+		self:SetWantsUpdates(true);
+	end
+	self.Update = function()
+		if self.pendingQuery == false then
+			self:SetWantsUpdates(false);
+			return;
+		end
+		if Turbine.Engine.GetGameTime() - self.pendingAt < 0.35 then return; end
+		self:SetWantsUpdates(false);
+		self:Search(self.pendingQuery);
 	end
 
 	self.clearButton = Turbine.UI.Lotro.Button();
@@ -211,9 +234,9 @@ function Window:Constructor(strings, catalogs)
 	self.clearButton:SetFont(self.small);
 	self.clearButton:SetText(strings.clear);
 	self.clearButton.Click = function()
+		self.pendingQuery = false;
 		self.searchBox:SetText("");
-		self.query = "";
-		self:Rebuild();
+		self:Search("");
 	end
 	self.clearIcon = makeImage(self, "clear");
 
@@ -324,7 +347,10 @@ function Window:Constructor(strings, catalogs)
 	self.findButton:SetText(strings.findreq);
 	self.findButton:SetVisible(false);
 	self.findButton.Click = function()
-		if self.findName then self.searchBox:SetText(self.findName); end
+		if self.findName then
+			self.searchBox:SetText(self.findName);
+			self:Search(self.findName);
+		end
 	end
 
 	self:Layout();
@@ -339,15 +365,35 @@ function Window:Constructor(strings, catalogs)
 		local settingsNow = MagicQuestLog.Settings.Get();
 		settingsNow.windowVisible = self:IsVisible();
 		MagicQuestLog.Settings.Save();
-		-- A hidden window cannot measure wrapped text; once it is on screen the
-		-- rows are measured for real instead of estimated from their length.
 		if self:IsVisible() then
-			self:Remeasure();
+			-- A hidden window cannot measure wrapped text; the first time it is on
+			-- screen the rows are measured for real. Later openings keep the heights.
+			if not self.measuredVisible then
+				self.measuredVisible = true;
+				self:Remeasure();
+			elseif self.stale then
+				self.stale = false;
+				self:Rebuild();
+			end
 			-- A new import may have arrived while the window was closed.
 			if self.Shown then self.Shown(); end
 		end
 	end;
 	self:ShowDetails(nil);
+	-- No tree here: the first build comes from ShowCharacter with the progress.
+end
+
+--- Run a search now. A single character would match most of the catalog, so it
+--- counts as no search.
+function Window:Search(text)
+	text = tostring(text or "");
+	local trimmed = string.gsub(text, "^%s+", "");
+	trimmed = string.gsub(trimmed, "%s+$", "");
+	local characters = select(2, string.gsub(trimmed, "[^\128-\191]", ""));
+	if characters < 2 then text = ""; end
+	self.pendingQuery = false;
+	if text == self.query then return; end
+	self.query = text;
 	self:Rebuild();
 end
 
@@ -432,15 +478,26 @@ function Window:Catalog()
 end
 
 function Window:Rebuild(force)
+	local perf = MagicQuestLog.Perf;
+	local started = perf.Now();
+	perf.Frame("Rebuild");
+	self.perfRulerCount, self.perfRulerSeconds = 0, 0;
+	-- Heights measured on screen are real; a later opening needs no new ruler pass.
+	if self:IsVisible() then self.measuredVisible = true; end
 	-- Only kind, query or progress change the tree. Expanding is a display
 	-- change, so it must not rebuild and re-sort the whole catalog.
 	local key = self.kind .. "\1" .. tostring(self.query) .. "\1" .. (self.completed and "known" or "?")
 		.. "\1" .. Model.ContextKey(self.context) .. "\1" .. self.filter .. "\1" .. tostring(self.level);
 	if force or self.treeCacheKey ~= key or self.root == nil then
+		local buildStarted = perf.Now();
 		self.root = Model.Build(self:Catalog(), self.query, self.strings, self.completed or nil, self.context,
 			{ filter = self.filter, level = self.level or nil });
+		perf.Record("Model.Build", buildStarted);
 		self.treeCacheKey = key;
+		-- New counts and names: rows made for the old tree are stale.
+		self.rowCache = {};
 	end
+	local fillStarted = perf.Now();
 	self.tree:SetSelectedIndex(0);
 	self.tree:ClearItems();
 	self.rows = {};
@@ -454,6 +511,9 @@ function Window:Rebuild(force)
 		if name ~= "all" then button:SetEnabled(self.completed ~= false); end
 	end
 	for _, child in ipairs(self.root.order) do self:AddNode(child, 0, "|"); end
+	perf.Record("ClearItems + AddItem", fillStarted, " (" .. #self.rows .. " Zeilen)");
+	perf.Record("Rebuild gesamt", started, " (Lineal: " .. self.perfRulerCount .. " / "
+		.. string.format("%.1f ms", self.perfRulerSeconds * 1000) .. ")");
 end
 
 --- Headline count. With progress it reports finished of total, and says so. A set
@@ -478,7 +538,13 @@ function Window:SetProgress(completed, exact, running, level)
 	self.level = tonumber(level) or false;
 	if not self.completed and self.filter ~= "all" then self.filter = "all"; end
 	self.treeCacheKey = nil;
-	if self.root ~= nil then self:Rebuild(); end
+	if self:IsVisible() then
+		self.stale = false;
+		self:Rebuild();
+	else
+		-- Built when the window opens; a closed window does not need a tree.
+		self.stale = true;
+	end
 end
 
 --- Can this client report wrapped text at all? The scroll bar bound to the ruler is
@@ -527,7 +593,14 @@ function Window:RowHeight(text, width)
 	if known ~= nil then return known; end
 	local base = self:LineHeight();
 	local height = base;
+	-- Shorter than one column of 9 px characters: certainly one line, no ruler.
+	local characters = select(2, string.gsub(text, "[^\128-\191]", ""));
+	if characters < math.floor(width / 9) then
+		self.heights[key] = base;
+		return base;
+	end
 	if self:RulerWorks() then
+		local measureStarted = MagicQuestLog.Perf.Now();
 		self.ruler:SetWidth(width);
 		self.ruler:SetText(text);
 		for step = 0, 3 do
@@ -536,6 +609,9 @@ function Window:RowHeight(text, width)
 			if not self.rulerBar:IsVisible() then break; end
 		end
 		self.ruler:SetText("");
+		self.perfRulerCount = (tonumber(self.perfRulerCount) or 0) + 1;
+		self.perfRulerSeconds = (tonumber(self.perfRulerSeconds) or 0)
+			+ MagicQuestLog.Perf.Now() - measureStarted;
 	else
 		local perLine = math.max(8, math.floor(width / 9));
 		local lines = math.min(4, math.max(1, math.ceil(#text / perLine)));
@@ -549,7 +625,9 @@ end
 --- the real ruler decides, so the cached heights are dropped and rebuilt.
 function Window:Remeasure()
 	self.heights = {};
-	if self.root ~= nil then self:Rebuild(); end
+	self.rowCache = {};
+	self.stale = false;
+	self:Rebuild();
 end
 
 function Window:Sizes(control, depth)
@@ -596,13 +674,15 @@ function Window:AddNode(node, depth, parentPath)
 	local path = parentPath .. depth .. "/" .. tostring(node.key);
 	local hasChildren = (#node.order > 0) or (#node.items > 0);
 	local open = self.expanded[path] == true;
-	local row = Turbine.UI.Control();
+	local row = self.rowCache[path];
+	if row == nil then
+	row = Turbine.UI.Control();
 	row:SetSize(1, LINE);
 	row:SetBackColor(self.back);
 	row:SetMouseVisible(true);
 	-- The expander is a chevron texture instead of "[+]"/"[-]" text.
 	if hasChildren then
-		row.marker = makeImage(row, open and "open" or "closed");
+		row.marker = makeImage(row, "closed");
 	else
 		row.marker = false;
 	end
@@ -615,6 +695,9 @@ function Window:AddNode(node, depth, parentPath)
 	label:SetSize(1, LINE);
 	row.label = label;
 	row.status, row.text = false, false;
+	self.rowCache[path] = row;
+	end
+	if row.marker then row.marker:SetBackground(ICONS[open and "open" or "closed"]); end
 	self:AddRow(row, depth, function()
 		self:ShowNode(node);
 		if not hasChildren then return; end
@@ -636,16 +719,18 @@ function Window:AddNode(node, depth, parentPath)
 		local key = path .. "#" .. section;
 		if sectioned and section ~= current then
 			current = section;
-			local header = Turbine.UI.Control();
-			header:SetSize(1, LINE);
-			header:SetBackColor(self.headerBack);
-			header:SetMouseVisible(true);
 			if self.folded[key] == nil then
 				local sections = 0;
 				for _ in pairs(counts) do sections = sections + 1; end
 				self.folded[key] = sections > 1;
 			end
-			header.marker = makeImage(header, self.folded[key] and "closed" or "open");
+			local header = self.rowCache["H" .. key];
+			if header == nil then
+			header = Turbine.UI.Control();
+			header:SetSize(1, LINE);
+			header:SetBackColor(self.headerBack);
+			header:SetMouseVisible(true);
+			header.marker = makeImage(header, "closed");
 			local caption = section == "" and self.strings.general or section;
 			local label = makeLabel(header, self.small, self.gold);
 			label:SetMultiline(true);
@@ -653,13 +738,19 @@ function Window:AddNode(node, depth, parentPath)
 			label:SetSize(1, LINE);
 			header.label = label;
 			header.status, header.text = false, false;
+			self.rowCache["H" .. key] = header;
+			end
+			header.marker:SetBackground(ICONS[self.folded[key] and "closed" or "open"]);
 			self:AddRow(header, depth + 1, function()
 				self.folded[key] = not self.folded[key];
 				self:Rebuild();
 			end);
 		end
 		if not (sectioned and self.folded[key]) then
-		local item = Turbine.UI.Control();
+		local itemKey = key .. "@" .. tostring(record.id);
+		local item = self.rowCache[itemKey];
+		if item == nil then
+		item = Turbine.UI.Control();
 		item:SetSize(1, LINE);
 		item:SetBackColor(self.back);
 		item:SetMouseVisible(true);
@@ -697,6 +788,8 @@ function Window:AddNode(node, depth, parentPath)
 		text:SetText(name);
 		text:SetSize(1, LINE);
 		item.text = text;
+		self.rowCache[itemKey] = item;
+		end
 		self:AddRow(item, depth + 1 + (sectioned and 1 or 0), function()
 			if self.highlighted then self.highlighted:SetBackColor(self.back); end
 			item:SetBackColor(self.selectedBack);
