@@ -69,10 +69,29 @@ STORY_EXTRA = {'The Black Book of Mordor', 'The Legacy of Durin and the Trials o
                'The Song of Waves and Wind', '...and the Verses of Victory'}
 
 
+CHOICE = re.compile(r'\$\{[A-Z_]+:([^}]*)\}')
+
+
+def choice(match):
+    """${PLAYERNAME:Entdecker[m]|Entdeckerin[f]} -> "Entdecker / Entdeckerin":
+    the game picks by the character's gender, the catalogue shows both,
+    masculine first."""
+    forms = []
+    for part in match.group(1).split('|'):
+        word = re.sub(r'\[[^\]]*\]', '', part).strip()
+        tag = re.search(r'\[([a-z]+)\]', part)
+        if word and word not in [w for _, w in forms]:
+            forms.append((0 if tag and tag.group(1) == 'm' else 1, word))
+    forms.sort(key=lambda pair: pair[0])
+    return ' / '.join(word for _, word in forms)
+
+
 def clean(text):
-    """Game text: literal \\q is a quote, literal \\n is a line break."""
+    """Game text: literal \\q is a quote, literal \\n is a line break, gender
+    choices become "masculine / feminine"."""
     if text is None:
         return ''
+    text = CHOICE.sub(choice, text)
     return text.replace('\\q', '"').replace('\\n', '\n').strip()
 
 

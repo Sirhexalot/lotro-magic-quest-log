@@ -1,8 +1,8 @@
 {
   "schema": 3,
   "sources": {
-    "quests.json": "8e20d49566b8fce8eac2dbdef66d73db965c545da28191b0c785160ff21799cb",
-    "deeds.json": "feed49652f24f13388c0e353d4bf2caebde6cad0d62ca881984e7217c6a83766",
+    "quests.json": "c82278200c593451a6931d6beffc1b93ba93704716c4b50fd14805663bbbbd1f",
+    "deeds.json": "aea1cabbcf0494466d98bdc1ad8742a50802b07fe10bd45900550aff786b9942",
     "areas.json": "d2a1436dc11f925a3b2edd9c20f926bf6ffbe689c20cbdf06d07a22fd49501e4",
     "locations.json": "0f6183617fe6b0a82e2e01a35c57da9657a1d40ffb4db6d249b9a3b802d268e0",
     "enums/enum-names.json": "a3dd8a909226af000b49be0d5c331f99c93562ee9ed7ed011734fd49e47bccce",
@@ -50,10 +50,7 @@
         "deeds_targets": 4366,
         "deeds_with_reputation": 1598
       },
-      "english_fallback_texts": {
-        "quests": 6,
-        "deeds": 137
-      }
+      "english_fallback_texts": {}
     },
     "fr": {
       "counts": {
@@ -74,10 +71,7 @@
         "deeds_targets": 4366,
         "deeds_with_reputation": 1598
       },
-      "english_fallback_texts": {
-        "quests": 1,
-        "deeds": 77
-      }
+      "english_fallback_texts": {}
     }
   },
   "source_manifest": {
