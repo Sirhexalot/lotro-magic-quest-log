@@ -508,6 +508,13 @@ list stacks rows — is checked in the game.
 
 ## Changes
 
+**0.4.0** — the game's own maps.
+- Which map a quest, objective or quest giver is on now comes from the game's map
+  data (parchment maps, bounds, links). More of them have a map: 12,519 quests
+  with a placed objective (before 12,010), 6,884 quest givers (6,621), 638 deeds
+  (561). From MoorMap only its map numbers are used, for the button.
+- Includes 0.3.1 below, which was not released on its own.
+
 **0.3.1** — faster window, working chat command.
 - `/mql` works for the whole session again: the command was only held by a local
   variable and could be collected, after which the client answered "unknown command".

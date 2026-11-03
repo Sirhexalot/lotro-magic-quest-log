@@ -142,6 +142,14 @@ Not uploaded any more, but kept: `quest-progress.jpg`, `deed-progress.jpg`,
 
 ### Changes
 
+0.4.0 - the game's own maps.
+
+- Which map a quest is on now comes from the game's own map data; more quests,
+  quest givers and deeds have a map.
+- Objectives on request: a "Show objectives" button right under the description,
+  for quests and deeds.
+- One text size in the whole window.
+
 0.3.1 - faster window, working chat command.
 
 - /mql works for the whole session again.
