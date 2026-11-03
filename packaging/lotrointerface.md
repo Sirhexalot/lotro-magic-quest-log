@@ -9,7 +9,7 @@ Author-only notes live in [publish-notes.md](publish-notes.md).
 |---|---|
 | Category | LotRO Stand-Alone Plugins → Other |
 | Name | **Magic Quest Log** (must match the `.plugin` file exactly) |
-| Version | 0.1.2 |
+| Version | 0.2.0 |
 | File | `dist/MagicQuestLog-<version>.zip` |
 | Author | Adrian |
 | Homepage | https://github.com/Sirhexalot/lotro-magic-quest-log |
@@ -80,103 +80,34 @@ That is all. Only the map button needs
 [MoorMap](https://www.lotrointerface.com/downloads/info532-MoorMap.html) by Garan;
 everything else works without it.
 
-### Optional: bring in your older quests and deeds
+### Your older quests and deeds — and several characters
 
 The plugin counts what you finish **from the moment it is installed**. Quests and
 deeds you completed before that are not in the game's chat messages, so the plugin
-cannot know them by itself.
+cannot know them by itself. **LOTRO Companion** knows them, and the free web page
+of this plugin hands them over. If you don't care about the old entries, skip
+this; the plugin works fine without it.
 
-There is a small extra tool for exactly that. It reads the quest journal of the
-character you are playing right now and writes it into the plugin. Use it once —
-then everything you have ever done shows up as finished. If you don't care about
-the old entries, skip this whole section; the plugin works fine without it.
+1. **LOTRO Companion** (free, <https://sourceforge.net/projects/lotrocompanion/>):
+   log in your character and enter the world, then in Companion click
+   **Import from LOTRO…** under *Misc*, then *Refresh* and *Start*.
+2. Open **<https://mm.sirhexalot.de/spielstand.html>** and choose Companion's
+   `characters` folder. It is read **only in your browser** — nothing is uploaded.
+3. Click **Write into the LOTRO folder** (Chrome, Edge) or **Download as zip** and
+   unpack the zip into the game's `PluginData` folder.
+4. Open the Magic Quest Log window. Done — no restart needed.
 
-**What you need**
+The page explains every step for Windows and for Mac (where Companion runs in the
+same Wine setup as the game), including where the folders are.
 
-- The plugin, already installed (see above).
-- **LOTRO Companion**, free, from
-  <https://sourceforge.net/projects/lotrocompanion/>. Install it and leave it
-  installed. You do **not** have to start it, and you do not have to import
-  anything in it — the tool only borrows two files from its program folder.
-- The game, running, with your character **in the world**. Being at the launcher
-  or the character selection is not enough.
+**Several characters:** load as many as you like. In the plugin, the button at the
+top right switches between all characters of the server you play on. On the web
+page, the menu does the same for the map.
 
-**Where the tool is**
-
-It comes with the plugin, inside its folder:
-
-```
-Plugins\MagicQuestLog\Optional-Progress-Tool\
-```
-
-[Screenshot: the folder `Optional-Progress-Tool` open in Explorer, showing
-`START-HERE.txt`, `read-journal.bat` and `read-journal.command`. Caption:
-"Both launchers live in this folder — use the one for your system."]
-
-**Step by step (Windows)**
-
-1. Log in your character and enter the world.
-2. Open the folder above in Explorer.
-3. Double-click **`read-journal.bat`**.
-4. A black window opens and prints a few lines. Windows may ask for administrator
-   rights — allow it, reading the game's memory needs that.
-5. Wait until it says `Done`.
-6. Close the game completely and start it again. The plugin reads the file while
-   it loads; reloading the plugin inside a running game often fails because the
-   catalog is large. A restart always works.
-7. Type `/mql`. The headline now shows your real numbers instead of
-   "finished (known)".
-
-**Step by step (macOS)**
-
-The Mac version is a special case: LOTRO runs through Wine there, and this
-launcher already knows how to reach into it. It is made for exactly this setup.
-
-1. Log in your character and enter the world.
-2. Open the plugin folder in Finder and go to `Optional-Progress-Tool`.
-3. Double-click **`read-journal.command`**.
-
-   macOS may block the file the first time because it comes from a download. Then
-   right-click it, choose **Open**, and confirm once. After that a double-click is
-   enough.
-4. A terminal window opens and prints a few lines. Wait until it says `Done`.
-5. Close the game and start it again, as in step 6 above.
-6. Type `/mql` — your old progress is now counted.
-
-[Screenshot: the terminal window after a successful run, showing `Done`. Caption:
-"When it says Done, only a game restart is missing."]
-
-**One character at a time**
-
-The tool always reads the character that is logged in, because that is the only
-one the game keeps in memory. There is nothing to choose. For a second character,
-log that one in and run the tool again — each character keeps its own progress
-file, and the plugin shows the one that belongs to the character you play.
-
-If two game windows are open, close one first; the tool refuses to guess.
-
-**What it reads**
-
-Only the quest journal of your character: the list of finished and running quests
-and deeds. Nothing else — no inventory, no money, no mail, no chat, no account
-data. It never writes into the game; it only creates one file inside the plugin
-folder. Delete `MagicQuestLog\Data\Progress.lua` if you ever want to go back to
-plain totals.
-
-**If it does not work**
-
-The tool stops and tells you why. It never writes half a file.
-
-| Message | What to do |
-|---|---|
-| LOTRO Companion was not found | Install it, or point `COMPANION_DIR` (Windows) or `MQL_COMPANION` (Mac) at its folder |
-| the LOTRO client folder was not found | Start the game once so the path exists |
-| no LOTRO processes found / enter the world first | The game is closed, or your character is not logged in yet |
-| the active character is X, not Y | A different character is logged in — log in the right one |
-
-After a big game update the read can fail until LOTRO Companion ships an update.
-That only affects this tool. The plugin itself keeps working; it just will not add
-older progress until then.
+**Collecting deeds above all?** Have a look at
+[Deed Tracker](https://www.lotrointerface.com/downloads/info1139-DeedTracker.html)
+by b414213562 — a mature plugin just for deeds. Magic Quest Log is mainly about
+quests; both work side by side.
 
 ### Screenshots
 
@@ -190,8 +121,8 @@ Upload these in order; the files sit in `docs/screenshots/`.
    quests get a green check."
 4. `deed-progress.jpg` — "Deeds use the same tree and the same counters."
 
-Still to take: the `Optional-Progress-Tool` folder in Explorer and the terminal
-after a successful run, both for the optional section above.
+Still to take: the character switch at the top right of the window, and the web
+page's character list.
 
 ### Good to know
 
@@ -203,6 +134,17 @@ after a successful run, both for the optional section above.
   after a game start takes a moment.
 
 ### Changes
+
+0.2.0 - progress from LOTRO Companion, several characters.
+
+- Your older progress now comes from LOTRO Companion through the plugin's web page:
+  choose Companion's folder there, write the result into the game's PluginData
+  folder. It is read in your browser only. The separate tool from 0.1.x is gone; it
+  needed an update after every game update.
+- A character switch in the window: every character of your server that has
+  progress. Each import shows its date.
+- A new import is picked up whenever you open the window.
+- Live progress is kept per character. Progress from 0.1.x is taken over.
 
 0.1.2 - the counters show what is still possible.
 
@@ -230,7 +172,5 @@ after a successful run, both for the optional section above.
   and counts, start icon, remembered window placement.
 - Progress from the quest channel while playing, so what you just finished shows
   up without any export or restart.
-- Optional journal reader for progress from before the installation, shipped in
-  `Optional-Progress-Tool`.
 - MoorMap integration through a quickslot, because a plugin cannot run a slash
   command itself.

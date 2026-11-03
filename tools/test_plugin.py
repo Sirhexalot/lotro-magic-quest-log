@@ -109,22 +109,27 @@ Turbine.UI.Lotro.Window = windowPrototype;
 Turbine.UI.Display = { GetWidth = function() return 1920 end, GetHeight = function() return 1080 end };
 storedSettings = nil;
 savedSettings = nil;
--- Settings live in the account scope, live progress per character. Both are
--- stubbed separately so a test can tell which scope was written.
+-- Settings live in the account scope, progress in the server scope (one file per
+-- character, so every character of the server can be shown). Each scope is its own
+-- table, so a test can tell where something was written.
 savedData = {};
-Turbine.DataScope = { Account = 1, Character = 2 };
+serverData = {};
+characterData = {};
+Turbine.DataScope = { Account = 1, Character = 2, Server = 3 };
 Turbine.PluginData = {
 	Load = function(scope, key)
-		if scope == Turbine.DataScope.Account and key ~= "MagicQuestLogLive" then
-			return storedSettings;
-		end
-		return storedData[key];
+		if scope == Turbine.DataScope.Account then return storedSettings; end
+		if scope == Turbine.DataScope.Server then return serverData[key]; end
+		return characterData[key];
 	end,
 	Save = function(scope, key, value)
-		if scope == Turbine.DataScope.Account and key ~= "MagicQuestLogLive" then
+		if scope == Turbine.DataScope.Account then
 			savedSettings = value;
-		else
+		elseif scope == Turbine.DataScope.Server then
+			serverData[key] = value;
 			savedData[key] = value;
+		else
+			characterData[key] = value;
 		end
 		return true;
 	end,
@@ -143,7 +148,7 @@ Turbine.Shell.WriteLine = function(text) lastShell = text end;
 def run():
     lua = LuaRuntime(unpack_returned_tuples=True)
     lua.execute(STUBS)
-    for name in ('Class.lua', 'Strings.lua', 'Settings.lua', 'Model.lua', 'Live.lua', 'Icon.lua', 'Window.lua'):
+    for name in ('Class.lua', 'Strings.lua', 'Settings.lua', 'Model.lua', 'Live.lua', 'Characters.lua', 'Icon.lua', 'Window.lua'):
         lua.execute((PLUGIN / name).read_text(encoding='utf-8'))
     lua.execute((DATA / 'Quests_de.lua').read_text(encoding='utf-8'))
     lua.execute((DATA / 'Deeds_de.lua').read_text(encoding='utf-8'))
@@ -660,8 +665,8 @@ receiveChat("Neue Aufgabe: " .. second.name);
 assert(tracker.completed[second.id] ~= true, "starting a quest is not completing it");
 receiveChat("Abgeschlossen: Gibt es nicht");
 assert(tracker.unresolved["Gibt es nicht"] == nil, "an unknown name is not a name clash");
--- Live progress is stored per character, not in the account settings.
-local saved = savedData["MagicQuestLogLive"];
+-- Live progress is stored per character in the server scope, not in the settings.
+local saved = savedData["MagicQuestLog_Live_Feldobar"];
 assert(saved ~= nil, "live progress must be saved");
 assert(saved.completed[uniqueRecord.id] == true, "saved live progress must hold the id");
 assert(savedSettings == nil or savedSettings.completed == nil,
@@ -687,7 +692,7 @@ end
 receiveChat("Abgeschlossen: " .. MagicQuestLog.catalogs.quests[1].name);
 local marks = 0;
 for _, line in ipairs({}) do marks = marks + 1; end
-assert(tracker.completed ~= newTracker.completed or savedData["MagicQuestLogLive"] ~= nil,
+assert(tracker.completed ~= newTracker.completed or savedData["MagicQuestLog_Live_Feldobar"] ~= nil,
 	"reload must not keep two trackers writing");
 -- Client language without a local catalog falls back to English explicitly.
 MQL.language = "fr";
@@ -759,11 +764,15 @@ local progress = MagicQuestLog.Data.progress;
 assert(progress ~= nil, "progress data must be loaded for this test");
 local originalCharacter = progress.character;
 progress.character = "Someoneelse";
+-- No live or imported progress either, so only the foreign file could claim anything.
+local keptServer, keptCharacter = serverData, characterData;
+serverData, characterData = {}, {};
 MagicQuestLog.Load(nil);
 assert(MagicQuestLog.window.completed == false, "foreign progress must be ignored");
 assert(not string.find(MagicQuestLog.window.countLabel:GetText(), MagicQuestLog.strings.finished, 1, true),
 	"a foreign progress file must never show finished counts");
 progress.character = originalCharacter;
+serverData, characterData = keptServer, keptCharacter;
 MagicQuestLog.Load(nil);
 assert(MagicQuestLog.window.completed ~= false, "matching progress must be used again");
 -- Back to a clean German client for the summary below.
@@ -772,6 +781,77 @@ languageCommand = "hilfe";
 MagicQuestLog.Load(nil);
 assert(MagicQuestLog.language == "de", "German client must use the German catalog");
 ''')
+
+    lua.execute(r'''
+-- Several characters. The map site writes one import file per character into the
+-- server scope; the plugin reads it, never writes it, and can show any character.
+local MQL = MagicQuestLog;
+serverData, characterData = {}, {};
+local quests = MQL.catalogs.quests;
+local a, b, c = quests[1].id, quests[2].id, quests[3].id;
+-- The old live file in the character scope is taken over once.
+characterData["MagicQuestLogLive"] = { version = "1", completed = { [c] = true }, unresolved = {} };
+serverData["MagicQuestLog_Import_Feldobar"] = { version = "1", character = "Feldobar",
+	date = "2026-11-03", completed = { [a] = true, ["nonsense"] = true, ["7000000Z"] = true } };
+serverData["MagicQuestLog_Import_Meriadoc"] = { version = "1", character = "Meriadoc",
+	date = "2026-11-02", completed = { [b] = true } };
+-- A file whose content names another character is not that character's progress.
+serverData["MagicQuestLog_Import_Fremder"] = { version = "1", character = "Feldobar",
+	completed = { [b] = true } };
+serverData["MagicQuestLog_Characters"] = { Meriadoc = true, Fremder = true, ["bad name"] = true };
+MQL.Data.progress = nil;
+package.loaded["MagicQuestLog.Data.Progress"] = nil;
+MagicQuestLog.Load(nil);
+local window = MQL.window;
+assert(MQL.shown == "Feldobar", "the logged-in character is shown first");
+assert(window.completed[a] == true, "imported id must count");
+assert(window.completed[c] == true, "old live progress must be taken over");
+assert(window.completed["NONSENSE"] == nil and window.completed["7000000Z"] == nil, "malformed ids are dropped");
+assert(window.progressExact == true, "an import holds the older history");
+assert(string.find(window.characterLabel:GetText(), "2026-11-03", 1, true), "import date shown: " .. window.characterLabel:GetText());
+assert(window.characterButton:GetText() == "Feldobar", "switch names the character");
+-- The logged-in character joins the stored list; invalid names never do.
+local index = serverData["MagicQuestLog_Characters"];
+assert(index.Feldobar == true and index.Meriadoc == true, "character list must hold both");
+assert(MQL.characters[1] == "Feldobar" and #MQL.characters == 3, "sorted list without bad names: " .. table.concat(MQL.characters, ","));
+-- Switching shows the other character's import and no live claim.
+window.CharacterClicked();
+assert(MQL.shown == "Fremder", "next character: " .. tostring(MQL.shown));
+assert(window.completed == false, "a file naming someone else must be ignored");
+window.CharacterClicked();
+assert(MQL.shown == "Meriadoc", "next character: " .. tostring(MQL.shown));
+assert(window.completed[b] == true and window.completed[a] == nil, "only Meriadoc's ids");
+assert(not string.find(window.characterLabel:GetText(), MQL.strings.livenow, 1, true), "no live tag for another character");
+window.CharacterClicked();
+assert(MQL.shown == "Feldobar", "the switch wraps around");
+-- Live completions belong to the logged-in character only, in its own file.
+MQL.Live.Mark(MQL.tracker, b);
+assert(serverData["MagicQuestLog_Live_Feldobar"].completed[b] == true, "live goes to the own file");
+assert(serverData["MagicQuestLog_Live_Meriadoc"] == nil, "another character's file stays untouched");
+assert(characterData["MagicQuestLogLive"].completed[c] == true, "the old file is left as it was");
+-- A new import while the game runs shows up when the window opens again.
+local builds, original = 0, MQL.Model.Build;
+MQL.Model.Build = function(...) builds = builds + 1; return original(...); end;
+window.Shown();
+assert(builds == 0, "an unchanged import must not rebuild the tree");
+serverData["MagicQuestLog_Import_Feldobar"].completed[quests[4].id] = true;
+serverData["MagicQuestLog_Import_Feldobar"].date = "2026-11-04";
+window:SetVisible(false);
+window:SetVisible(true);
+window.VisibleChanged();
+assert(window.completed[quests[4].id] == true, "a new import must be picked up on opening");
+assert(builds >= 1, "a changed import rebuilds the tree");
+MQL.Model.Build = original;
+-- Without any import, live or old file there is no claim at all.
+serverData, characterData = {}, {};
+MagicQuestLog.Load(nil);
+assert(MQL.window.completed == false, "nothing known means nothing claimed");
+assert(MQL.characters[1] == "Feldobar", "the logged-in character is always listed");
+-- Back to the regular data for the summary below.
+serverData, characterData = {}, {};
+''')
+    lua.execute((DATA / 'Progress.lua').read_text(encoding='utf-8'))
+    lua.execute("MagicQuestLog.Load(nil)")
 
     read = lua.eval('''function()
     local MQL = MagicQuestLog;
@@ -813,6 +893,7 @@ end''')
           % (values['bookCounted'], values['bookListed']))
     print('PASS: MoorMap runs through a quickslot alias shortcut, not by printing the command')
     print('PASS: a progress file for another character is ignored instead of being shown as ours')
+    print('PASS: several characters: import per character, switch, old live data taken over, new import read on opening')
     print('PASS: LOTRO markup is removed from texts, a stray "<" in real words is kept')
     print('PASS: switching records resets the detail scroll to the top')
     print('PASS: live completion is read from the quest channel in all three forms')

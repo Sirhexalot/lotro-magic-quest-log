@@ -6,7 +6,11 @@ English.
 
 The repository contains the plugin, the tools and the icons. The generated
 catalog (~102 MB) is **not** in the repository — it ships as a release archive.
-A character's own progress file also stays local.
+Your progress never enters it: it lives in the game's own `PluginData` folder.
+
+**Companion site:** the same quests as a map, with your progress, at
+<https://mm.sirhexalot.de/> ([source](https://github.com/Sirhexalot/lotro-magic-quest-map)).
+Its **Progress** page also brings your older progress into the plugin (see below).
 
 ## What the plugin does
 
@@ -22,12 +26,15 @@ A character's own progress file also stays local.
   **session play** is never written to the journal, and of two quests that rule
   each other out only one can be taken. Both are marked in the tree ("session
   play", "not possible") and stay out of the numbers. The details say why.
-- **Progress** from two sources: an optional status file (`Data/Progress.lua`)
-  for everything done before, and the quest chat channel for what you finish
-  while playing. The tree and the headline then show "finished / total" (e.g.
-  `(163/276)`) and the details a green check. With no file at all the totals are
-  labelled as partial ("finished (known)"), because a live session cannot know
-  older history — never an invented full count.
+- **Progress** from two sources: what LOTRO Companion knew, brought in through
+  the map site, and the quest chat channel for what you finish while playing. The
+  tree and the headline then show "finished / total" (e.g. `(163/276)`) and the
+  details a green check. Without an import the totals are labelled as partial
+  ("finished (known)"), because a live session cannot know older history — never
+  an invented full count.
+- **Several characters:** a button at the top right switches between every
+  character of this server that has progress; the label says how old its import
+  is and whether its completions come in live (only the logged-in one does).
 - **Show in MoorMap** through a quickslot with an alias shortcut, whenever a
   position has been verified.
 - Window in the client's own style: title bar, close button, draggable.
@@ -36,6 +43,12 @@ A character's own progress file also stays local.
 - Test and developer content is hidden, and the tests keep it that way.
 
 Not included: items, crafting, equipment, an own map and character export.
+
+**Collecting deeds above all?** Have a look at
+[Deed Tracker](https://www.lotrointerface.com/downloads/info1139-DeedTracker.html)
+by b414213562 — a mature plugin just for deeds, with LOTRO points, virtue
+experience and the resolution of identically named deeds. Magic Quest Log is
+mainly about quests; both work side by side.
 
 ## Screenshots
 
@@ -80,9 +93,9 @@ quest you finish shows up immediately — no export, no restart.
 
 What that means in practice:
 
-- Ids seen live are stored **per character** in the client's own plugin data, not
-  in `Data/Progress.lua`. A live session never overwrites an export and an export
-  never overwrites a live session; both are merged for display.
+- Ids seen live are stored **per character** in the client's own plugin data
+  (`MagicQuestLog_Live_<name>`). A live session never overwrites an import and an
+  import never overwrites a live session; both are merged for display.
 - Deeds use the same header, so one handler covers quests and deeds.
 - The message carries a **name, not an id**. 639 quest names and 237 deed names in
   the German catalog belong to more than one entry (race and class variants,
@@ -90,7 +103,7 @@ What that means in practice:
   marked and the chat names what could not be assigned. Those stay in a list, so a
   later version or a manual decision can resolve them.
 - Because a live session starts at zero, the headline says "finished (known)"
-  until a `Progress.lua` supplies the older history.
+  until an import supplies the older history.
 
 ## Licence
 
@@ -147,9 +160,6 @@ MagicQuestLog/tools/rebuild-from-export.command "<EXPORT_DIR>" "<PLUGIN_DIR>"
 
 # the old XML path, kept for comparison and for a Companion lore directory
 MagicQuestLog/tools/rebuild.command "<LORE_DIR>" "<PLUGIN_DIR>"
-
-# build a status file from a character export (read-only)
-python3 MagicQuestLog/tools/build_progress.py <export.json>
 
 # re-render the icons from the Lucide SVGs (read-only)
 python3 MagicQuestLog/tools/build_icons.py
@@ -250,60 +260,47 @@ in the catalogue, so all three languages and every view agree:
   something that was done - but it is a reminder that the requirement blobs also
   describe entry points, not only either/or choices.
 
-### Getting your older progress in
+## Getting your older progress in
 
 The plugin counts what you finish from the moment it is installed. Quests and
-deeds from before that are not in the game's chat, so the plugin cannot know
-them. There is one optional tool for this, and it ships with the plugin:
-`MagicQuestLog/Optional-Progress-Tool/`. Use it once.
+deeds from before that are not in the game's chat, so the plugin cannot know them
+by itself. **LOTRO Companion** knows them, and the map site hands them over:
 
-**What you need**
+1. In **LOTRO Companion** (free, <https://sourceforge.net/projects/lotrocompanion/>)
+   import your character: enter the world, then *Misc* → **Import from LOTRO…** →
+   *Refresh* → *Start*. On a Mac, Companion runs in the same Wine environment as
+   the game; the site has a ready command for that.
+2. Open <https://mm.sirhexalot.de/spielstand.html>, choose Companion's
+   `characters` folder. It is read **in your browser only** — nothing is uploaded.
+3. **Write into the LOTRO folder** (Chrome, Edge) or **download as zip** and unpack
+   it into the game's `PluginData` folder.
+4. Open the Magic Quest Log window. A new import is read every time the window
+   opens; no restart needed.
 
-- The plugin, already installed.
-- **LOTRO Companion** from <https://sourceforge.net/projects/lotrocompanion/>.
-  Install it and leave it installed; you never start it and never import
-  anything in it. The tool only borrows two files from its program folder.
-- The game, running, with your character **in the world** (not at the launcher).
+What gets written, per account and server, below `PluginData/<account>/<server>/AllCharacters/`:
 
-**Windows**
+| File | Written by | Holds |
+|---|---|---|
+| `MagicQuestLog_Import_<name>.plugindata` | the map site | character, server, date, finished ids |
+| `MagicQuestLog_Characters.plugindata` | site and plugin | names for the character switch |
+| `MagicQuestLog_Live_<name>.plugindata` | the plugin | ids seen in the quest channel |
 
-1. Log in your character and enter the world.
-2. Open `Plugins\MagicQuestLog\Optional-Progress-Tool\` in Explorer.
-3. Double-click `read-journal.bat`; allow the administrator prompt.
-4. Wait until it says `Done`.
-5. Close the game completely and start it again.
-6. Type `/mql` — your old progress is counted.
+The plugin never writes an import file, and an import naming another character is
+ignored. That the client reads a plugin data file from disk on every `Load` — so a
+new import appears without a restart — was checked in the game.
 
-**macOS**
+Companion's own format, as the converter reads it: `characters/toon-NNNNN/`
+holds `summary.xml` (name, server, account), `questsStatus.xml` and
+`deedsStatus.xml`. Keys are **decimal** (`1879048198` = `70000006`); an entry is
+finished when `state="COMPLETED"` or `completionCount ≥ 1` (repeatables); only the
+top-level entries count, not their nested objective states. The subscription id
+and everything else in those files is never read.
 
-LOTRO runs through Wine there, and `read-journal.command` knows that setup.
-
-1. Log in your character and enter the world.
-2. Open the same folder in Finder.
-3. Double-click `read-journal.command`. If macOS blocks it, right-click it,
-   choose **Open** and confirm once.
-4. Wait until it says `Done`.
-5. Close the game completely and start it again.
-6. Type `/mql` — your old progress is counted.
-
-**Why a restart?** The plugin reads the file when it loads. Unloading and loading
-it again inside a running game usually fails because the catalog is large; a
-restart always works.
-
-The tool reads the journal of the character that is logged in — there is nothing
-to choose. For a second character, log that one in and run it again; each
-character keeps its own file. With two game windows open, close one first.
-
-It reads only the quest journal: no inventory, money, mail, chat or account data,
-and it never writes into the game. Delete `Data/Progress.lua` to undo it.
-
-The same instructions ship in the folder (`README.md` and `START-HERE.txt`).
-Developers find the internals, exit codes and the alternative route through
-Companion's XML files in `tools/journal-reader/TECHNICAL.md`.
-
-A character's own status file does **not** belong in the repository:
-`Data/Progress.lua` is listed in `.gitignore`, `make_release.py` leaves it out of
-the archive, and `Data/Progress.example.lua` shows the format with sample data.
+**Before 0.2.0** progress came from a separate memory reader that wrote
+`Data/Progress.lua`. That reader is gone: it depended on Companion's libraries
+and needed an update after every client update. An existing `Data/Progress.lua` is
+still honoured for its own character, and live progress stored by older versions
+is taken over once.
 
 ## Where the catalog data comes from
 
@@ -372,10 +369,11 @@ copy.
   next step.
 - **MoorMap needs one click** on the quickslot. A slash command cannot be run
   from inside a plugin.
-- **Progress** is only as complete as its sources. A `Progress.lua` is a journal
-  export from one point in time; live tracking only knows what happened since the
-  plugin was loaded with that character. Neither replaces the other, and nothing
-  here can know what was done before either of them existed.
+- **Progress** is only as complete as its sources. A Companion import is a
+  snapshot from one point in time; live tracking only knows what happened since
+  the plugin was loaded with that character. Neither replaces the other.
+- **The character switch** shows characters of the account and server you are
+  playing on — the client gives a plugin no other folders.
 - **The same name can appear more than once** — hundreds of quests sit twice in
   the same group (for example "Das letzte Wort" or "Einleitung überspringen").
   These are not duplicates from our build: every entry has its own id. They are
@@ -417,79 +415,37 @@ Ready-to-paste values for a LOTROInterface download — category, description,
 changelog and the `.plugincompendium` file for the LOTRO Plugin Compendium — are
 in [`packaging/lotrointerface.md`](packaging/lotrointerface.md).
 
-## State and checks
+## Checks
 
-Generated: 15,209 quests (483 test entries hidden) and 5,534 deeds per language,
-8,403 verified quest positions in the German catalog (8,402 in English). A
-progress file with 3,657 entries finished
-(3,177 quests + 480 deeds), 579 running, 3 listed twice (repeatable) and 3
-unknown ids. Data check: identical id sets and an identical tree structure in all
-three languages, child totals add up. Plugin test: 21 checks green, among them a
-collapsed start, name search including "ker izel" → "Kêr Izel", details without
-raw placeholders, an honest display without a position, the English fallback when
-a language catalog is missing, the header below the title bar, a labelled search
-field, "n/total" counters, the cached tree when expanding, an ignored status file
-of another character, resolved placeholders, LOTRO markup removed from texts, the
-detail scroll reset when switching records, and that every icon texture named in
-the Lua really exists.
+```sh
+.venv/bin/python tools/verify_catalog.py   # ids, tree and flags identical in en/de/fr
+.venv/bin/python tools/test_plugin.py      # plugin logic in Lua 5.1 on the real catalog
+```
 
-**Fixed after the second play test** (not re-checked in game since): no rebuild
-and re-sort of the whole catalog when expanding (the tree is cached), one control
-per row instead of more than 40 for the status mark, the header below the title
-bar, the search field labelled "Suchen", MoorMap through a quickslot alias
-instead of printing a command that did nothing, and progress counters per node.
+The plugin test drives the real window code against stubbed client classes:
+collapsed start, accent-insensitive search, details without raw placeholders,
+wrapped rows, the MoorMap shortcut, settings stored as text, live completion from
+the quest channel, session plays and ruled-out alternatives kept out of the
+counters, and several characters (import per character, switch, old live data
+taken over, a new import read when the window opens). The browser converter is
+tested in the map repository against a real LOTRO Companion folder, down to the
+plugin's own loader. What a headless test cannot judge — row heights, how the
+list stacks rows — is checked in the game.
 
-**Done after the third play test (2 Nov), not checked in game since:** icons from
-Lucide (start icon `mop-sparkles`, tabs, search field, clearing, node chevrons,
-status circles, map pin), description and step text one size larger (Verdana14
-instead of Verdana12, title Verdana16), and documented that quest names can
-repeat as separate entries.
+## Changes
 
-**Done after the fourth play test (2 Nov), not checked in game since:** LOTRO
-markup such as `<rgb=#FF0000>…</rgb>`, `<b>` and `<u>` is stripped from texts
-instead of showing as tags, and switching records scrolls the detail pane back to
-the top. Tree and
-row text one size larger as well (Verdana14, like the description; row heights
-20 and 18 px). The MoorMap slot no longer shows the alias: the map pin lies on
-top of it as a click-through cover (`mapCover`/`mapIcon` with
-`SetMouseVisible(false)`) so the click still reaches the quickslot underneath.
+**0.2.0** — progress from LOTRO Companion, several characters.
+- Older progress comes from LOTRO Companion through the map site's Progress page,
+  converted in the browser and written to `PluginData`. The separate memory
+  reader is gone.
+- A character switch in the window; every character of the server with progress.
+- A new import is read whenever the window opens.
+- Live progress is kept per character in the server scope; older live data and an
+  old `Data/Progress.lua` are taken over.
 
-**Two more errors from the fifth play test, both fixed:**
+**0.1.2** — counters show only what is still possible (session plays and ruled-out
+alternatives are marked and not counted).
 
-1. **`Window.lua: SetValue: Invalid operation while the scroll bar is bound.`**
-   The scroll reset set the value on a bar that a label drives. The client refuses
-   that. The pane is now unbound, filled and rebound — the same way Compendium does
-   it — which resets the offset without touching the bar.
-2. **`MagicQuestLogSettings.plugindata: '}' expected near ','`** again. Stray
-   numeric keys (`[1,000000] = 0,000000`) had got into the settings table at some
-   point and were copied back on every save. Loading and saving now take only the
-   six known keys, so junk cannot persist, and the file on disk was repaired.
+**0.1.1** — long names wrap and the row grows; territories no longer appear twice.
 
-**Four real bugs fixed during this round:**
-
-1. **Placeholders were not replaced but became "[value]".** In `Resolve` the
-   result of `gsub` was discarded, so the fallback branch overwrote every
-   placeholder. `${PLAYER}` now reads the character name, `${CLASS}` the class,
-   and `${PLAYERNAME:A[m]|B[f]}` becomes "A / B". A test asserts the character
-   name appears in the text and the fallback marker does not.
-2. **Group names with placeholders stayed raw** (`${PLAYERNAME:…}` in the tree).
-   Captions now go through the same resolution as the texts.
-3. **Zone names stayed English.** The generator looked a zone name up in a table
-   keyed by id, so it never found anything. Now "Breeland", "Das Auenland",
-   "Pays de Bree"; the keys stay English so the structure is identical in every
-   language.
-4. **The settings file was unreadable** (`'}' expected near ','`): the client
-   writes numbers with a decimal comma. Positions are now stored as text. The
-   damaged file was repaired by hand.
-
-**Icons:** re-rendered at their exact display size. They used to be 32 px and
-were shrunk to 11–18 px in game; the client samples plugin textures poorly, which
-made them look jagged.
-
-Row clicks go through the list selection, the same path the client uses
-elsewhere; it is reset after every selection so the same row stays clickable.
-
-**Fixed after the first play test:** missing window frame (now
-`Turbine.UI.Lotro.Window`), missing start icon (now a Lucide texture) and rows
-that did not react (now through the list selection). One requirement remains: the
-client has to learn about the plugin folder — restart the game, then `/mql`.
+**0.1.0** — first release.

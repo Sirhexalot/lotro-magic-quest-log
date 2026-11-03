@@ -209,6 +209,20 @@ function Window:Constructor(strings, catalogs)
 
 	self.countLabel = makeLabel(self, self.small, self.trim);
 
+	-- Character switch: any character of this server that has progress. A click
+	-- moves to the next one; the label says whose numbers are shown and how old the
+	-- import is.
+	self.characterButton = Turbine.UI.Lotro.Button();
+	self.characterButton:SetParent(self);
+	self.characterButton:SetSize(150, 20);
+	self.characterButton:SetFont(self.small);
+	self.characterButton:SetText(strings.character);
+	self.characterButton.Click = function()
+		if self.CharacterClicked then self.CharacterClicked(); end
+	end
+	self.characterLabel = makeLabel(self, self.small, self.trim);
+	self.characterLabel:SetTextAlignment(Turbine.UI.ContentAlignment.MiddleRight);
+
 	self.tree = Turbine.UI.ListBox();
 	self.tree:SetParent(self);
 	self.tree:SetBackColor(self.back);
@@ -283,7 +297,11 @@ function Window:Constructor(strings, catalogs)
 		MagicQuestLog.Settings.Save();
 		-- A hidden window cannot measure wrapped text; once it is on screen the
 		-- rows are measured for real instead of estimated from their length.
-		if self:IsVisible() then self:Remeasure(); end
+		if self:IsVisible() then
+			self:Remeasure();
+			-- A new import may have arrived while the window was closed.
+			if self.Shown then self.Shown(); end
+		end
 	end;
 	self:ShowDetails(nil);
 	self:Rebuild();
@@ -305,7 +323,10 @@ function Window:Layout()
 	self.searchBox:SetPosition(boxLeft, ROW);
 	self.searchBox:SetSize(math.max(120, width - MARGIN - 80 - 8 - boxLeft), 20);
 	self.countLabel:SetPosition(MARGIN, ROW + 28);
-	self.countLabel:SetSize(math.max(200, width - MARGIN * 2), 18);
+	self.countLabel:SetSize(math.max(200, width - MARGIN * 2 - 470), 18);
+	self.characterButton:SetPosition(width - MARGIN - 150, ROW + 26);
+	self.characterLabel:SetPosition(width - MARGIN - 470, ROW + 28);
+	self.characterLabel:SetSize(310, 18);
 
 	local bodyTop = HEADER + 22;
 	local bodyHeight = math.max(120, height - bodyTop - MARGIN - FOOTER);
@@ -619,6 +640,18 @@ function Window:ShowDetails(record)
 		self.mapLabel:SetVisible(false);
 		self.mapInfo:SetText(self.strings.nomap);
 	end
+end
+
+--- Whose progress is shown. "date" is the day of the Companion import, if any;
+--- "current" says whether this is the logged-in character, the only one whose
+--- completions come in live.
+function Window:SetCharacter(name, date, current)
+	self.characterName = name or false;
+	self.characterButton:SetText(name or self.strings.character);
+	local parts = {};
+	if date ~= nil then parts[#parts + 1] = self.strings.importedon .. " " .. date; end
+	if current then parts[#parts + 1] = self.strings.livenow; end
+	self.characterLabel:SetText(table.concat(parts, " · "));
 end
 
 function Window:SetContext(context)

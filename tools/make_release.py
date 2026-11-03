@@ -4,7 +4,8 @@ The catalog is ~102 MB and therefore not in the repository, so a release archive
 is how it reaches other players. The archive is install-ready: unpack it into the
 game's Plugins folder.
 
-A character's own progress file is never included; a documented example is.
+A character's own progress is never included: it lives in the game's PluginData
+folder (written by the map site), and an old Data/Progress.lua is left out.
 The version comes from MagicQuestLog.plugin, so it cannot drift from the plugin.
 
 Run:  python3 MagicQuestLog/tools/make_release.py
@@ -23,8 +24,6 @@ DIST = ROOT / 'dist'
 CATALOGS = ('Quests_en.lua', 'Quests_de.lua', 'Quests_fr.lua',
             'Deeds_en.lua', 'Deeds_de.lua', 'Deeds_fr.lua')
 PRIVATE = ('Progress.lua',)
-TOOLS = ROOT / 'tools/journal-reader'
-TOOL_FOLDER = Path('MagicQuestLog/Optional-Progress-Tool')
 
 
 def version():
@@ -35,8 +34,6 @@ def version():
 
 
 def main():
-    if not (TOOLS / 'JournalExport.java').is_file():
-        raise SystemExit('missing the optional progress tool: ' + str(TOOLS))
     missing = [name for name in CATALOGS if not (DATA / name).is_file()]
     if missing:
         print('Missing catalog files: ' + ', '.join(missing))
@@ -69,16 +66,6 @@ def main():
                 count += 1
         archive.write(ROOT / 'LICENSE', arcname='MagicQuestLog/LICENSE.txt')
         archive.write(ROOT / 'icon-sources/NOTICE', arcname='MagicQuestLog/icons-NOTICE.txt')
-        # The optional progress tool ships inside the plugin folder, so a player finds
-        # it without visiting the repository. It needs a local LOTRO Companion
-        # installation; the download page and START-HERE.txt say so.
-        for path in sorted(TOOLS.rglob('*')):
-            # Developer notes stay in the repository; the download is for players.
-            if not path.is_file() or path.name.endswith('.pyc') or path.name in ('TECHNICAL.md', 'JournalExport.java', 'verify_progress.py'):
-                continue
-            relative = path.relative_to(TOOLS)
-            archive.write(path, arcname=str(TOOL_FOLDER / relative))
-            count += 1
     digest = hashlib.sha256(target.read_bytes()).hexdigest()
     print('%s  %d files  %.1f MiB'
           % (target, count + 2, target.stat().st_size / 1024 / 1024))

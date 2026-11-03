@@ -7,10 +7,8 @@ Not for the download page. The text that goes there is in
 
 - The archive must contain **one top-level folder** holding the `.plugin` file.
   It does: `MagicQuestLog/MagicQuestLog.plugin`.
-- The archive contains the plugin **plus** the optional journal reader under
-  `MagicQuestLog/Optional-Progress-Tool/`. That tool needs LOTRO Companion
-  installed; the download page and its `START-HERE.txt` both say so, which is the
-  condition for shipping it. `tools/make_release.py` packages it on purpose.
+- The archive contains only the plugin. Older progress comes from LOTRO Companion
+  through the map site (0.2.0); the journal reader shipped in 0.1.x is gone.
 - The name in `.plugin` and in the download title must match character for
   character, otherwise the client and the Plugin Compendium show two entries.
 - New uploads are invisible until staff approve them. While waiting, LPC
@@ -55,7 +53,7 @@ a file admin approves it.
                  xmlns:xsd="http://www.w3.org/2001/XMLSchema">
      <Id>FILL_IN</Id>
      <Name>Magic Quest Log</Name>
-     <Version>0.1.2</Version>
+     <Version>0.2.0</Version>
      <Author>Adrian</Author>
      <InfoUrl>https://www.lotrointerface.com/downloads/infoFILL_IN</InfoUrl>
      <DownloadUrl>https://www.lotrointerface.com/downloads/downloadFILL_IN</DownloadUrl>
@@ -83,15 +81,12 @@ software that knows the client's memory, and that is not ours:
 | require a local LOTRO Companion | works today, but a store page that says so loses most players |
 | no import at all | plugin is complete in itself; only quests from install time on are counted |
 
-Current state: the tool ships **inside the download** as
-`MagicQuestLog/Optional-Progress-Tool/` (from `tools/journal-reader/`). The
-download therefore has one declared dependency: a local LOTRO Companion
-installation, only for its memory library and Windows Java. The page describes it
-as an optional section with the steps, and the tool's `START-HERE.txt` repeats
-them. The page links Companion's SourceForge download.
-
-The permission email was not sent and is no longer needed: the tool ships the
-dependency openly instead of bundling foreign libraries.
+Decided for 0.2.0 (on advice from Damien, LOTRO Companion's author): the plugin
+uses **LOTRO Companion's own character files**, as Deed Tracker does. Companion
+keeps its memory access current after every client update; its output format is
+stable. The conversion runs in the browser on the map site (no upload), which
+writes one plugin data file per character into `PluginData`. The journal reader
+from 0.1.x is gone.
 
 Why not rebuild it ourselves: LOTRO's Lua API has no quest access at all — the
 only gameplay objects it exposes are `LocalPlayer`, `Class`, `Race` and
