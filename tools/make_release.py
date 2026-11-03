@@ -37,7 +37,7 @@ def main():
     missing = [name for name in CATALOGS if not (DATA / name).is_file()]
     if missing:
         print('Missing catalog files: ' + ', '.join(missing))
-        print('Build them first:  tools/rebuild.command <LORE_DIR>')
+        print('Build them first:  tools/rebuild-from-export.command <EXPORT_DIR>')
         return 1
     stamp = version()
     DIST.mkdir(exist_ok=True)

@@ -2,8 +2,7 @@
 # Magic Quest Log: rebuild the catalog from our own DAT export ("Weg B").
 # Reads game data only; it never writes to the game files. Double-clickable in Finder.
 #
-# The XML way (LOTRO Companion lore directory) lives in rebuild.command. This one
-# needs no Companion application: the export folder, the enum dump and the game's
+# Needs no Companion application: the export folder, the enum dump and the game's
 # maps from Companion's lore data (parchmentMaps.xml, maps/), which decide the map
 # each position is on. MoorMap's Defaults.lua is read only for its map numbers, so
 # the plugin's "Show in MoorMap" button opens the right map. landblocks.xml is

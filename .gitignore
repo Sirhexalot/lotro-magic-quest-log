@@ -1,5 +1,5 @@
 # The generated catalogs are ~102 MB and are shipped as a release archive
-# instead of living in the repository. Rebuild them with tools/rebuild.command.
+# instead of living in the repository. Rebuild them with tools/rebuild-from-export.command.
 plugin/MagicQuestLog/Data/*.lua
 
 # Progress files from versions before 0.2.0 are private and never published.

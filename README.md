@@ -214,9 +214,6 @@ The examples assume `LORE_DIR` is a directory with extracted game data
 # the shipped path: build from our own DAT export, check it, install it
 MagicQuestLog/tools/rebuild-from-export.command "<EXPORT_DIR>" "<PLUGIN_DIR>"
 
-# the old XML path, kept for comparison and for a Companion lore directory
-MagicQuestLog/tools/rebuild.command "<LORE_DIR>" "<PLUGIN_DIR>"
-
 # re-render the icons from the Lucide SVGs (read-only)
 python3 MagicQuestLog/tools/build_icons.py
 
@@ -276,8 +273,7 @@ Without the first argument the newest `full-dat-*` folder below
 `Companion-Test/source-exporter` is used; without the third, `landblocks.xml` is
 looked up in the usual Companion install locations. The script builds, runs
 `verify_catalog.py` and `test_plugin.py`, prints the counts from `manifest.json`
-and installs into `PLUGIN_DIR`. `tools/rebuild.command` still drives the old XML
-path and is marked as such.
+and installs into `PLUGIN_DIR`.
 
 Result: 15,209 quests and 5,534 deeds per language, identical ids and identical
 tree structure in all three languages (verified). 483 test/developer entries are
@@ -390,26 +386,8 @@ exporter and its licence questions. The importer needs no Companion application.
 | `GaranStuff/MoorMap/Defaults.lua` | only MoorMap's map numbers, for the "Show in MoorMap" button |
 | `LOTRO Companion` → `app/data/lore/landblocks.xml` | optional territory fallback |
 
-The **old XML path** still exists in `build_catalog.py` and `rebuild.command`.
-It is not used for anything shipped, and unlike the shipped path it still takes
-map bounds from MoorMap; it stays only for comparison.
-It reads extracted game data from two LOTRO Companion repositories, because the
-map data is not in the first one:
-
-| Source | Provides | Belongs at |
-|---|---|---|
-| `LotroCompanion/lotro-data` | `quests.xml`, `deeds.xml`, `geoAreas.xml`, `enums/`, `labels/<language>/` | `<LORE_DIR>` |
-| `LotroCompanion/lotro-maps-db` | `maps/maps.xml` | `<LORE_DIR>/maps` |
-
-```sh
-git clone https://github.com/LotroCompanion/lotro-data.git     "<LORE_DIR>"
-git clone https://github.com/LotroCompanion/lotro-maps-db.git  "<LORE_DIR>/maps"
-```
-
-That is the same layout a LOTRO Companion installation has, where both sit under
-`app/data/lore/`. Files actually read: `quests.xml`, `deeds.xml`, `geoAreas.xml`,
-`maps/maps/maps.xml`, `enums/QuestCategory.xml`, `enums/DeedCategory.xml`, and per
-language the labels for quests, deeds, geoAreas, npc and both enums.
+The old XML path (`build_catalog.py`, `rebuild.command`), which read Companion's
+quest XML and took map bounds from MoorMap, was removed in 0.4.0.
 
 ### Rights, kept apart on purpose
 
