@@ -677,6 +677,33 @@ def build(export_dir, enums_path, output, moormap_path=None, overrides=None, lan
             if chosen is not None:
                 record['gt'] = {'map': chosen['map'], 'lat': lat, 'lon': lon}
                 stats['quests_with_giver_position'] += 1
+        # Plain facts from the record, each only when the game sets it:
+        #   nq next quest, rp repeatable (-1 any number of times, else up to n),
+        #   dy resets daily, tl time limit in seconds, gr 2 = fellowship / 1 = small
+        #   fellowship recommended, ix instance, lp LOTRO points.
+        nxt = props.get('Quest_NextQuest')
+        if isinstance(nxt, int) and nxt:
+            record['nq'] = '%08X' % (nxt & 0xffffffff)
+        times = props.get('Quest_MaxTimesCompletable')
+        if isinstance(times, int) and (times == -1 or times > 1):
+            record['rp'] = times
+        if props.get('Quest_IsDailyGlobalReset') == 1:
+            record['dy'] = 1
+        limit = props.get('Quest_TimeLimit')
+        if isinstance(limit, (int, float)) and limit > 0:
+            record['tl'] = int(limit)
+        if props.get('Quest_IsFellowshipRecommended') == 1:
+            record['gr'] = 2
+        elif props.get('Quest_IsSmallFellowshipRecommended') == 1:
+            record['gr'] = 1
+        if props.get('Quest_IsInstanceQuest') == 1:
+            record['ix'] = 1
+        # LOTRO points come as a tier. Checked against 2,606 deeds (LOTRO Companion's
+        # lore, used only to verify): 2 = 5, 3 = 10, 4 = 15, 5 = 20, 6 = 50, no
+        # exception. Other tiers are not mapped.
+        points = {2: 5, 3: 10, 4: 15, 5: 20, 6: 50}.get(props.get('Quest_TurbinePointTier'))
+        if points:
+            record['lp'] = points
         # rf: the faction this gives reputation with and the game's reward tier
         # (1-6, a relative size; the points per tier are not in the data).
         reward = props.get('Quest_PositiveFaction')
@@ -709,6 +736,17 @@ def build(export_dir, enums_path, output, moormap_path=None, overrides=None, lan
                     built = make_record(entry, kind, locale, stats, fallback)
                     if built is not None:
                         records.append(built)
+                # pq: quests that lead here (their "next quest" is this one).
+                visible_ids = {r['id'] for r in records}
+                previous = defaultdict(list)
+                for record in records:
+                    if record.get('nq') in visible_ids:
+                        previous[record['nq']].append(record['id'])
+                    elif 'nq' in record:
+                        del record['nq']
+                for record in records:
+                    if record['id'] in previous:
+                        record['pq'] = sorted(previous[record['id']])
                 if kind == 'quests':
                     # These two fields only name entries the catalog still shows:
                     # a pointer at a hidden test entry would dangle.

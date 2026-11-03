@@ -463,6 +463,12 @@ list stacks rows — is checked in the game.
   character level, level ranges per area, "~" for scaling quests.
 - Running counters ("44/75") and the character level from the Companion import.
 - Search also finds areas; clicking an area shows a summary.
+- Facts from the game data: LOTRO points (deeds, mapped from the game's tier and
+  checked against 2,606 deeds), daily, repeatable or up to n times, fellowship or
+  small fellowship recommended, instance, time limit; the quest chain (what leads
+  here, what comes next).
+- More places from the client's own geo data: quests with an objective position
+  8,403 -> 12,010, quest-giver positions for 6,621 quests.
 - Catalogue rebuilt from the 3 November export: German and French names that
   depend on gender ("Bezwinger / Bezwingerin") are whole again.
 

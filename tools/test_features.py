@@ -64,9 +64,24 @@ local deed
 for _, r in ipairs(deeds) do if r.id == "70000CFB" then deed = r end end
 local deedText = M.Detail(deed, S, {}, { running = running["70000CFB"], deed = true })
 assert(string.find(deedText, "[44/75", 1, true), "counter 44/75 in the deed text")
+-- Facts and chain from the game data.
+local chained, daily, deedLp
+for _, r in ipairs(quests) do
+	if not chained and r.nq ~= nil and byId[r.nq] ~= nil then chained = r end
+	if not daily and r.dy == 1 then daily = r end
+end
+for _, r in ipairs(deeds) do if not deedLp and r.lp ~= nil then deedLp = r end end
+local chainText = M.Detail(chained, S, {}, { byId = all.byId })
+assert(string.find(chainText, S.chain, 1, true) and string.find(chainText, S.after .. ": ", 1, true), "quest chain shown")
+local nextRecord = byId[chained.nq]
+local found = false
+for _, id in ipairs(nextRecord.pq or {}) do if id == chained.id then found = true end end
+assert(found, "next quest names this one as previous")
+assert(string.find(M.Detail(daily, S, {}, {}), S.daily, 1, true), "daily shown")
+assert(string.find(M.Detail(deedLp, S, {}, { deed = true }), string.format(S.lp, deedLp.lp), 1, true), "LOTRO points shown")
 -- Area summary.
 local summary = M.NodeSummary(bree, S, completed, 150, {})
 assert(string.find(summary, S.available .. ":", 1, true), "summary lists available")
 print("PASS: filter (" .. avail.total .. " available of " .. all.total .. "), area search, level range "
-	.. bree.range .. ", requirements, spoiler-free details, counter 44/75, area summary")
+	.. bree.range .. ", requirements, spoiler-free details, counter 44/75, chain, daily, LOTRO points, area summary")
 ''')

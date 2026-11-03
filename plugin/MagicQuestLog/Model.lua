@@ -339,6 +339,20 @@ function M.Detail(record, strings, context, opts)
 	end
 	if record.g ~= nil and record.g ~= "" then head[#head + 1] = string.format(strings.from, record.g); end
 	if #head > 0 then table.insert(parts, table.concat(head, "  ·  ")); end
+	-- Facts from the game data in one line.
+	local facts = {};
+	if tonumber(record.lp) then facts[#facts + 1] = string.format(strings.lp, tonumber(record.lp)); end
+	if record.dy == 1 then facts[#facts + 1] = strings.daily; end
+	if record.rp == -1 then facts[#facts + 1] = strings.repeatable;
+	elseif tonumber(record.rp) and tonumber(record.rp) > 1 then facts[#facts + 1] = string.format(strings.upto, tonumber(record.rp)); end
+	if record.gr == 2 then facts[#facts + 1] = strings.fellowship;
+	elseif record.gr == 1 then facts[#facts + 1] = strings.smallfellowship; end
+	if record.ix == 1 then facts[#facts + 1] = strings.instance; end
+	if tonumber(record.tl) then
+		local seconds = tonumber(record.tl);
+		facts[#facts + 1] = string.format(strings.timelimit, seconds >= 120 and (tostring(math.floor(seconds / 60 + 0.5)) .. " min") or (tostring(seconds) .. " s"));
+	end
+	if #facts > 0 then table.insert(parts, table.concat(facts, "  ·  ")); end
 	-- Why an entry is not counted. The row is dimmed in the tree; this says why.
 	if record.sessionPlay then
 		table.insert(parts, strings.sessionnote);
@@ -375,6 +389,13 @@ function M.Detail(record, strings, context, opts)
 	if record.vb == 1 then requirements[#requirements + 1] = "- " .. strings.reqother; end
 	if #requirements > 0 then
 		table.insert(parts, strings.requirements .. "\n" .. table.concat(requirements, "\n"));
+	end
+	-- Quest chain: what leads here, what comes next.
+	local chain = {};
+	for _, id in ipairs(record.pq or {}) do chain[#chain + 1] = "- " .. strings.before .. ": " .. nameOf(id) .. state(id); end
+	if record.nq ~= nil then chain[#chain + 1] = "- " .. strings.after .. ": " .. nameOf(record.nq) .. state(record.nq); end
+	if #chain > 0 then
+		table.insert(parts, strings.chain .. "\n" .. table.concat(chain, "\n"));
 	end
 	local description = M.Resolve(record.d, context, strings);
 	if (string.gsub(description, "%s", "")) ~= "" then
