@@ -35,7 +35,9 @@ end
 --- ("${PLAYERNAME:Runebewahrer[im]|Runebewahrerin[f]}"), and a raw placeholder in a
 --- tree row is useless to read.
 function M.Display(text, context, strings)
-	return (M.Resolve(M.Caption(text, strings), context, strings));
+	local shown = M.Resolve(M.Caption(text, strings), context, strings);
+	-- Grammar marks the game leaves on some category names ("Stark-Axt[m]").
+	return (string.gsub(shown, "%[%l%l?%l?%]", ""));
 end
 
 --- Context changes are rare but they do change the display text, so cached text is
@@ -84,6 +86,34 @@ function M.Available(record, completed, level)
 	return true;
 end
 
+--- List section of an entry below its area: the names of path parts three and
+--- deeper, a part that only repeats the area ("Imlad Morgul: Cirith Ungol") cut
+--- to its own name. Returns the name ("" for the area itself) and its kind:
+--- "area" for a sub-area, "group" for a quest group.
+function M.Section(parts, context, strings)
+	local names, kind = {}, "group";
+	local above = {};
+	for index, part in ipairs(parts or {}) do
+		local name = M.Display(part.n, context, strings);
+		if index <= 2 then
+			above[#above + 1] = name;
+		else
+			if index == 3 and string.sub(tostring(part.k), 1, 5) == "area:" then kind = "area"; end
+			for _, upper in ipairs(above) do
+				local prefix = upper .. ":";
+				if string.lower(string.sub(name, 1, #prefix)) == string.lower(prefix) then
+					name = (string.gsub(string.sub(name, #prefix + 1), "^%s+", ""));
+				end
+			end
+			if name ~= "" and (#names == 0 or string.lower(names[#names]) ~= string.lower(name)) then
+				names[#names + 1] = name;
+			end
+			above[#above + 1] = name;
+		end
+	end
+	return table.concat(names, " > "), kind;
+end
+
 --- Middle half of the levels below a node ("Stufe 9-25"), scaling entries left out.
 --- Only with at least five levels; a node made mostly of scaling content says "~".
 local function levelRange(levels, scaling)
@@ -116,6 +146,9 @@ function M.Build(records, query, strings, completed, context, options)
 			local captions = {};
 			for _, part in ipairs(record.p or {}) do captions[#captions + 1] = M.Display(part.n, context, strings); end
 			record.pathText = M.Normalize(table.concat(captions, "\1"));
+			-- List section below the area, cached like the name.
+			record.section, record.sectionKind = M.Section(record.p, context, strings);
+			record.sectionKey = M.SortKey(record.section);
 			record.sortKey = M.SortKey(record.displayName);
 			record.displayKey = key;
 		end
@@ -163,8 +196,13 @@ function M.Build(records, query, strings, completed, context, options)
 				root.total = root.total + 1;
 				if finished then root.done = root.done + 1; end
 			end
+			-- Two tree levels only (region or section, then area or book); what lies
+			-- deeper becomes the entry's list section within its area.
 			local node = root;
-			for _, part in ipairs(record.p or {}) do
+			local parts, depth = record.p or {}, 0;
+			for _, part in ipairs(parts) do
+				depth = depth + 1;
+				if depth > 2 then break; end
 				local child = node.children[part.k];
 				if child == nil then
 					local caption = M.Display(part.n, context, strings);
@@ -196,9 +234,20 @@ function M.Build(records, query, strings, completed, context, options)
 		end
 	end
 	-- Names that occur more than once in one list get their quest giver beside them.
+	-- Items are ordered by section: the area itself first, then sub-areas, then
+	-- quest groups, each alphabetically, and by name inside a section.
 	local function sort(node)
 		table.sort(node.order, function(a, b) return a.sortKey < b.sortKey; end);
-		table.sort(node.items, function(a, b) return a.sortKey < b.sortKey; end);
+		local function rank(record)
+			if record.section == "" then return 0; end
+			return record.sectionKind == "area" and 1 or 2;
+		end
+		table.sort(node.items, function(a, b)
+			local ra, rb = rank(a), rank(b);
+			if ra ~= rb then return ra < rb; end
+			if a.sectionKey ~= b.sectionKey then return a.sectionKey < b.sectionKey; end
+			return a.sortKey < b.sortKey;
+		end);
 		local seen = {};
 		for _, record in ipairs(node.items) do seen[record.displayName] = (seen[record.displayName] or 0) + 1; end
 		for _, record in ipairs(node.items) do record.twin = seen[record.displayName] > 1; end

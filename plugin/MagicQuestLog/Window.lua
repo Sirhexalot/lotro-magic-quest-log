@@ -131,6 +131,9 @@ function Window:Constructor(strings, catalogs)
 	self.dim = Turbine.UI.Color(0.45, 0.45, 0.45);
 	self.gold = Turbine.UI.Color(1, 0.9, 0.5);
 	self.selectedBack = Turbine.UI.Color(0.16, 0.15, 0.10);
+	self.headerBack = Turbine.UI.Color(0.11, 0.10, 0.08);
+	-- Folded list sections, by node path and section name.
+	self.folded = {};
 
 	-- Ruler for wrapped tree text. A label reports no text metrics, but a label
 	-- bound to a vertical scroll bar reports overflow: the bar is visible only while
@@ -617,7 +620,37 @@ function Window:AddNode(node, depth, parentPath)
 	end);
 	if not open then return; end
 	for _, child in ipairs(node.order) do self:AddNode(child, depth + 1, path); end
+	-- Section headers inside an area: "General" for its own entries, then
+	-- sub-areas and quest groups. A click folds a section.
+	local counts, sectioned = {}, false;
 	for _, record in ipairs(node.items) do
+		counts[record.section or ""] = (counts[record.section or ""] or 0) + 1;
+		if (record.section or "") ~= "" then sectioned = true; end
+	end
+	local current = nil;
+	for _, record in ipairs(node.items) do
+		local section = record.section or "";
+		local key = path .. "#" .. section;
+		if sectioned and section ~= current then
+			current = section;
+			local header = Turbine.UI.Control();
+			header:SetSize(1, LINE);
+			header:SetBackColor(self.headerBack);
+			header:SetMouseVisible(true);
+			header.marker = makeImage(header, self.folded[key] and "closed" or "open");
+			local caption = section == "" and self.strings.general or section;
+			local label = makeLabel(header, self.small, self.gold);
+			label:SetMultiline(true);
+			label:SetText(caption .. "   (" .. tostring(counts[section]) .. ")");
+			label:SetSize(1, LINE);
+			header.label = label;
+			header.status, header.text = false, false;
+			self:AddRow(header, depth + 1, function()
+				self.folded[key] = not self.folded[key];
+				self:Rebuild();
+			end);
+		end
+		if not (sectioned and self.folded[key]) then
 		local item = Turbine.UI.Control();
 		item:SetSize(1, LINE);
 		item:SetBackColor(self.back);
@@ -656,12 +689,13 @@ function Window:AddNode(node, depth, parentPath)
 		text:SetText(name);
 		text:SetSize(1, LINE);
 		item.text = text;
-		self:AddRow(item, depth + 1, function()
+		self:AddRow(item, depth + 1 + (sectioned and 1 or 0), function()
 			if self.highlighted then self.highlighted:SetBackColor(self.back); end
 			item:SetBackColor(self.selectedBack);
 			self.highlighted = item;
 			self:ShowDetails(record);
 		end);
+		end
 	end
 end
 

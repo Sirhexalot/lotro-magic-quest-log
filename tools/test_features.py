@@ -79,9 +79,20 @@ for _, id in ipairs(nextRecord.pq or {}) do if id == chained.id then found = tru
 assert(found, "next quest names this one as previous")
 assert(string.find(M.Detail(daily, S, {}, {}), S.daily, 1, true), "daily shown")
 assert(string.find(M.Detail(deedLp, S, {}, { deed = true }), string.format(S.lp, deedLp.lp), 1, true), "LOTRO points shown")
+-- Two tree levels; deeper parts are list sections, area prefixes removed.
+for _, region in ipairs(all.order) do
+	for _, area in ipairs(region.order) do
+		assert(#area.order == 0, "no third tree level under " .. area.name)
+	end
+end
+local morgul = find(all, "Imlad Morgul")
+local sections = {}
+for _, r in ipairs(morgul.items) do sections[r.section] = r.sectionKind end
+assert(sections[""] ~= nil and sections["Cirith Ungol"] == "area", "Imlad Morgul: general and the sub-area Cirith Ungol")
+for name in pairs(sections) do assert(not string.find(name, "Imlad Morgul:", 1, true), "area prefix left in " .. name) end
 -- Area summary.
 local summary = M.NodeSummary(bree, S, completed, 150, {})
 assert(string.find(summary, S.available .. ":", 1, true), "summary lists available")
 print("PASS: filter (" .. avail.total .. " available of " .. all.total .. "), area search, level range "
-	.. bree.range .. ", requirements, spoiler-free details, counter 44/75, chain, daily, LOTRO points, area summary")
+	.. bree.range .. ", requirements, spoiler-free details, counter 44/75, chain, daily, LOTRO points, two tree levels with list sections, area summary")
 ''')

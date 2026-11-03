@@ -419,22 +419,33 @@ for _, record in ipairs(MQL.catalogs.quests) do
 end
 assert(ersatz ~= nil and interlude ~= nil, "expected the two entries from the game");
 local root = MQL.Model.Build(MQL.catalogs.quests, "", MQL.strings, completed, {});
+-- The tree has two levels; the chapter group is a list section of its book.
 local function leafOf(record)
 	local node = root;
-	for _, part in ipairs(record.p) do node = node.children[part.k]; end
+	for index, part in ipairs(record.p) do
+		if index > 2 then break; end
+		node = node.children[part.k];
+	end
 	return node;
 end
 local group = leafOf(interlude);
-assert(group ~= nil and leafOf(ersatz) == group, "both entries must share one chapter group");
+assert(group ~= nil and leafOf(ersatz) == group and interlude.section == ersatz.section and interlude.section ~= "",
+	"both entries must share one chapter group");
 local counted, listed = 0, 0;
 for _, record in ipairs(group.items) do
-	listed = listed + 1;
-	if not (record.sessionPlay or record.excluded) then counted = counted + 1; end
+	if record.section == interlude.section then
+		listed = listed + 1;
+		if not (record.sessionPlay or record.excluded) then counted = counted + 1; end
+	end
 end
 assert(counted == listed - 2, "the two entries must be the only uncounted ones: "
 	.. tostring(counted) .. " of " .. tostring(listed));
-assert(group.total == counted, "the group must count only what can still be done: "
-	.. tostring(group.total) .. " of " .. tostring(listed));
+local bookCountable = 0;
+for _, record in ipairs(group.items) do
+	if not (record.sessionPlay or record.excluded) then bookCountable = bookCountable + 1; end
+end
+assert(group.total == bookCountable, "the book must count only what can still be done: "
+	.. tostring(group.total) .. " of " .. tostring(bookCountable));
 bookCounted, bookListed = counted, listed;
 assert(ersatz.excluded == true, "the alternate chapter must be ruled out");
 assert(interlude.sessionPlay == true, "the interlude must be a session play");

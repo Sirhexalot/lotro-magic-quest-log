@@ -463,6 +463,12 @@ list stacks rows — is checked in the game.
   character level, level ranges per area, "~" for scaling quests.
 - Running counters ("44/75") and the character level from the Companion import.
 - Search also finds areas; clicking an area shows a summary.
+- A tree of two levels only: region (or section, volume), then area. Clicking a
+  region opens it and shows its areas; an area lists its entries under section
+  headers — the area itself ("General"), then sub-areas, then quest groups —
+  each foldable. Grammar marks such as "[m]" no longer show in names.
+- Quests whose category has no place are placed by where their giver stands
+  (catch-all "No geographic assignment" 1,402 -> 913).
 - Facts from the game data: LOTRO points (deeds, mapped from the game's tier and
   checked against 2,606 deeds), daily, repeatable or up to n times, fellowship or
   small fellowship recommended, instance, time limit; the quest chain (what leads

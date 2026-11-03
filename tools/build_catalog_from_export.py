@@ -473,10 +473,13 @@ def build(export_dir, enums_path, output, moormap_path=None, overrides=None, lan
     # state (DidGeoExport.java). Preferred over the guess from other quests'
     # objectives, which only knows NPCs someone has to talk to.
     did_places = defaultdict(set)
+    did_blocks = defaultdict(set)
     if did_positions and Path(did_positions).is_file():
         for line in Path(did_positions).read_text(encoding='utf-8').splitlines():
             row = json.loads(line)
             did_places[row['did']].add((row['region'], round(row['latitude'], 2), round(row['longitude'], 2)))
+            if row.get('cell') == '00000000':
+                did_blocks[row['did']].add((str(row['region']), str(row['block_x']), str(row['block_y'])))
 
     def one_spot(places):
         """Centre of places that are one spot (one region, within 0.3 map units), else None."""
@@ -514,6 +517,21 @@ def build(export_dir, enums_path, output, moormap_path=None, overrides=None, lan
     # category is not a zone, and only when every position agrees: a quest whose
     # objectives lie in several territories gets no invented zone.
     def territory_for(ident):
+        found = set()
+        # Where the quest giver stands counts as well (outdoors, one spot only).
+        blocks = []
+        npc = giver_of.get(ident)
+        if npc and one_spot(did_places.get(npc)) is not None:
+            blocks = list(did_blocks.get(npc, ()))
+        # Where the quest is taken decides: a giver standing in one territory places
+        # the quest there, even when its objectives spread over several.
+        for block in blocks:
+            area_id = landblocks.get(block)
+            name = source.territory_name(area_id) if area_id is not None else None
+            if name:
+                found.add(name)
+        if len(found) == 1:
+            return found.pop()
         found = set()
         for _, lat, lon, region, block in positions.get(ident, []):
             area_id = landblocks.get(block) if block is not None else None

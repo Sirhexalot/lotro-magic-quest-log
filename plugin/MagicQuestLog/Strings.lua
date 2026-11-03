@@ -3,6 +3,7 @@
 MagicQuestLog = MagicQuestLog or {};
 MagicQuestLog.Strings = {
 	en = {
+		general = "General", group = "Group",
 		lp = "%d LOTRO points", daily = "daily", repeatable = "repeatable", upto = "up to %d times",
 		fellowship = "fellowship recommended", smallfellowship = "small fellowship recommended",
 		instance = "instance", timelimit = "time limit %s", chain = "QUEST CHAIN", before = "before", after = "next",
@@ -36,6 +37,7 @@ MagicQuestLog.Strings = {
 		alternativenote = "Not possible: \"%s\" is already finished.",
 	},
 	de = {
+		general = "Allgemein", group = "Gruppe",
 		lp = "%d LOTRO-Punkte", daily = "täglich", repeatable = "wiederholbar", upto = "bis zu %d-mal",
 		fellowship = "Gruppe empfohlen", smallfellowship = "kleine Gruppe empfohlen",
 		instance = "Instanz", timelimit = "Zeitlimit %s", chain = "AUFGABENKETTE", before = "davor", after = "danach",
@@ -69,6 +71,7 @@ MagicQuestLog.Strings = {
 		alternativenote = "Nicht möglich: \"%s\" ist bereits erledigt.",
 	},
 	fr = {
+		general = "Général", group = "Groupe",
 		lp = "%d points LOTRO", daily = "quotidienne", repeatable = "répétable", upto = "jusqu'à %d fois",
 		fellowship = "communauté recommandée", smallfellowship = "petite communauté recommandée",
 		instance = "instance", timelimit = "limite %s", chain = "CHAÎNE DE QUÊTES", before = "avant", after = "ensuite",
