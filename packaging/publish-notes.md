@@ -41,6 +41,9 @@ a file admin approves it.
 - 2 November 2026, evening: 0.1.2 uploaded (long names wrap, duplicate area gone,
   counters show only what is still possible). Page shows "awaiting approval";
   the download link still serves 0.1.0.
+- 3 November 2026: 0.2.0 uploaded (progress from LOTRO Companion through the map
+  site, character switch, journal reader removed, Deed Tracker recommended for
+  deeds). Description replaced in full. Again "awaiting approval".
 
 ## After the first upload
 
