@@ -1,0 +1,2858 @@
+{
+ "de_quests": {
+  "counts": {
+   "t_now": 12519,
+   "t_same_map": 10167,
+   "t_before": 11973,
+   "g_now": 6884,
+   "g_same_map": 5571,
+   "g_before": 6571,
+   "t_other_map": 1806,
+   "g_other_map": 1000,
+   "t_new": 546,
+   "t_lost": 37,
+   "g_lost": 50,
+   "g_new": 313,
+   "t_had_before": 12010,
+   "g_had_before": 6621
+  },
+  "lost": [
+   [
+    "Rhovanion ,nil,nil,0x410f5e5a",
+    48
+   ],
+   [
+    "Mordor",
+    28
+   ],
+   [
+    "Sagroth",
+    11
+   ]
+  ],
+  "changed": [
+   [
+    "yondershire -> The Shire",
+    489
+   ],
+   [
+    "swanfleet -> Enedwaith",
+    308
+   ],
+   [
+    "Bree-land -> The Wildwood of Bree-land",
+    132
+   ],
+   [
+    "Wildermore ,0x411375a9,0x411375ad -> East Rohan: The Wold",
+    92
+   ],
+   [
+    "swanfleet -> Eregion",
+    79
+   ],
+   [
+    "Trollshaws -> The Angle of Mitheithel",
+    70
+   ],
+   [
+    "swanfleet -> Mossward",
+    66
+   ],
+   [
+    "swanfleet -> Cardolan",
+    65
+   ],
+   [
+    "Morgul Vale -> Minas Morgul",
+    60
+   ],
+   [
+    "Eaworth -> West Rohan: Broadacres",
+    57
+   ],
+   [
+    "Cliving -> East Rohan: Entwash Vale",
+    57
+   ],
+   [
+    "Morgul Vale -> Talath Úrui",
+    55
+   ],
+   [
+    "Ered Luin -> Falathlorn Homesteads",
+    54
+   ],
+   [
+    "North Downs -> The Wildwood of Bree-land",
+    52
+   ],
+   [
+    "The Shire -> The Wildwood of Bree-land",
+    44
+   ],
+   [
+    "Talath Anor -> Taur Drúadan",
+    43
+   ],
+   [
+    "Tal Methedras after -> Tâl Methedras",
+    42
+   ],
+   [
+    "Talath Anor -> Pelennor",
+    34
+   ],
+   [
+    "urash dar -> Imhûlar",
+    33
+   ],
+   [
+    "new rivendell -> Rivendell Steadings",
+    29
+   ],
+   [
+    "idagal -> An Shêru",
+    29
+   ],
+   [
+    "Car Bronach -> Welkin-lofts",
+    28
+   ],
+   [
+    "South Ithilien -> Pelennor",
+    26
+   ],
+   [
+    "Laketown -> Northern Mirkwood",
+    26
+   ],
+   [
+    "Bree-land -> North Downs",
+    25
+   ],
+   [
+    "Evendim -> The Wildwood of Bree-land",
+    25
+   ],
+   [
+    "Gundabad - Gloomingtarn -> Deepscrave",
+    25
+   ],
+   [
+    "Wastes -> Udûn",
+    22
+   ],
+   [
+    "the great river ,0x4111e1c1,0x4111e1c2 -> Wildermore",
+    21
+   ],
+   [
+    "Rhovanion ,nil,nil,0x410f5e5a -> West Rohan: Broadacres",
+    21
+   ],
+   [
+    "havens of belfalas -> Cape of Belfalas",
+    21
+   ],
+   [
+    "Anfalas -> Pinnath Gelin",
+    21
+   ],
+   [
+    "Gundabad - Mattugard -> Deepscrave",
+    20
+   ],
+   [
+    "Dale -> Northern Mirkwood",
+    19
+   ],
+   [
+    "Dor Amarth -> Agarnaith",
+    16
+   ],
+   [
+    "Lone-lands -> Cardolan",
+    16
+   ],
+   [
+    "mirkwood -> Lothlórien",
+    15
+   ],
+   [
+    "sutcrofts ,0x4112fce5,0x4112fce6 -> Rohan Housing: Plains",
+    15
+   ],
+   [
+    "Lossarnach -> Upper Lebennin (King's Gondor)",
+    15
+   ],
+   [
+    "Pelennor after battle -> Lossarnach (King's Gondor)",
+    14
+   ],
+   [
+    "swanfleet -> Trollshaws",
+    14
+   ],
+   [
+    "Talath Urui -> Dor Amarth",
+    13
+   ],
+   [
+    "Redhorn Lodes -> The Grand Stair",
+    12
+   ],
+   [
+    "Rhovanion ,nil,nil,0x410f5e5a -> Glimmerdeep",
+    12
+   ],
+   [
+    "Upper Lebennin -> Pelargir (King's Gondor)",
+    12
+   ],
+   [
+    "Eryn Lasgalen (North Mirkwood) -> Iron Hills",
+    11
+   ],
+   [
+    "kamrabezur -> Ilmabiri; the Wells",
+    11
+   ],
+   [
+    "Rhovanion ,nil,nil,0x410f5e5a -> East Rohan: Snowbourn",
+    9
+   ],
+   [
+    "Lhingris -> Udûn",
+    9
+   ],
+   [
+    "idagal -> Khûd Zagin",
+    9
+   ],
+   [
+    "adagim -> Kighân",
+    9
+   ],
+   [
+    "Sagroth -> Eriador",
+    8
+   ],
+   [
+    "Enedwaith ,nil,nil -> Dunland Overview",
+    8
+   ],
+   [
+    "Dor Amarth -> Orodruin",
+    8
+   ],
+   [
+    "Lhingris -> Dor Amarth",
+    8
+   ],
+   [
+    "Rhovanion ,nil,nil,0x410f5e5a -> Steel Keep",
+    8
+   ],
+   [
+    "takhdar -> Ilmabiri; the Wells",
+    8
+   ],
+   [
+    "kamrabezur -> Khabârkhad; the Crypts",
+    8
+   ],
+   [
+    "khud zagin -> Imhûlar",
+    8
+   ],
+   [
+    "imhular -> An Shêru",
+    8
+   ],
+   [
+    "kighan -> An Shêru",
+    8
+   ],
+   [
+    "new rivendell -> Misty Mountains",
+    7
+   ],
+   [
+    "Lone-lands -> The Angle of Mitheithel",
+    7
+   ],
+   [
+    "Trollshaws -> Eregion",
+    7
+   ],
+   [
+    "Enedwaith ,nil,nil -> Eregion",
+    7
+   ],
+   [
+    "Agarnaith -> Orodruin",
+    7
+   ],
+   [
+    "Lone-lands -> Trollshaws",
+    7
+   ],
+   [
+    "Anfalas -> King's Gondor Lamedon",
+    7
+   ],
+   [
+    "Lower Lebennin -> Upper Lebennin (King's Gondor)",
+    7
+   ],
+   [
+    "King's Gondor -> Lower Lebennin (King's Gondor)",
+    7
+   ],
+   [
+    "urash dar -> Ambarûl",
+    7
+   ],
+   [
+    "Lone-lands -> Bree-land",
+    6
+   ],
+   [
+    "Gap Of Rohan ,0x41116edc,0x41116edd,0x41116ee0 -> Dunland",
+    6
+   ],
+   [
+    "The Wold ,0x4112fceb,0x4112fcec -> East Rohan: Harwick",
+    6
+   ],
+   [
+    "Wells of Langflood -> Ered Mithrin",
+    6
+   ],
+   [
+    "yondershire -> Falathlorn Homesteads",
+    6
+   ],
+   [
+    "Lower Lebennin -> Pelargir (King's Gondor)",
+    6
+   ],
+   [
+    "Outer Gondor -> Anfalas",
+    6
+   ],
+   [
+    "adagim -> Imhûlar",
+    6
+   ],
+   [
+    "Glittering Caves (before dawn) -> Glittering Caves",
+    5
+   ],
+   [
+    "Pelennor after battle -> Minas Tirith (after battle)",
+    5
+   ],
+   [
+    "ambarul -> Umbar Baharbêl",
+    5
+   ],
+   [
+    "idagal -> Emax Dûl",
+    5
+   ],
+   [
+    "Shire Homesteads -> The Shire",
+    4
+   ],
+   [
+    "Forlaw ,0x41137a01,0x411379fd -> East Rohan: Entwash Vale",
+    4
+   ],
+   [
+    "Glittering Caves (epic battle) -> ",
+    4
+   ],
+   [
+    "stonedeans ,0x41142C51,0x41142C3E -> Rohan Housing: Plains",
+    4
+   ],
+   [
+    "South Ithilien -> Minas Tirith",
+    4
+   ],
+   [
+    "North Ithilien -> Lhingris",
+    4
+   ],
+   [
+    "Eryn Lasgalen (North Mirkwood) -> Vales of Anduin",
+    4
+   ],
+   [
+    "Vales of Anduin -> Wells of Langflood",
+    4
+   ],
+   [
+    "Vales of Anduin -> Grimbeorn's House",
+    4
+   ],
+   [
+    "Agoroth -> Forochel",
+    4
+   ],
+   [
+    "Wells of Langflood -> Lyndelby Homesteads",
+    4
+   ],
+   [
+    "Delvings of Gundabad -> Máttugard",
+    4
+   ],
+   [
+    "Sagroth -> Carn Dûm, Angmar Reborn",
+    4
+   ],
+   [
+    "Cape of Umbar -> Umbar Baharbêl",
+    4
+   ],
+   [
+    "esh mekag -> Idagâl",
+    4
+   ],
+   [
+    "Ered Luin -> Eriador",
+    3
+   ],
+   [
+    "Misty Mountains -> Rivendell",
+    3
+   ],
+   [
+    "Trollshaws -> Rivendell Steadings",
+    3
+   ],
+   [
+    "Gap Of Rohan ,0x41116edc,0x41116edd,0x41116ee0 -> Nan Curunír",
+    3
+   ],
+   [
+    "the great river ,0x4111e1c1,0x4111e1c2 -> Lothlórien",
+    3
+   ],
+   [
+    "Harwick ,0x41132e11,0x41132e0f -> East Rohan: Entwash Vale",
+    3
+   ],
+   [
+    "Snowbourn ,0x41132e59,0x41132e5b -> East Rohan: Sutcrofts",
+    3
+   ],
+   [
+    "blackroot vale -> Lamedon",
+    3
+   ],
+   [
+    "havens of belfalas -> Cape of Belfalas Homesteads",
+    3
+   ],
+   [
+    "Mordor -> Lower Lebennin (King's Gondor)",
+    3
+   ],
+   [
+    "King's Gondor -> Lossarnach (King's Gondor)",
+    3
+   ],
+   [
+    "Belfalas (King's Gondor) -> Anfalas",
+    3
+   ],
+   [
+    "Dor-en-Ernil (King's Gondor) -> King's Gondor Ringlo Vale",
+    3
+   ],
+   [
+    "Nud Melek -> Redhorn Lodes",
+    2
+   ],
+   [
+    "moria -> The Water-works",
+    2
+   ],
+   [
+    "The Silvertine Lodes -> The Great Delving",
+    2
+   ],
+   [
+    "erebor -> Eriador",
+    2
+   ],
+   [
+    "Galtrev ,nil,nil,0x41116f03 -> Gap of Rohan",
+    2
+   ],
+   [
+    "Nan Curunir ,nil,nil,0x4111960c -> Isengard",
+    2
+   ],
+   [
+    "The Wold ,0x4112fceb,0x4112fcec -> The Great River",
+    2
+   ],
+   [
+    "Rhovanion ,nil,nil,0x410f5e5a -> East Rohan: Sutcrofts",
+    2
+   ],
+   [
+    "eastfold ,0x41142C42,0x41142C3C -> Rohan Housing: Foothills",
+    2
+   ],
+   [
+    "sutcrofts ,0x4112fce5,0x4112fce6 -> Rohan Housing: Foothills",
+    2
+   ],
+   [
+    "Eastfold Hills Homesteads -> West Rohan: Edoras",
+    2
+   ],
+   [
+    "Pelennor after battle -> Osgiliath (after battle)",
+    2
+   ],
+   [
+    "Talath Urui -> Agarnaith",
+    2
+   ],
+   [
+    "Vales of Anduin -> Mordor Besieged",
+    2
+   ],
+   [
+    "Kingstead Meadows Homesteads -> West Rohan: Edoras",
+    2
+   ],
+   [
+    "ered mithrin -> Elderslade",
+    2
+   ],
+   [
+    "Thaurisgar -> Carn Dûm, Angmar Reborn",
+    2
+   ],
+   [
+    "gwathrenost level 2 -> Carn Dûm, Angmar Reborn",
+    2
+   ],
+   [
+    "Mordor -> King's Gondor Dol Amroth",
+    2
+   ],
+   [
+    "King's Gondor -> Upper Lebennin (King's Gondor)",
+    2
+   ],
+   [
+    "Belfalas (King's Gondor) -> King's Gondor Lamedon",
+    2
+   ],
+   [
+    "Mordor -> King's Gondor Blackroot Vale",
+    2
+   ],
+   [
+    "Blackroot Vale (King's Gondor) -> King's Gondor Lamedon",
+    2
+   ],
+   [
+    "takhdar -> Kamrabezûr; the Vaults",
+    2
+   ],
+   [
+    "Misty Mountains -> Eriador",
+    1
+   ],
+   [
+    "Bree -> Bree-land",
+    1
+   ],
+   [
+    "Archet ,0x4101E0A1,0x4101e0ba -> Bree",
+    1
+   ],
+   [
+    "Angmar -> Eriador",
+    1
+   ],
+   [
+    "Flaming Deeps -> Redhorn Lodes",
+    1
+   ],
+   [
+    "Zelem Melek -> The Grand Stair",
+    1
+   ],
+   [
+    "Barrow Downs South -> Bree-land",
+    1
+   ],
+   [
+    "Lothl rien -> Mirkwood",
+    1
+   ],
+   [
+    "Barrow Downs South -> The Old Forest",
+    1
+   ],
+   [
+    "swanfleet -> Isengard Depths",
+    1
+   ],
+   [
+    "The Wold ,0x4112fceb,0x4112fcec -> Wildermore",
+    1
+   ],
+   [
+    "mirkwood -> The Great River",
+    1
+   ],
+   [
+    "entwash vale ,0x4112fcdb,0x4112fcdc -> West Rohan: Broadacres",
+    1
+   ],
+   [
+    "Wildermore ,0x411375a9,0x411375ad -> East Rohan: Eaves of Fangorn",
+    1
+   ],
+   [
+    "broadacres ,0x41142C4E,0x41142C3F -> West Rohan: Stonedeans",
+    1
+   ],
+   [
+    "eastfold ,0x41142C42,0x41142C3C -> East Rohan: Sutcrofts",
+    1
+   ],
+   [
+    "isengard (flooded) -> Ring of Isengard",
+    1
+   ],
+   [
+    "Lebennin -> Pelargir",
+    1
+   ],
+   [
+    "Mordor -> Dol Amroth",
+    1
+   ],
+   [
+    "Rhovanion ,nil,nil,0x410f5e5a -> Mirkwood",
+    1
+   ],
+   [
+    "Dor Amarth -> Udûn",
+    1
+   ],
+   [
+    "Lhingris -> Talath Úrui",
+    1
+   ],
+   [
+    "Plateau of Gorgoroth -> Agarnaith",
+    1
+   ],
+   [
+    "Wells of Langflood -> Grimbeorn's House",
+    1
+   ],
+   [
+    "Vales of Anduin -> Lothlórien",
+    1
+   ],
+   [
+    "Woe of the Willow -> Cardolan",
+    1
+   ],
+   [
+    "Rhovanion ,nil,nil,0x410f5e5a -> Misty Mountains",
+    1
+   ],
+   [
+    "Rhovanion ,nil,nil,0x410f5e5a -> Gloomingtarn",
+    1
+   ],
+   [
+    "Rhovanion ,nil,nil,0x410f5e5a -> Erebor Homesteads",
+    1
+   ],
+   [
+    "Sarch Vorn Exterior -> Bree-land",
+    1
+   ],
+   [
+    "Bree-land -> Cardolan",
+    1
+   ],
+   [
+    "Lower Lebennin -> King's Gondor Dor En Ernil",
+    1
+   ],
+   [
+    "Mordor -> King's Gondor Lamedon",
+    1
+   ],
+   [
+    "King's Gondor -> King's Gondor Ringlo Vale",
+    1
+   ],
+   [
+    "Haradwaith R5 - coords are only estimates -> Cape of Umbar",
+    1
+   ],
+   [
+    "khud zagin -> Ambarûl",
+    1
+   ],
+   [
+    "ambarul -> Imhûlar",
+    1
+   ],
+   [
+    "adagim -> ",
+    1
+   ],
+   [
+    "hatokali fells -> Emax Dûl",
+    1
+   ]
+  ],
+  "no_button": []
+ },
+ "de_deeds": {
+  "counts": {
+   "t_now": 638,
+   "t_other_map": 90,
+   "t_before": 553,
+   "t_same_map": 463,
+   "t_new": 85,
+   "t_lost": 8,
+   "t_had_before": 561,
+   "g_had_before": 0
+  },
+  "lost": [
+   [
+    "Sagroth",
+    4
+   ],
+   [
+    "Thaurisgar",
+    2
+   ],
+   [
+    "gwathrenost level 3",
+    1
+   ],
+   [
+    "Haradwaith R5 - coords are only estimates",
+    1
+   ]
+  ],
+  "changed": [
+   [
+    "yondershire -> The Shire",
+    18
+   ],
+   [
+    "Rhovanion ,nil,nil,0x410f5e5a -> The Anvil of Winterstith",
+    6
+   ],
+   [
+    "Rhovanion ,nil,nil,0x410f5e5a -> Steel Keep",
+    5
+   ],
+   [
+    "swanfleet -> Enedwaith",
+    4
+   ],
+   [
+    "Wildermore ,0x411375a9,0x411375ad -> East Rohan: The Wold",
+    4
+   ],
+   [
+    "idagal -> An Shêru",
+    4
+   ],
+   [
+    "swanfleet -> Eregion",
+    3
+   ],
+   [
+    "moria -> The Water-works",
+    2
+   ],
+   [
+    "Enedwaith ,nil,nil -> Eregion",
+    2
+   ],
+   [
+    "Forlaw ,0x41137a01,0x411379fd -> East Rohan: Entwash Vale",
+    2
+   ],
+   [
+    "South Ithilien -> Minas Tirith",
+    2
+   ],
+   [
+    "Vales of Anduin -> Wells of Langflood",
+    2
+   ],
+   [
+    "Gundabad - Mattugard -> Deepscrave",
+    2
+   ],
+   [
+    "Misty Mountains -> Rivendell",
+    1
+   ],
+   [
+    "Trollshaws -> The Angle of Mitheithel",
+    1
+   ],
+   [
+    "Trollshaws -> Rivendell Steadings",
+    1
+   ],
+   [
+    "Evendim -> The Wildwood of Bree-land",
+    1
+   ],
+   [
+    "Dunlending ,nil,nil,0x41119612 -> Dunland",
+    1
+   ],
+   [
+    "Harwick ,0x41132e11,0x41132e0f -> East Rohan: Entwash Vale",
+    1
+   ],
+   [
+    "Talath Anor -> Taur Drúadan",
+    1
+   ],
+   [
+    "Talath Anor -> Pelennor",
+    1
+   ],
+   [
+    "Agarnaith -> Orodruin",
+    1
+   ],
+   [
+    "Dor Amarth -> Orodruin",
+    1
+   ],
+   [
+    "Talath Urui -> Agarnaith",
+    1
+   ],
+   [
+    "Talath Urui -> Dor Amarth",
+    1
+   ],
+   [
+    "Dor Amarth -> Agarnaith",
+    1
+   ],
+   [
+    "Lhingris -> Talath Úrui",
+    1
+   ],
+   [
+    "Morgul Vale -> Talath Úrui",
+    1
+   ],
+   [
+    "Laketown -> Northern Mirkwood",
+    1
+   ],
+   [
+    "Rhovanion ,nil,nil,0x410f5e5a -> Glimmerdeep",
+    1
+   ],
+   [
+    "Rhovanion ,nil,nil,0x410f5e5a -> Gloomingtarn",
+    1
+   ],
+   [
+    "Gundabad - Gloomingtarn -> Deepscrave",
+    1
+   ],
+   [
+    "Sarch Vorn Exterior -> Bree-land",
+    1
+   ],
+   [
+    "swanfleet -> Mossward",
+    1
+   ],
+   [
+    "swanfleet -> Trollshaws",
+    1
+   ],
+   [
+    "King's Gondor -> Lossarnach (King's Gondor)",
+    1
+   ],
+   [
+    "Upper Lebennin -> Pelargir (King's Gondor)",
+    1
+   ],
+   [
+    "Lower Lebennin -> Pelargir (King's Gondor)",
+    1
+   ],
+   [
+    "Dor-en-Ernil (King's Gondor) -> King's Gondor Ringlo Vale",
+    1
+   ],
+   [
+    "Outer Gondor -> Anfalas",
+    1
+   ],
+   [
+    "takhdar -> Ilmabiri; the Wells",
+    1
+   ],
+   [
+    "ambarul -> Umbar Baharbêl",
+    1
+   ],
+   [
+    "khud zagin -> Ambarûl",
+    1
+   ],
+   [
+    "urash dar -> Ambarûl",
+    1
+   ],
+   [
+    "imhular -> An Shêru",
+    1
+   ],
+   [
+    "adagim -> ",
+    1
+   ],
+   [
+    "kighan -> An Shêru",
+    1
+   ]
+  ],
+  "no_button": []
+ },
+ "en_quests": {
+  "counts": {
+   "t_now": 12518,
+   "t_same_map": 10166,
+   "t_before": 11972,
+   "g_now": 6884,
+   "g_same_map": 5571,
+   "g_before": 6571,
+   "t_other_map": 1806,
+   "g_other_map": 1000,
+   "t_new": 546,
+   "t_lost": 37,
+   "g_lost": 50,
+   "g_new": 313,
+   "t_had_before": 12009,
+   "g_had_before": 6621
+  },
+  "lost": [
+   [
+    "Rhovanion ,nil,nil,0x410f5e5a",
+    48
+   ],
+   [
+    "Mordor",
+    28
+   ],
+   [
+    "Sagroth",
+    11
+   ]
+  ],
+  "changed": [
+   [
+    "yondershire -> The Shire",
+    489
+   ],
+   [
+    "swanfleet -> Enedwaith",
+    308
+   ],
+   [
+    "Bree-land -> The Wildwood of Bree-land",
+    132
+   ],
+   [
+    "Wildermore ,0x411375a9,0x411375ad -> East Rohan: The Wold",
+    92
+   ],
+   [
+    "swanfleet -> Eregion",
+    79
+   ],
+   [
+    "Trollshaws -> The Angle of Mitheithel",
+    70
+   ],
+   [
+    "swanfleet -> Mossward",
+    66
+   ],
+   [
+    "swanfleet -> Cardolan",
+    65
+   ],
+   [
+    "Morgul Vale -> Minas Morgul",
+    60
+   ],
+   [
+    "Eaworth -> West Rohan: Broadacres",
+    57
+   ],
+   [
+    "Cliving -> East Rohan: Entwash Vale",
+    57
+   ],
+   [
+    "Morgul Vale -> Talath Úrui",
+    55
+   ],
+   [
+    "Ered Luin -> Falathlorn Homesteads",
+    54
+   ],
+   [
+    "North Downs -> The Wildwood of Bree-land",
+    52
+   ],
+   [
+    "The Shire -> The Wildwood of Bree-land",
+    44
+   ],
+   [
+    "Talath Anor -> Taur Drúadan",
+    43
+   ],
+   [
+    "Tal Methedras after -> Tâl Methedras",
+    42
+   ],
+   [
+    "Talath Anor -> Pelennor",
+    34
+   ],
+   [
+    "urash dar -> Imhûlar",
+    33
+   ],
+   [
+    "new rivendell -> Rivendell Steadings",
+    29
+   ],
+   [
+    "idagal -> An Shêru",
+    29
+   ],
+   [
+    "Car Bronach -> Welkin-lofts",
+    28
+   ],
+   [
+    "South Ithilien -> Pelennor",
+    26
+   ],
+   [
+    "Laketown -> Northern Mirkwood",
+    26
+   ],
+   [
+    "Bree-land -> North Downs",
+    25
+   ],
+   [
+    "Evendim -> The Wildwood of Bree-land",
+    25
+   ],
+   [
+    "Gundabad - Gloomingtarn -> Deepscrave",
+    25
+   ],
+   [
+    "Wastes -> Udûn",
+    22
+   ],
+   [
+    "the great river ,0x4111e1c1,0x4111e1c2 -> Wildermore",
+    21
+   ],
+   [
+    "Rhovanion ,nil,nil,0x410f5e5a -> West Rohan: Broadacres",
+    21
+   ],
+   [
+    "havens of belfalas -> Cape of Belfalas",
+    21
+   ],
+   [
+    "Anfalas -> Pinnath Gelin",
+    21
+   ],
+   [
+    "Gundabad - Mattugard -> Deepscrave",
+    20
+   ],
+   [
+    "Dale -> Northern Mirkwood",
+    19
+   ],
+   [
+    "Dor Amarth -> Agarnaith",
+    16
+   ],
+   [
+    "Lone-lands -> Cardolan",
+    16
+   ],
+   [
+    "mirkwood -> Lothlórien",
+    15
+   ],
+   [
+    "sutcrofts ,0x4112fce5,0x4112fce6 -> Rohan Housing: Plains",
+    15
+   ],
+   [
+    "Lossarnach -> Upper Lebennin (King's Gondor)",
+    15
+   ],
+   [
+    "Pelennor after battle -> Lossarnach (King's Gondor)",
+    14
+   ],
+   [
+    "swanfleet -> Trollshaws",
+    14
+   ],
+   [
+    "Talath Urui -> Dor Amarth",
+    13
+   ],
+   [
+    "Redhorn Lodes -> The Grand Stair",
+    12
+   ],
+   [
+    "Rhovanion ,nil,nil,0x410f5e5a -> Glimmerdeep",
+    12
+   ],
+   [
+    "Upper Lebennin -> Pelargir (King's Gondor)",
+    12
+   ],
+   [
+    "Eryn Lasgalen (North Mirkwood) -> Iron Hills",
+    11
+   ],
+   [
+    "kamrabezur -> Ilmabiri; the Wells",
+    11
+   ],
+   [
+    "Rhovanion ,nil,nil,0x410f5e5a -> East Rohan: Snowbourn",
+    9
+   ],
+   [
+    "Lhingris -> Udûn",
+    9
+   ],
+   [
+    "idagal -> Khûd Zagin",
+    9
+   ],
+   [
+    "adagim -> Kighân",
+    9
+   ],
+   [
+    "Sagroth -> Eriador",
+    8
+   ],
+   [
+    "Enedwaith ,nil,nil -> Dunland Overview",
+    8
+   ],
+   [
+    "Dor Amarth -> Orodruin",
+    8
+   ],
+   [
+    "Lhingris -> Dor Amarth",
+    8
+   ],
+   [
+    "Rhovanion ,nil,nil,0x410f5e5a -> Steel Keep",
+    8
+   ],
+   [
+    "takhdar -> Ilmabiri; the Wells",
+    8
+   ],
+   [
+    "kamrabezur -> Khabârkhad; the Crypts",
+    8
+   ],
+   [
+    "khud zagin -> Imhûlar",
+    8
+   ],
+   [
+    "imhular -> An Shêru",
+    8
+   ],
+   [
+    "kighan -> An Shêru",
+    8
+   ],
+   [
+    "new rivendell -> Misty Mountains",
+    7
+   ],
+   [
+    "Lone-lands -> The Angle of Mitheithel",
+    7
+   ],
+   [
+    "Trollshaws -> Eregion",
+    7
+   ],
+   [
+    "Enedwaith ,nil,nil -> Eregion",
+    7
+   ],
+   [
+    "Agarnaith -> Orodruin",
+    7
+   ],
+   [
+    "Lone-lands -> Trollshaws",
+    7
+   ],
+   [
+    "Anfalas -> King's Gondor Lamedon",
+    7
+   ],
+   [
+    "Lower Lebennin -> Upper Lebennin (King's Gondor)",
+    7
+   ],
+   [
+    "King's Gondor -> Lower Lebennin (King's Gondor)",
+    7
+   ],
+   [
+    "urash dar -> Ambarûl",
+    7
+   ],
+   [
+    "Lone-lands -> Bree-land",
+    6
+   ],
+   [
+    "Gap Of Rohan ,0x41116edc,0x41116edd,0x41116ee0 -> Dunland",
+    6
+   ],
+   [
+    "The Wold ,0x4112fceb,0x4112fcec -> East Rohan: Harwick",
+    6
+   ],
+   [
+    "Wells of Langflood -> Ered Mithrin",
+    6
+   ],
+   [
+    "yondershire -> Falathlorn Homesteads",
+    6
+   ],
+   [
+    "Lower Lebennin -> Pelargir (King's Gondor)",
+    6
+   ],
+   [
+    "Outer Gondor -> Anfalas",
+    6
+   ],
+   [
+    "adagim -> Imhûlar",
+    6
+   ],
+   [
+    "Glittering Caves (before dawn) -> Glittering Caves",
+    5
+   ],
+   [
+    "Pelennor after battle -> Minas Tirith (after battle)",
+    5
+   ],
+   [
+    "ambarul -> Umbar Baharbêl",
+    5
+   ],
+   [
+    "idagal -> Emax Dûl",
+    5
+   ],
+   [
+    "Shire Homesteads -> The Shire",
+    4
+   ],
+   [
+    "Forlaw ,0x41137a01,0x411379fd -> East Rohan: Entwash Vale",
+    4
+   ],
+   [
+    "Glittering Caves (epic battle) -> ",
+    4
+   ],
+   [
+    "stonedeans ,0x41142C51,0x41142C3E -> Rohan Housing: Plains",
+    4
+   ],
+   [
+    "South Ithilien -> Minas Tirith",
+    4
+   ],
+   [
+    "North Ithilien -> Lhingris",
+    4
+   ],
+   [
+    "Eryn Lasgalen (North Mirkwood) -> Vales of Anduin",
+    4
+   ],
+   [
+    "Vales of Anduin -> Wells of Langflood",
+    4
+   ],
+   [
+    "Vales of Anduin -> Grimbeorn's House",
+    4
+   ],
+   [
+    "Agoroth -> Forochel",
+    4
+   ],
+   [
+    "Wells of Langflood -> Lyndelby Homesteads",
+    4
+   ],
+   [
+    "Delvings of Gundabad -> Máttugard",
+    4
+   ],
+   [
+    "Sagroth -> Carn Dûm, Angmar Reborn",
+    4
+   ],
+   [
+    "Cape of Umbar -> Umbar Baharbêl",
+    4
+   ],
+   [
+    "esh mekag -> Idagâl",
+    4
+   ],
+   [
+    "Ered Luin -> Eriador",
+    3
+   ],
+   [
+    "Misty Mountains -> Rivendell",
+    3
+   ],
+   [
+    "Trollshaws -> Rivendell Steadings",
+    3
+   ],
+   [
+    "Gap Of Rohan ,0x41116edc,0x41116edd,0x41116ee0 -> Nan Curunír",
+    3
+   ],
+   [
+    "the great river ,0x4111e1c1,0x4111e1c2 -> Lothlórien",
+    3
+   ],
+   [
+    "Harwick ,0x41132e11,0x41132e0f -> East Rohan: Entwash Vale",
+    3
+   ],
+   [
+    "Snowbourn ,0x41132e59,0x41132e5b -> East Rohan: Sutcrofts",
+    3
+   ],
+   [
+    "blackroot vale -> Lamedon",
+    3
+   ],
+   [
+    "havens of belfalas -> Cape of Belfalas Homesteads",
+    3
+   ],
+   [
+    "Mordor -> Lower Lebennin (King's Gondor)",
+    3
+   ],
+   [
+    "King's Gondor -> Lossarnach (King's Gondor)",
+    3
+   ],
+   [
+    "Belfalas (King's Gondor) -> Anfalas",
+    3
+   ],
+   [
+    "Dor-en-Ernil (King's Gondor) -> King's Gondor Ringlo Vale",
+    3
+   ],
+   [
+    "Nud Melek -> Redhorn Lodes",
+    2
+   ],
+   [
+    "moria -> The Water-works",
+    2
+   ],
+   [
+    "The Silvertine Lodes -> The Great Delving",
+    2
+   ],
+   [
+    "erebor -> Eriador",
+    2
+   ],
+   [
+    "Galtrev ,nil,nil,0x41116f03 -> Gap of Rohan",
+    2
+   ],
+   [
+    "Nan Curunir ,nil,nil,0x4111960c -> Isengard",
+    2
+   ],
+   [
+    "The Wold ,0x4112fceb,0x4112fcec -> The Great River",
+    2
+   ],
+   [
+    "Rhovanion ,nil,nil,0x410f5e5a -> East Rohan: Sutcrofts",
+    2
+   ],
+   [
+    "eastfold ,0x41142C42,0x41142C3C -> Rohan Housing: Foothills",
+    2
+   ],
+   [
+    "sutcrofts ,0x4112fce5,0x4112fce6 -> Rohan Housing: Foothills",
+    2
+   ],
+   [
+    "Eastfold Hills Homesteads -> West Rohan: Edoras",
+    2
+   ],
+   [
+    "Pelennor after battle -> Osgiliath (after battle)",
+    2
+   ],
+   [
+    "Talath Urui -> Agarnaith",
+    2
+   ],
+   [
+    "Vales of Anduin -> Mordor Besieged",
+    2
+   ],
+   [
+    "Kingstead Meadows Homesteads -> West Rohan: Edoras",
+    2
+   ],
+   [
+    "ered mithrin -> Elderslade",
+    2
+   ],
+   [
+    "Thaurisgar -> Carn Dûm, Angmar Reborn",
+    2
+   ],
+   [
+    "gwathrenost level 2 -> Carn Dûm, Angmar Reborn",
+    2
+   ],
+   [
+    "Mordor -> King's Gondor Dol Amroth",
+    2
+   ],
+   [
+    "King's Gondor -> Upper Lebennin (King's Gondor)",
+    2
+   ],
+   [
+    "Belfalas (King's Gondor) -> King's Gondor Lamedon",
+    2
+   ],
+   [
+    "Mordor -> King's Gondor Blackroot Vale",
+    2
+   ],
+   [
+    "Blackroot Vale (King's Gondor) -> King's Gondor Lamedon",
+    2
+   ],
+   [
+    "takhdar -> Kamrabezûr; the Vaults",
+    2
+   ],
+   [
+    "Misty Mountains -> Eriador",
+    1
+   ],
+   [
+    "Bree -> Bree-land",
+    1
+   ],
+   [
+    "Archet ,0x4101E0A1,0x4101e0ba -> Bree",
+    1
+   ],
+   [
+    "Angmar -> Eriador",
+    1
+   ],
+   [
+    "Flaming Deeps -> Redhorn Lodes",
+    1
+   ],
+   [
+    "Zelem Melek -> The Grand Stair",
+    1
+   ],
+   [
+    "Barrow Downs South -> Bree-land",
+    1
+   ],
+   [
+    "Lothl rien -> Mirkwood",
+    1
+   ],
+   [
+    "Barrow Downs South -> The Old Forest",
+    1
+   ],
+   [
+    "swanfleet -> Isengard Depths",
+    1
+   ],
+   [
+    "The Wold ,0x4112fceb,0x4112fcec -> Wildermore",
+    1
+   ],
+   [
+    "mirkwood -> The Great River",
+    1
+   ],
+   [
+    "entwash vale ,0x4112fcdb,0x4112fcdc -> West Rohan: Broadacres",
+    1
+   ],
+   [
+    "Wildermore ,0x411375a9,0x411375ad -> East Rohan: Eaves of Fangorn",
+    1
+   ],
+   [
+    "broadacres ,0x41142C4E,0x41142C3F -> West Rohan: Stonedeans",
+    1
+   ],
+   [
+    "eastfold ,0x41142C42,0x41142C3C -> East Rohan: Sutcrofts",
+    1
+   ],
+   [
+    "isengard (flooded) -> Ring of Isengard",
+    1
+   ],
+   [
+    "Lebennin -> Pelargir",
+    1
+   ],
+   [
+    "Mordor -> Dol Amroth",
+    1
+   ],
+   [
+    "Rhovanion ,nil,nil,0x410f5e5a -> Mirkwood",
+    1
+   ],
+   [
+    "Dor Amarth -> Udûn",
+    1
+   ],
+   [
+    "Lhingris -> Talath Úrui",
+    1
+   ],
+   [
+    "Plateau of Gorgoroth -> Agarnaith",
+    1
+   ],
+   [
+    "Wells of Langflood -> Grimbeorn's House",
+    1
+   ],
+   [
+    "Vales of Anduin -> Lothlórien",
+    1
+   ],
+   [
+    "Woe of the Willow -> Cardolan",
+    1
+   ],
+   [
+    "Rhovanion ,nil,nil,0x410f5e5a -> Misty Mountains",
+    1
+   ],
+   [
+    "Rhovanion ,nil,nil,0x410f5e5a -> Gloomingtarn",
+    1
+   ],
+   [
+    "Rhovanion ,nil,nil,0x410f5e5a -> Erebor Homesteads",
+    1
+   ],
+   [
+    "Sarch Vorn Exterior -> Bree-land",
+    1
+   ],
+   [
+    "Bree-land -> Cardolan",
+    1
+   ],
+   [
+    "Lower Lebennin -> King's Gondor Dor En Ernil",
+    1
+   ],
+   [
+    "Mordor -> King's Gondor Lamedon",
+    1
+   ],
+   [
+    "King's Gondor -> King's Gondor Ringlo Vale",
+    1
+   ],
+   [
+    "Haradwaith R5 - coords are only estimates -> Cape of Umbar",
+    1
+   ],
+   [
+    "khud zagin -> Ambarûl",
+    1
+   ],
+   [
+    "ambarul -> Imhûlar",
+    1
+   ],
+   [
+    "adagim -> ",
+    1
+   ],
+   [
+    "hatokali fells -> Emax Dûl",
+    1
+   ]
+  ],
+  "no_button": []
+ },
+ "en_deeds": {
+  "counts": {
+   "t_now": 638,
+   "t_other_map": 90,
+   "t_before": 553,
+   "t_same_map": 463,
+   "t_new": 85,
+   "t_lost": 8,
+   "t_had_before": 561,
+   "g_had_before": 0
+  },
+  "lost": [
+   [
+    "Sagroth",
+    4
+   ],
+   [
+    "Thaurisgar",
+    2
+   ],
+   [
+    "gwathrenost level 3",
+    1
+   ],
+   [
+    "Haradwaith R5 - coords are only estimates",
+    1
+   ]
+  ],
+  "changed": [
+   [
+    "yondershire -> The Shire",
+    18
+   ],
+   [
+    "Rhovanion ,nil,nil,0x410f5e5a -> The Anvil of Winterstith",
+    6
+   ],
+   [
+    "Rhovanion ,nil,nil,0x410f5e5a -> Steel Keep",
+    5
+   ],
+   [
+    "swanfleet -> Enedwaith",
+    4
+   ],
+   [
+    "Wildermore ,0x411375a9,0x411375ad -> East Rohan: The Wold",
+    4
+   ],
+   [
+    "idagal -> An Shêru",
+    4
+   ],
+   [
+    "swanfleet -> Eregion",
+    3
+   ],
+   [
+    "moria -> The Water-works",
+    2
+   ],
+   [
+    "Enedwaith ,nil,nil -> Eregion",
+    2
+   ],
+   [
+    "Forlaw ,0x41137a01,0x411379fd -> East Rohan: Entwash Vale",
+    2
+   ],
+   [
+    "South Ithilien -> Minas Tirith",
+    2
+   ],
+   [
+    "Vales of Anduin -> Wells of Langflood",
+    2
+   ],
+   [
+    "Gundabad - Mattugard -> Deepscrave",
+    2
+   ],
+   [
+    "Misty Mountains -> Rivendell",
+    1
+   ],
+   [
+    "Trollshaws -> The Angle of Mitheithel",
+    1
+   ],
+   [
+    "Trollshaws -> Rivendell Steadings",
+    1
+   ],
+   [
+    "Evendim -> The Wildwood of Bree-land",
+    1
+   ],
+   [
+    "Dunlending ,nil,nil,0x41119612 -> Dunland",
+    1
+   ],
+   [
+    "Harwick ,0x41132e11,0x41132e0f -> East Rohan: Entwash Vale",
+    1
+   ],
+   [
+    "Talath Anor -> Taur Drúadan",
+    1
+   ],
+   [
+    "Talath Anor -> Pelennor",
+    1
+   ],
+   [
+    "Agarnaith -> Orodruin",
+    1
+   ],
+   [
+    "Dor Amarth -> Orodruin",
+    1
+   ],
+   [
+    "Talath Urui -> Agarnaith",
+    1
+   ],
+   [
+    "Talath Urui -> Dor Amarth",
+    1
+   ],
+   [
+    "Dor Amarth -> Agarnaith",
+    1
+   ],
+   [
+    "Lhingris -> Talath Úrui",
+    1
+   ],
+   [
+    "Morgul Vale -> Talath Úrui",
+    1
+   ],
+   [
+    "Laketown -> Northern Mirkwood",
+    1
+   ],
+   [
+    "Rhovanion ,nil,nil,0x410f5e5a -> Glimmerdeep",
+    1
+   ],
+   [
+    "Rhovanion ,nil,nil,0x410f5e5a -> Gloomingtarn",
+    1
+   ],
+   [
+    "Gundabad - Gloomingtarn -> Deepscrave",
+    1
+   ],
+   [
+    "Sarch Vorn Exterior -> Bree-land",
+    1
+   ],
+   [
+    "swanfleet -> Mossward",
+    1
+   ],
+   [
+    "swanfleet -> Trollshaws",
+    1
+   ],
+   [
+    "King's Gondor -> Lossarnach (King's Gondor)",
+    1
+   ],
+   [
+    "Upper Lebennin -> Pelargir (King's Gondor)",
+    1
+   ],
+   [
+    "Lower Lebennin -> Pelargir (King's Gondor)",
+    1
+   ],
+   [
+    "Dor-en-Ernil (King's Gondor) -> King's Gondor Ringlo Vale",
+    1
+   ],
+   [
+    "Outer Gondor -> Anfalas",
+    1
+   ],
+   [
+    "takhdar -> Ilmabiri; the Wells",
+    1
+   ],
+   [
+    "ambarul -> Umbar Baharbêl",
+    1
+   ],
+   [
+    "khud zagin -> Ambarûl",
+    1
+   ],
+   [
+    "urash dar -> Ambarûl",
+    1
+   ],
+   [
+    "imhular -> An Shêru",
+    1
+   ],
+   [
+    "adagim -> ",
+    1
+   ],
+   [
+    "kighan -> An Shêru",
+    1
+   ]
+  ],
+  "no_button": []
+ },
+ "fr_quests": {
+  "counts": {
+   "t_now": 12519,
+   "t_same_map": 10167,
+   "t_before": 11973,
+   "g_now": 6884,
+   "g_same_map": 5571,
+   "g_before": 6571,
+   "t_other_map": 1806,
+   "g_other_map": 1000,
+   "t_new": 546,
+   "t_lost": 37,
+   "g_lost": 50,
+   "g_new": 313,
+   "t_had_before": 12010,
+   "g_had_before": 6621
+  },
+  "lost": [
+   [
+    "Rhovanion ,nil,nil,0x410f5e5a",
+    48
+   ],
+   [
+    "Mordor",
+    28
+   ],
+   [
+    "Sagroth",
+    11
+   ]
+  ],
+  "changed": [
+   [
+    "yondershire -> The Shire",
+    489
+   ],
+   [
+    "swanfleet -> Enedwaith",
+    308
+   ],
+   [
+    "Bree-land -> The Wildwood of Bree-land",
+    132
+   ],
+   [
+    "Wildermore ,0x411375a9,0x411375ad -> East Rohan: The Wold",
+    92
+   ],
+   [
+    "swanfleet -> Eregion",
+    79
+   ],
+   [
+    "Trollshaws -> The Angle of Mitheithel",
+    70
+   ],
+   [
+    "swanfleet -> Mossward",
+    66
+   ],
+   [
+    "swanfleet -> Cardolan",
+    65
+   ],
+   [
+    "Morgul Vale -> Minas Morgul",
+    60
+   ],
+   [
+    "Eaworth -> West Rohan: Broadacres",
+    57
+   ],
+   [
+    "Cliving -> East Rohan: Entwash Vale",
+    57
+   ],
+   [
+    "Morgul Vale -> Talath Úrui",
+    55
+   ],
+   [
+    "Ered Luin -> Falathlorn Homesteads",
+    54
+   ],
+   [
+    "North Downs -> The Wildwood of Bree-land",
+    52
+   ],
+   [
+    "The Shire -> The Wildwood of Bree-land",
+    44
+   ],
+   [
+    "Talath Anor -> Taur Drúadan",
+    43
+   ],
+   [
+    "Tal Methedras after -> Tâl Methedras",
+    42
+   ],
+   [
+    "Talath Anor -> Pelennor",
+    34
+   ],
+   [
+    "urash dar -> Imhûlar",
+    33
+   ],
+   [
+    "new rivendell -> Rivendell Steadings",
+    29
+   ],
+   [
+    "idagal -> An Shêru",
+    29
+   ],
+   [
+    "Car Bronach -> Welkin-lofts",
+    28
+   ],
+   [
+    "South Ithilien -> Pelennor",
+    26
+   ],
+   [
+    "Laketown -> Northern Mirkwood",
+    26
+   ],
+   [
+    "Bree-land -> North Downs",
+    25
+   ],
+   [
+    "Evendim -> The Wildwood of Bree-land",
+    25
+   ],
+   [
+    "Gundabad - Gloomingtarn -> Deepscrave",
+    25
+   ],
+   [
+    "Wastes -> Udûn",
+    22
+   ],
+   [
+    "the great river ,0x4111e1c1,0x4111e1c2 -> Wildermore",
+    21
+   ],
+   [
+    "Rhovanion ,nil,nil,0x410f5e5a -> West Rohan: Broadacres",
+    21
+   ],
+   [
+    "havens of belfalas -> Cape of Belfalas",
+    21
+   ],
+   [
+    "Anfalas -> Pinnath Gelin",
+    21
+   ],
+   [
+    "Gundabad - Mattugard -> Deepscrave",
+    20
+   ],
+   [
+    "Dale -> Northern Mirkwood",
+    19
+   ],
+   [
+    "Dor Amarth -> Agarnaith",
+    16
+   ],
+   [
+    "Lone-lands -> Cardolan",
+    16
+   ],
+   [
+    "mirkwood -> Lothlórien",
+    15
+   ],
+   [
+    "sutcrofts ,0x4112fce5,0x4112fce6 -> Rohan Housing: Plains",
+    15
+   ],
+   [
+    "Lossarnach -> Upper Lebennin (King's Gondor)",
+    15
+   ],
+   [
+    "Pelennor after battle -> Lossarnach (King's Gondor)",
+    14
+   ],
+   [
+    "swanfleet -> Trollshaws",
+    14
+   ],
+   [
+    "Talath Urui -> Dor Amarth",
+    13
+   ],
+   [
+    "Redhorn Lodes -> The Grand Stair",
+    12
+   ],
+   [
+    "Rhovanion ,nil,nil,0x410f5e5a -> Glimmerdeep",
+    12
+   ],
+   [
+    "Upper Lebennin -> Pelargir (King's Gondor)",
+    12
+   ],
+   [
+    "Eryn Lasgalen (North Mirkwood) -> Iron Hills",
+    11
+   ],
+   [
+    "kamrabezur -> Ilmabiri; the Wells",
+    11
+   ],
+   [
+    "Rhovanion ,nil,nil,0x410f5e5a -> East Rohan: Snowbourn",
+    9
+   ],
+   [
+    "Lhingris -> Udûn",
+    9
+   ],
+   [
+    "idagal -> Khûd Zagin",
+    9
+   ],
+   [
+    "adagim -> Kighân",
+    9
+   ],
+   [
+    "Sagroth -> Eriador",
+    8
+   ],
+   [
+    "Enedwaith ,nil,nil -> Dunland Overview",
+    8
+   ],
+   [
+    "Dor Amarth -> Orodruin",
+    8
+   ],
+   [
+    "Lhingris -> Dor Amarth",
+    8
+   ],
+   [
+    "Rhovanion ,nil,nil,0x410f5e5a -> Steel Keep",
+    8
+   ],
+   [
+    "takhdar -> Ilmabiri; the Wells",
+    8
+   ],
+   [
+    "kamrabezur -> Khabârkhad; the Crypts",
+    8
+   ],
+   [
+    "khud zagin -> Imhûlar",
+    8
+   ],
+   [
+    "imhular -> An Shêru",
+    8
+   ],
+   [
+    "kighan -> An Shêru",
+    8
+   ],
+   [
+    "new rivendell -> Misty Mountains",
+    7
+   ],
+   [
+    "Lone-lands -> The Angle of Mitheithel",
+    7
+   ],
+   [
+    "Trollshaws -> Eregion",
+    7
+   ],
+   [
+    "Enedwaith ,nil,nil -> Eregion",
+    7
+   ],
+   [
+    "Agarnaith -> Orodruin",
+    7
+   ],
+   [
+    "Lone-lands -> Trollshaws",
+    7
+   ],
+   [
+    "Anfalas -> King's Gondor Lamedon",
+    7
+   ],
+   [
+    "Lower Lebennin -> Upper Lebennin (King's Gondor)",
+    7
+   ],
+   [
+    "King's Gondor -> Lower Lebennin (King's Gondor)",
+    7
+   ],
+   [
+    "urash dar -> Ambarûl",
+    7
+   ],
+   [
+    "Lone-lands -> Bree-land",
+    6
+   ],
+   [
+    "Gap Of Rohan ,0x41116edc,0x41116edd,0x41116ee0 -> Dunland",
+    6
+   ],
+   [
+    "The Wold ,0x4112fceb,0x4112fcec -> East Rohan: Harwick",
+    6
+   ],
+   [
+    "Wells of Langflood -> Ered Mithrin",
+    6
+   ],
+   [
+    "yondershire -> Falathlorn Homesteads",
+    6
+   ],
+   [
+    "Lower Lebennin -> Pelargir (King's Gondor)",
+    6
+   ],
+   [
+    "Outer Gondor -> Anfalas",
+    6
+   ],
+   [
+    "adagim -> Imhûlar",
+    6
+   ],
+   [
+    "Glittering Caves (before dawn) -> Glittering Caves",
+    5
+   ],
+   [
+    "Pelennor after battle -> Minas Tirith (after battle)",
+    5
+   ],
+   [
+    "ambarul -> Umbar Baharbêl",
+    5
+   ],
+   [
+    "idagal -> Emax Dûl",
+    5
+   ],
+   [
+    "Shire Homesteads -> The Shire",
+    4
+   ],
+   [
+    "Forlaw ,0x41137a01,0x411379fd -> East Rohan: Entwash Vale",
+    4
+   ],
+   [
+    "Glittering Caves (epic battle) -> ",
+    4
+   ],
+   [
+    "stonedeans ,0x41142C51,0x41142C3E -> Rohan Housing: Plains",
+    4
+   ],
+   [
+    "South Ithilien -> Minas Tirith",
+    4
+   ],
+   [
+    "North Ithilien -> Lhingris",
+    4
+   ],
+   [
+    "Eryn Lasgalen (North Mirkwood) -> Vales of Anduin",
+    4
+   ],
+   [
+    "Vales of Anduin -> Wells of Langflood",
+    4
+   ],
+   [
+    "Vales of Anduin -> Grimbeorn's House",
+    4
+   ],
+   [
+    "Agoroth -> Forochel",
+    4
+   ],
+   [
+    "Wells of Langflood -> Lyndelby Homesteads",
+    4
+   ],
+   [
+    "Delvings of Gundabad -> Máttugard",
+    4
+   ],
+   [
+    "Sagroth -> Carn Dûm, Angmar Reborn",
+    4
+   ],
+   [
+    "Cape of Umbar -> Umbar Baharbêl",
+    4
+   ],
+   [
+    "esh mekag -> Idagâl",
+    4
+   ],
+   [
+    "Ered Luin -> Eriador",
+    3
+   ],
+   [
+    "Misty Mountains -> Rivendell",
+    3
+   ],
+   [
+    "Trollshaws -> Rivendell Steadings",
+    3
+   ],
+   [
+    "Gap Of Rohan ,0x41116edc,0x41116edd,0x41116ee0 -> Nan Curunír",
+    3
+   ],
+   [
+    "the great river ,0x4111e1c1,0x4111e1c2 -> Lothlórien",
+    3
+   ],
+   [
+    "Harwick ,0x41132e11,0x41132e0f -> East Rohan: Entwash Vale",
+    3
+   ],
+   [
+    "Snowbourn ,0x41132e59,0x41132e5b -> East Rohan: Sutcrofts",
+    3
+   ],
+   [
+    "blackroot vale -> Lamedon",
+    3
+   ],
+   [
+    "havens of belfalas -> Cape of Belfalas Homesteads",
+    3
+   ],
+   [
+    "Mordor -> Lower Lebennin (King's Gondor)",
+    3
+   ],
+   [
+    "King's Gondor -> Lossarnach (King's Gondor)",
+    3
+   ],
+   [
+    "Belfalas (King's Gondor) -> Anfalas",
+    3
+   ],
+   [
+    "Dor-en-Ernil (King's Gondor) -> King's Gondor Ringlo Vale",
+    3
+   ],
+   [
+    "Nud Melek -> Redhorn Lodes",
+    2
+   ],
+   [
+    "moria -> The Water-works",
+    2
+   ],
+   [
+    "The Silvertine Lodes -> The Great Delving",
+    2
+   ],
+   [
+    "erebor -> Eriador",
+    2
+   ],
+   [
+    "Galtrev ,nil,nil,0x41116f03 -> Gap of Rohan",
+    2
+   ],
+   [
+    "Nan Curunir ,nil,nil,0x4111960c -> Isengard",
+    2
+   ],
+   [
+    "The Wold ,0x4112fceb,0x4112fcec -> The Great River",
+    2
+   ],
+   [
+    "Rhovanion ,nil,nil,0x410f5e5a -> East Rohan: Sutcrofts",
+    2
+   ],
+   [
+    "eastfold ,0x41142C42,0x41142C3C -> Rohan Housing: Foothills",
+    2
+   ],
+   [
+    "sutcrofts ,0x4112fce5,0x4112fce6 -> Rohan Housing: Foothills",
+    2
+   ],
+   [
+    "Eastfold Hills Homesteads -> West Rohan: Edoras",
+    2
+   ],
+   [
+    "Pelennor after battle -> Osgiliath (after battle)",
+    2
+   ],
+   [
+    "Talath Urui -> Agarnaith",
+    2
+   ],
+   [
+    "Vales of Anduin -> Mordor Besieged",
+    2
+   ],
+   [
+    "Kingstead Meadows Homesteads -> West Rohan: Edoras",
+    2
+   ],
+   [
+    "ered mithrin -> Elderslade",
+    2
+   ],
+   [
+    "Thaurisgar -> Carn Dûm, Angmar Reborn",
+    2
+   ],
+   [
+    "gwathrenost level 2 -> Carn Dûm, Angmar Reborn",
+    2
+   ],
+   [
+    "Mordor -> King's Gondor Dol Amroth",
+    2
+   ],
+   [
+    "King's Gondor -> Upper Lebennin (King's Gondor)",
+    2
+   ],
+   [
+    "Belfalas (King's Gondor) -> King's Gondor Lamedon",
+    2
+   ],
+   [
+    "Mordor -> King's Gondor Blackroot Vale",
+    2
+   ],
+   [
+    "Blackroot Vale (King's Gondor) -> King's Gondor Lamedon",
+    2
+   ],
+   [
+    "takhdar -> Kamrabezûr; the Vaults",
+    2
+   ],
+   [
+    "Misty Mountains -> Eriador",
+    1
+   ],
+   [
+    "Bree -> Bree-land",
+    1
+   ],
+   [
+    "Archet ,0x4101E0A1,0x4101e0ba -> Bree",
+    1
+   ],
+   [
+    "Angmar -> Eriador",
+    1
+   ],
+   [
+    "Flaming Deeps -> Redhorn Lodes",
+    1
+   ],
+   [
+    "Zelem Melek -> The Grand Stair",
+    1
+   ],
+   [
+    "Barrow Downs South -> Bree-land",
+    1
+   ],
+   [
+    "Lothl rien -> Mirkwood",
+    1
+   ],
+   [
+    "Barrow Downs South -> The Old Forest",
+    1
+   ],
+   [
+    "swanfleet -> Isengard Depths",
+    1
+   ],
+   [
+    "The Wold ,0x4112fceb,0x4112fcec -> Wildermore",
+    1
+   ],
+   [
+    "mirkwood -> The Great River",
+    1
+   ],
+   [
+    "entwash vale ,0x4112fcdb,0x4112fcdc -> West Rohan: Broadacres",
+    1
+   ],
+   [
+    "Wildermore ,0x411375a9,0x411375ad -> East Rohan: Eaves of Fangorn",
+    1
+   ],
+   [
+    "broadacres ,0x41142C4E,0x41142C3F -> West Rohan: Stonedeans",
+    1
+   ],
+   [
+    "eastfold ,0x41142C42,0x41142C3C -> East Rohan: Sutcrofts",
+    1
+   ],
+   [
+    "isengard (flooded) -> Ring of Isengard",
+    1
+   ],
+   [
+    "Lebennin -> Pelargir",
+    1
+   ],
+   [
+    "Mordor -> Dol Amroth",
+    1
+   ],
+   [
+    "Rhovanion ,nil,nil,0x410f5e5a -> Mirkwood",
+    1
+   ],
+   [
+    "Dor Amarth -> Udûn",
+    1
+   ],
+   [
+    "Lhingris -> Talath Úrui",
+    1
+   ],
+   [
+    "Plateau of Gorgoroth -> Agarnaith",
+    1
+   ],
+   [
+    "Wells of Langflood -> Grimbeorn's House",
+    1
+   ],
+   [
+    "Vales of Anduin -> Lothlórien",
+    1
+   ],
+   [
+    "Woe of the Willow -> Cardolan",
+    1
+   ],
+   [
+    "Rhovanion ,nil,nil,0x410f5e5a -> Misty Mountains",
+    1
+   ],
+   [
+    "Rhovanion ,nil,nil,0x410f5e5a -> Gloomingtarn",
+    1
+   ],
+   [
+    "Rhovanion ,nil,nil,0x410f5e5a -> Erebor Homesteads",
+    1
+   ],
+   [
+    "Sarch Vorn Exterior -> Bree-land",
+    1
+   ],
+   [
+    "Bree-land -> Cardolan",
+    1
+   ],
+   [
+    "Lower Lebennin -> King's Gondor Dor En Ernil",
+    1
+   ],
+   [
+    "Mordor -> King's Gondor Lamedon",
+    1
+   ],
+   [
+    "King's Gondor -> King's Gondor Ringlo Vale",
+    1
+   ],
+   [
+    "Haradwaith R5 - coords are only estimates -> Cape of Umbar",
+    1
+   ],
+   [
+    "khud zagin -> Ambarûl",
+    1
+   ],
+   [
+    "ambarul -> Imhûlar",
+    1
+   ],
+   [
+    "adagim -> ",
+    1
+   ],
+   [
+    "hatokali fells -> Emax Dûl",
+    1
+   ]
+  ],
+  "no_button": []
+ },
+ "fr_deeds": {
+  "counts": {
+   "t_now": 638,
+   "t_other_map": 90,
+   "t_before": 553,
+   "t_same_map": 463,
+   "t_new": 85,
+   "t_lost": 8,
+   "t_had_before": 561,
+   "g_had_before": 0
+  },
+  "lost": [
+   [
+    "Sagroth",
+    4
+   ],
+   [
+    "Thaurisgar",
+    2
+   ],
+   [
+    "gwathrenost level 3",
+    1
+   ],
+   [
+    "Haradwaith R5 - coords are only estimates",
+    1
+   ]
+  ],
+  "changed": [
+   [
+    "yondershire -> The Shire",
+    18
+   ],
+   [
+    "Rhovanion ,nil,nil,0x410f5e5a -> The Anvil of Winterstith",
+    6
+   ],
+   [
+    "Rhovanion ,nil,nil,0x410f5e5a -> Steel Keep",
+    5
+   ],
+   [
+    "swanfleet -> Enedwaith",
+    4
+   ],
+   [
+    "Wildermore ,0x411375a9,0x411375ad -> East Rohan: The Wold",
+    4
+   ],
+   [
+    "idagal -> An Shêru",
+    4
+   ],
+   [
+    "swanfleet -> Eregion",
+    3
+   ],
+   [
+    "moria -> The Water-works",
+    2
+   ],
+   [
+    "Enedwaith ,nil,nil -> Eregion",
+    2
+   ],
+   [
+    "Forlaw ,0x41137a01,0x411379fd -> East Rohan: Entwash Vale",
+    2
+   ],
+   [
+    "South Ithilien -> Minas Tirith",
+    2
+   ],
+   [
+    "Vales of Anduin -> Wells of Langflood",
+    2
+   ],
+   [
+    "Gundabad - Mattugard -> Deepscrave",
+    2
+   ],
+   [
+    "Misty Mountains -> Rivendell",
+    1
+   ],
+   [
+    "Trollshaws -> The Angle of Mitheithel",
+    1
+   ],
+   [
+    "Trollshaws -> Rivendell Steadings",
+    1
+   ],
+   [
+    "Evendim -> The Wildwood of Bree-land",
+    1
+   ],
+   [
+    "Dunlending ,nil,nil,0x41119612 -> Dunland",
+    1
+   ],
+   [
+    "Harwick ,0x41132e11,0x41132e0f -> East Rohan: Entwash Vale",
+    1
+   ],
+   [
+    "Talath Anor -> Taur Drúadan",
+    1
+   ],
+   [
+    "Talath Anor -> Pelennor",
+    1
+   ],
+   [
+    "Agarnaith -> Orodruin",
+    1
+   ],
+   [
+    "Dor Amarth -> Orodruin",
+    1
+   ],
+   [
+    "Talath Urui -> Agarnaith",
+    1
+   ],
+   [
+    "Talath Urui -> Dor Amarth",
+    1
+   ],
+   [
+    "Dor Amarth -> Agarnaith",
+    1
+   ],
+   [
+    "Lhingris -> Talath Úrui",
+    1
+   ],
+   [
+    "Morgul Vale -> Talath Úrui",
+    1
+   ],
+   [
+    "Laketown -> Northern Mirkwood",
+    1
+   ],
+   [
+    "Rhovanion ,nil,nil,0x410f5e5a -> Glimmerdeep",
+    1
+   ],
+   [
+    "Rhovanion ,nil,nil,0x410f5e5a -> Gloomingtarn",
+    1
+   ],
+   [
+    "Gundabad - Gloomingtarn -> Deepscrave",
+    1
+   ],
+   [
+    "Sarch Vorn Exterior -> Bree-land",
+    1
+   ],
+   [
+    "swanfleet -> Mossward",
+    1
+   ],
+   [
+    "swanfleet -> Trollshaws",
+    1
+   ],
+   [
+    "King's Gondor -> Lossarnach (King's Gondor)",
+    1
+   ],
+   [
+    "Upper Lebennin -> Pelargir (King's Gondor)",
+    1
+   ],
+   [
+    "Lower Lebennin -> Pelargir (King's Gondor)",
+    1
+   ],
+   [
+    "Dor-en-Ernil (King's Gondor) -> King's Gondor Ringlo Vale",
+    1
+   ],
+   [
+    "Outer Gondor -> Anfalas",
+    1
+   ],
+   [
+    "takhdar -> Ilmabiri; the Wells",
+    1
+   ],
+   [
+    "ambarul -> Umbar Baharbêl",
+    1
+   ],
+   [
+    "khud zagin -> Ambarûl",
+    1
+   ],
+   [
+    "urash dar -> Ambarûl",
+    1
+   ],
+   [
+    "imhular -> An Shêru",
+    1
+   ],
+   [
+    "adagim -> ",
+    1
+   ],
+   [
+    "kighan -> An Shêru",
+    1
+   ]
+  ],
+  "no_button": []
+ }
+}

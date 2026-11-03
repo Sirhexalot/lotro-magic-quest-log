@@ -3,9 +3,11 @@
 # Reads game data only; it never writes to the game files. Double-clickable in Finder.
 #
 # The XML way (LOTRO Companion lore directory) lives in rebuild.command. This one
-# needs no Companion application: only the export folder, the enum dump and
-# MoorMap's bounds. landblocks.xml is optional and only used for the territory
-# fallback when a quest has no map reference of its own.
+# needs no Companion application: the export folder, the enum dump and the game's
+# maps from Companion's lore data (parchmentMaps.xml, maps/), which decide the map
+# each position is on. MoorMap's Defaults.lua is read only for its map numbers, so
+# the plugin's "Show in MoorMap" button opens the right map. landblocks.xml is
+# optional and only used for the territory fallback.
 #
 # Usage:  rebuild-from-export.command [EXPORT_DIR] [PLUGIN_DIR] [LANDBLOCKS_XML]
 #
@@ -50,7 +52,21 @@ MOORMAP=""
 if [ -n "$PLUGIN_DIR" ] && [ -f "$PLUGIN_DIR/GaranStuff/MoorMap/Defaults.lua" ]; then
 	MOORMAP="$PLUGIN_DIR/GaranStuff/MoorMap/Defaults.lua"
 else
-	echo "NOTE: MoorMap not found. Without its bounds no map positions are produced." >&2
+	echo "NOTE: MoorMap not found. Positions stay, but the MoorMap button has no map numbers." >&2
+fi
+LORE="${MQL_LORE_DIR:-}"
+if [ -z "$LORE" ]; then
+	for candidate in \
+		"$HOME/Applications/LOTRO-Companion-Test/LotRO Companion/app/data/lore" \
+		"$HOME/Applications/LOTRO Companion.app/Contents/Resources/app/data/lore" \
+		"/Applications/LOTRO Companion.app/Contents/Resources/app/data/lore"
+	do
+		if [ -f "$candidate/parchmentMaps.xml" ]; then LORE="$candidate"; break; fi
+	done
+fi
+if [ -z "$LORE" ] || [ ! -f "$LORE/parchmentMaps.xml" ]; then
+	echo "ERROR: the game's maps (Companion lore: parchmentMaps.xml, maps/) not found. Set MQL_LORE_DIR." >&2
+	exit 1
 fi
 if [ -z "$LANDBLOCKS" ]; then
 	for candidate in \
@@ -72,7 +88,7 @@ if [ ! -x "$VENV/bin/python" ]; then
 	"$VENV/bin/python" -m pip install --quiet --upgrade pip lupa
 fi
 
-ARGS=(--export "$EXPORT" --enums "$ENUMS" --output "$ROOT/plugin/MagicQuestLog/Data")
+ARGS=(--export "$EXPORT" --enums "$ENUMS" --lore "$LORE" --output "$ROOT/plugin/MagicQuestLog/Data")
 [ -n "$MOORMAP" ] && ARGS+=(--moormap "$MOORMAP")
 [ -n "$LANDBLOCKS" ] && ARGS+=(--landblocks "$LANDBLOCKS")
 # Quest givers: export of the bestowing NPCs next to the main export (optional).
@@ -84,7 +100,8 @@ DIDGEO="${MQL_DIDGEO:-$(dirname "$EXPORT")/did-positions-2026-11-03/positions.js
 
 echo "source:     $EXPORT"
 echo "enums:      $ENUMS"
-echo "moormap:    ${MOORMAP:-none}"
+echo "maps:       $LORE (game maps)"
+echo "moormap:    ${MOORMAP:-none} (map numbers for the button only)"
 echo "landblocks: ${LANDBLOCKS:-none}"
 
 echo "1/4 build the catalog"

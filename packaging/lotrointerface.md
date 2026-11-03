@@ -82,7 +82,9 @@ You can also simply restart the game; the plugin then loads by itself.
 
 That is all. Only the map button needs
 [MoorMap](https://www.lotrointerface.com/downloads/info532-MoorMap.html) by Garan;
-everything else works without it.
+everything else works without it. Which map a quest is on comes from the game's own
+map data; from MoorMap the plugin only uses its map numbers, so the button opens
+the right map.
 
 ### Your older quests and deeds — and several characters
 

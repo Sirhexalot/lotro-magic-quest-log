@@ -1006,6 +1006,25 @@ end''')
     print('PASS: %s quests with verified MoorMap positions, %s without; command format checked' %
           (values['withTargets'], values['withoutTargets']))
     print('PASS: a quest without a verified position shows no map button and no command')
+    lua.execute(r'''
+local M = MagicQuestLog.Model;
+-- The map a position is on is a game map (gm); MoorMap's number (map) only drives
+-- the button. Without it there is no command, and the ping format is unchanged.
+assert(M.MapCommand({ gm = 268437716, lat = -30.5, lon = -50.8 }, "X") == nil, "no MoorMap number, no button");
+assert(M.MapCommand({ gm = 268437716, map = 9, lat = -30.5, lon = -50.8, n = "1" }, "Bree quest")
+	== "/moormap ping 9:-30.50000:-50.80000:1:Bree quest", "ping format unchanged");
+local withGame, withNumber = 0, 0;
+for _, record in ipairs(MagicQuestLog.catalogs.quests) do
+	for _, target in ipairs(record.t or {}) do
+		assert(type(target.gm) == "number", "every target names its game map");
+		withGame = withGame + 1;
+		if target.map ~= nil then withNumber = withNumber + 1; end
+	end
+end
+assert(withNumber > 0.95 * withGame, "almost every target has a MoorMap number: " .. withNumber .. "/" .. withGame);
+mapShare = string.format("%.1f", 100 * withNumber / withGame);
+''')
+    print('PASS: targets name their game map; the MoorMap button needs MoorMap\'s number (%s %% of targets have one); ping format unchanged' % lua.globals().mapShare)
     print('PASS: %s row clicks via list selection (same row stays clickable); nodes expand and collapse' % values['rows'])
     print('PASS: start icon toggles the window; position and visibility are stored and honoured')
     print('PASS: header sits below the title bar, search is labelled "%s"' % values['searchLabelText'])

@@ -243,10 +243,25 @@ The shipped catalog is built from **our own DAT export**, not from Companion
 XML. `tools/build_catalog_from_export.py` reads `quests.json`, `deeds.json`,
 `areas.json`, `locations.json` and `manifest.json` from
 `Companion-Test/source-exporter`, the category enums
-(`enums/enum-names.json`, also read from the client) and MoorMap's map table. No
-Companion application and no Companion XML are involved; the import is plain
-Python and runs without Companion installed. The one optional Companion file is
-`app/data/lore/landblocks.xml`, used only as a territory fallback.
+(`enums/enum-names.json`, also read from the client) and **the game's own maps**
+from LOTRO Companion's lore data (`parchmentMaps.xml`, `maps/maps/maps.xml`,
+`maps/links.xml`; used with Damien's permission). No Companion application is
+involved; the import is plain Python. `app/data/lore/landblocks.xml` is used only
+as a territory fallback.
+
+**Which map a position is on** comes from the game data (`tools/game_maps.py`):
+the parchment maps give the list, each map's region and its parent map; maps.xml
+gives the bounds. A position goes to the deepest map of its region whose bounds
+hold it, and between neighbours at the same depth to the one on which it lies
+nearer the middle. The overview maps (Eriador, Rhovanion …) have only their image
+size as bounds; for Eriador the bounds are fitted from the pixel spots of its links
+to its places, the others show no dots. Checked against the area the game files
+each quest under: 82.6 % agree, the former MoorMap-based attribution 75.5 %.
+
+**MoorMap is used for one thing only**: its map numbers, so the "Show in MoorMap"
+button opens the right map. `Defaults.lua` is read to translate a game map into
+MoorMap's number through the shared image id (the next larger game map when MoorMap
+lacks one). No bounds, regions or parents are taken from MoorMap.
 
 ```sh
 MagicQuestLog/tools/rebuild-from-export.command \
@@ -368,10 +383,13 @@ exporter and its licence questions. The importer needs no Companion application.
 |---|---|
 | `Companion-Test/source-exporter/full-dat-*/` | `quests.json`, `deeds.json`, `areas.json`, `locations.json`, `manifest.json` |
 | `Companion-Test/source-exporter/enums/enum-names.json` | the category enums (also read from the client) |
-| `GaranStuff/MoorMap/Defaults.lua` | map bounds for the verified positions |
+| LOTRO Companion → `app/data/lore/parchmentMaps.xml`, `maps/maps/maps.xml`, `maps/links.xml` | the game's maps: list, region, parent, bounds |
+| `GaranStuff/MoorMap/Defaults.lua` | only MoorMap's map numbers, for the "Show in MoorMap" button |
 | `LOTRO Companion` → `app/data/lore/landblocks.xml` | optional territory fallback |
 
 The **old XML path** still exists in `build_catalog.py` and `rebuild.command`.
+It is not used for anything shipped, and unlike the shipped path it still takes
+map bounds from MoorMap; it stays only for comparison.
 It reads extracted game data from two LOTRO Companion repositories, because the
 map data is not in the first one:
 
@@ -454,10 +472,10 @@ copy.
 - World regions follow an explicit comparison with the original maps.
   `geoAreas.parentId` is unusable for that: it hangs Gondor and Mordor off
   Rhovanion.
-- Map positions are only offered when they have been verified against the
-  **exact texture id** of the map and the MoorMap bounds, and the region code
-  matches. Ambiguous or missing positions show no button at all: 8,403 of the
-  15,209 quests have a verified position.
+- A position is placed on a game map only when the map's region matches and its
+  bounds hold the position (see "Where the catalog comes from"); 12,519 of the
+  15,209 quests have at least one placed objective. The MoorMap button appears
+  only where MoorMap has a map number for that map or a larger one.
 - Positions come from the original coordinates of objectives and bestowers.
   They are not always the start of the quest.
 - The catalog totals are entries, not "reachable" quests. Class, race,

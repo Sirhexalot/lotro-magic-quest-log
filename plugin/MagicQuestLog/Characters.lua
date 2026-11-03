@@ -105,9 +105,11 @@ local function readImport(name)
 end
 
 function C.LoadImport(name)
-	local started = MagicQuestLog.Perf.Now();
+	local perf = MagicQuestLog.Perf;
+	if perf == nil then return readImport(name); end
+	local started = perf.Now();
 	local result = readImport(name);
-	MagicQuestLog.Perf.Record("LoadImport " .. tostring(name), started);
+	perf.Record("LoadImport " .. tostring(name), started);
 	return result;
 end
 
