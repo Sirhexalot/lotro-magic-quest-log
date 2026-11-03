@@ -34,6 +34,9 @@ def check(locale, kind, records):
     for record in records.values():
         assert HEX.match(record.id), '%s: bad id %r' % (locale, record.id)
         assert record.name and record.name.strip(), '%s %s: empty name' % (locale, record.id)
+        # Developer placeholders ("DNT", "HIDING CONTENT") stay hidden in every language.
+        assert not re.search(r'\bDNT\b', record.name) and 'HIDING CONTENT' not in record.name.upper(), \
+            'developer placeholder visible: %s %s' % (record.id, record.name)
         assert record.id not in ids, 'duplicate id ' + record.id
         ids.add(record.id)
         assert len(record.p) > 0, '%s %s: empty path' % (locale, record.id)

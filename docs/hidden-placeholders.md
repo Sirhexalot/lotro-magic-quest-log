@@ -1,0 +1,107 @@
+# Developer placeholders hidden from the catalog
+
+A title in any language has "DNT" (do not translate) as a word or contains "HIDING CONTENT".
+Rule: `is_placeholder()` in `tools/build_catalog_from_export.py`.
+
+## Quests (91)
+
+- `7000057D` Hiding Content
+- `7000176E` HIDING CONTENT - The Black Tide of Angmar
+- `7000177D` HIDING CONTENT - Orders from the Front
+- `70015211` HIDING CONTENT - DNT - Mapping the Dolven-view Dwarf-door
+- `70015213` HIDING CONTENT - DNT - Dwarf Doors: Dolven-view
+- `70015671` HIDING CONTENT - Piercing the Walls
+- `70015684` HIDING CONTENT - Expulsion
+- `700165B3` HIDING CONTENT - DNT - Red Dwarf-Lamp
+- `70016697` HIDING CONTENT - Mapping Zurr-tharûkh
+- `70016698` HIDING CONTENT - Mapping Mezel-katub
+- `70016699` HIDING CONTENT - Yellow Dwarf-lamp
+- `7001669E` HIDING CONTENT - DNT - Dwarven Doors: Menem-nar
+- `7001669F` HIDING CONTENT - DNT - Dwarven Doors: Khibir-zamu
+- `700166A0` HIDING CONTENT - DNT - Green Dwarf-Lamp
+- `700166A5` HIDING CONTENT - DNT - Dwarven Doors: Khibir-zarur
+- `700166A6` HIDING CONTENT - DNT - Mapping Umukh-kanon
+- `700166A7` HIDING CONTENT - DNT - Mapping Kheled-menem
+- `700166A8` HIDING CONTENT - DNT - Purple Dwarf-lamp
+- `70016713` HIDING CONTENT - Warn the Dale
+- `7001672B` HIDING CONTENT - A Thousand Campfires
+- `70016737` HIDING CONTENT - DNT - Dwarf-doors: Mezel-saluch
+- `700167A5` HIDING CONTENT - DNT - Mezel-saluch: Quîl the Rider
+- `700167A6` HIDING CONTENT - DNT - Mezel-saluch: Weapons of Moria
+- `700167A7` HIDING CONTENT - DNT - Mezel-saluch: Pack-raiders
+- `700167AB` HIDING CONTENT - DNT - Khibir-zarur: the Shadows of Faerdûath
+- `700167AC` HIDING CONTENT - Khibir-zarur: Gold in the Darkness
+- `700167AD` HIDING CONTENT - DNT - Khibir-zarur: Fragments of Shadow
+- `700167B0` HIDING CONTENT - DNT - Menem-nar: Morien the Malicious
+- `700167B1` HIDING CONTENT - DNT - Menem-nar: Veins of Mithril
+- `700167B2` HIDING CONTENT - DNT - Menem-nar: An Infestation of Gredbyg
+- `700167B3` HIDING CONTENT - DNT - Khibir-zamu: Stonetooth the Savage
+- `700167B4` HIDING CONTENT - DNT - Khibir-zamu: Relics of the Past
+- `700167B5` HIDING CONTENT - DNT - Khibir-zamu: Tunnellers of the Tomb
+- `700167BB` HIDING CONTENT - DNT - Kheled-menem: Ghâshug
+- `700167BC` HIDING CONTENT - DNT - Kheled-menem: A Light in the Hand
+- `700167BD` HIDING CONTENT - DNT - Kheled-menem: Stolen Lights
+- `700167C0` HIDING CONTENT - DNT - Umukh-kanon: Bhraf
+- `700167C1` HIDING CONTENT - DNT - Umukh-kanon: Mould in the Forge
+- `700167C2` HIDING CONTENT - DNT - Umukh-kanon: The Fires Within
+- `700167C8` HIDING CONTENT - DNT - Zurr-tharûkh: Nartum the Defiler
+- `700167C9` HIDING CONTENT - DNT - Zurr-tharûkh: Remains of the Fallen
+- `700167CA` HIDING CONTENT - DNT - Zurr-tharûkh: Desecrators
+- `700167CD` HIDING CONTENT - DNT - Mezel-katub:Thaguzg the Terrible
+- `700167CE` HIDING CONTENT - DNT - Mezel-katub: Tomes of Balin
+- `700167CF` HIDING CONTENT - DNT - Mezel-katub: Guldur in the Library
+- `700167D2` HIDING CONTENT - Thoughts Left Behind
+- `700168B7` HIDING CONTENT - The Carver's Stash
+- `70016B28` HIDING CONTENT - Lines of Power
+- `70016C4F` HIDING CONTENT - DNT - Gamilnafûk: Gîmog the Great Leader
+- `70016C50` HIDING CONTENT - DNT - Gamilnafûk: Fallen Comrades
+- `70016C51` HIDING CONTENT - DNT - Gamilnafûk: the Followers of Gîmog
+- `7002451E` DNT HIDING CONTENT - Task: Broken Wooden Maces
+- `70024523` DNT HIDING CONTENT - Task: Blackened Sword Sheaths
+- `70024525` DNT HIDING CONTENT - Task: Blackened Feathers
+- `70024528` DNT HIDING CONTENT - Task: Blackened Fur
+- `70024529` DNT HIDING CONTENT - Task: Blackened Feathers
+- `7002452A` DNT HIDING CONTENT - Task: Broken Wooden Maces
+- `7002452B` DNT HIDING CONTENT - Task: Blackened Skins
+- `7002452C` DNT HIDING CONTENT - Task: Dusky Ears
+- `7002452D` DNT HIDING CONTENT - Task: Blackened Sword Sheaths
+- `700247B8` DNT Obsolete: Wardens of Annúminas Task: Shimmering Dust
+- `7002483B` DNT Obsolete: Thorin's Hall Task: Monstrous Scales
+- `700255F7` DNT - Something Dreadful This Way Comes
+- `700255F9` DNT - I've Got a Bad Feeling...
+- `70038641` DNT - Bounder's Tokens - Bountiful Benevolence
+- `70038642` DNT Bounder's Tokens - Average Aid
+- `700415EE` DNT - Prototype MoL Sandbox Quest
+- `700473E6` DNT - Flora Quest Template
+- `70047BE2` DNT
+- `700490D9` DNT The Last Alliance: The Siege of Barad-dûr
+- `700494AD` DNT 
+- `70049A87` DNT - OBSOLETE Preparations for the Journey
+- `7004A37F` DNT 
+- `7004A398` DNT Anglach - Deeper Foes
+- `70050A0B` Káldbak, Scourge of the Withered Heath
+- `70052369` DNT - Helm's Deep Data Loader
+- `7005381D` DNT - Phasing Test 
+- `7005479D` Fires and Shadowfells
+- `70057BF2` DNT Mission Test
+- `70057BF4` DNT Mission Test Instance Template
+- `70057E5C` DNT Mission Test - TWO!
+- `7005A1C0` Mission: DNT
+- `7005A65F` DNT - DUPLICATE QUEST
+- `7005A660` DNT - DUPLICATE QUEST
+- `7005D3A2` To the Pit of Stonejaws DNT NOT USED
+- `700607B0` DNT - OLD INSTANCE DO NOT USE The Crumbling Halls of Glynafon
+- `70060896` DNT - OLD INSTANCE DO NOT USE Instance: The Crumbling Halls of Glynafon
+- `70061FD4` DNT - Mossward Starter Instance Data Wrapper
+- `70062D71` Supply Run - DNT
+- `7006564C` DNT -- TEST REP
+- `700688AD` DNT - SHIPCAT QUEST UNIMPLEMENTED
+
+## Deeds (6)
+
+- `7004E629` DNT Friend to TBD Ironfold
+- `7004E62A` DNT Known to TBD Ironfold
+- `7004E62B` DNT Kindred to the TBD
+- `7004E62C` DNT Ally to the TBD
+- `70075BD2` DNT - 3-man Meta
+- `70075BD3` DNT Instance Meta
