@@ -223,7 +223,8 @@ class Source:
         return parents
 
 
-def build(export_dir, enums_path, output, moormap_path=None, overrides=None, landblocks_path=None):
+def build(export_dir, enums_path, output, moormap_path=None, overrides=None, landblocks_path=None,
+          npcs_dir=None):
     source = Source(export_dir)
     overrides = overrides or {}
     hidden = set(overrides.get('hidden_ids', []))
@@ -320,6 +321,26 @@ def build(export_dir, enums_path, output, moormap_path=None, overrides=None, lan
     # status mask 0x30000000 = completed and 0x10000000 = underway; that mapping was
     # checked against 1,886 prerequisites of quests this character has finished
     # (96 % of their targets are finished too).
+    # Quest giver ("g"): the first NPC that bestows the quest, by name per language.
+    # Names come from a separate export of those NPC records (npcs_dir); the game
+    # marks grammar after a name ("Karlo Schwarzhain[mn]"), which is dropped.
+    npc_names = {}
+    if npcs_dir and (Path(npcs_dir) / 'raw.jsonl').is_file():
+        for line in (Path(npcs_dir) / 'raw.jsonl').read_text(encoding='utf-8').splitlines():
+            npc = json.loads(line)
+            name = (npc.get('properties') or {}).get('Name')
+            if isinstance(name, dict):
+                npc_names[npc['id']] = {locale: re.sub(r'\[[^\]]*\]', '', text or '').strip()
+                                        for locale, text in (name.get('texts') or {}).items()}
+    giver_of = {}
+    for entry in source.quests:
+        for role in (entry.get('properties') or {}).get('Quest_BestowalRoles') or []:
+            if isinstance(role, dict) and role.get('QuestDispenser_NPC'):
+                npc = '%08X' % (int(role['QuestDispenser_NPC']) & 0xffffffff)
+                if npc in npc_names:
+                    giver_of[entry['id']] = npc
+                    break
+
     session_ids = set()
     not_taken = defaultdict(set)
     for entry in source.quests:
@@ -535,6 +556,13 @@ def build(export_dir, enums_path, output, moormap_path=None, overrides=None, lan
                     # a pointer at a hidden test entry would dangle.
                     visible = {r['id'] for r in records}
                     for record in records:
+                        npc = giver_of.get(record['id'])
+                        if npc:
+                            names = npc_names[npc]
+                            giver = names.get(locale) or names.get('en')
+                            if giver:
+                                record['g'] = giver
+                                stats['quests_with_giver'] += 1
                         if record['id'] in session_ids:
                             record['x'] = 1
                             stats['quests_session'] += 1
@@ -574,12 +602,14 @@ def main():
     parser.add_argument('--moormap', type=Path, default=None, help='MoorMap Defaults.lua')
     parser.add_argument('--landblocks', type=Path, default=None,
                         help='landblocks.xml: ties target positions to a territory')
+    parser.add_argument('--npcs', type=Path, default=None,
+                        help='export of the quest-giving NPCs (raw.jsonl): adds the giver per quest')
     parser.add_argument('--output', type=Path, default=ROOT / 'plugin/MagicQuestLog/Data')
     parser.add_argument('--overrides', type=Path, default=ROOT / 'tools/overrides.json')
     options = parser.parse_args()
     data = json.loads(options.overrides.read_text(encoding='utf-8')) if options.overrides.is_file() else {}
     report = build(options.export, options.enums, options.output, options.moormap, data,
-                   options.landblocks)
+                   options.landblocks, options.npcs)
     print(json.dumps({k: v['counts'] for k, v in report['locales'].items()}, ensure_ascii=False, indent=2))
 
 

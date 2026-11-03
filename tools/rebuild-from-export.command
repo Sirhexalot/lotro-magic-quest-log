@@ -75,6 +75,9 @@ fi
 ARGS=(--export "$EXPORT" --enums "$ENUMS" --output "$ROOT/plugin/MagicQuestLog/Data")
 [ -n "$MOORMAP" ] && ARGS+=(--moormap "$MOORMAP")
 [ -n "$LANDBLOCKS" ] && ARGS+=(--landblocks "$LANDBLOCKS")
+# Quest givers: export of the bestowing NPCs next to the main export (optional).
+NPCS="${MQL_NPCS:-$(dirname "$EXPORT")/npcs-2026-11-03}"
+[ -f "$NPCS/raw.jsonl" ] && ARGS+=(--npcs "$NPCS")
 
 echo "source:     $EXPORT"
 echo "enums:      $ENUMS"
