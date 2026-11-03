@@ -116,7 +116,7 @@ function Window:Constructor(strings, catalogs)
 	self.level = false;
 	local stored = MagicQuestLog.Settings.Get();
 	self.filter = stored.filter or "all";
-	self.showObjectives = stored.showObjectives == true;
+	self.showObjectives = false;
 	-- The built tree is cached; expanding a node must not rebuild and re-sort
 	-- 15k records again.
 	self.treeCacheKey = nil;
@@ -293,20 +293,15 @@ function Window:Constructor(strings, catalogs)
 	self.mapLabel:SetText(strings.showmap);
 	self.mapInfo = makeLabel(self, self.small, self.trim);
 
-	-- List filter: one button that steps through all, open, done and available.
-	self.filterButton = Turbine.UI.Lotro.Button();
-	self.filterButton:SetParent(self);
-	self.filterButton:SetSize(150, 20);
-	self.filterButton:SetFont(self.small);
-	self.filterButton.Click = function()
-		local order = { "all", "open", "done", "available" };
-		local nextFilter = "all";
-		for position, name in ipairs(order) do
-			if name == self.filter then nextFilter = order[position % #order + 1]; end
-		end
-		-- "available" means nothing for deeds or without progress: skip it there.
-		if nextFilter == "available" and (self.kind ~= "quests" or not self.completed) then nextFilter = "all"; end
-		self:SetFilter(nextFilter);
+	-- List filter: four buttons side by side, the active one marked.
+	self.filterButtons = {};
+	for _, name in ipairs({ "all", "open", "done", "available" }) do
+		local button = Turbine.UI.Lotro.Button();
+		button:SetParent(self);
+		button:SetSize(86, 20);
+		button:SetFont(self.small);
+		button.Click = function() self:SetFilter(name); end
+		self.filterButtons[name] = button;
 	end
 
 	-- Objectives and steps stay hidden until asked for, so the solution is not in
@@ -316,11 +311,9 @@ function Window:Constructor(strings, catalogs)
 	self.stepsButton:SetSize(140, 20);
 	self.stepsButton:SetFont(self.small);
 	self.stepsButton.Click = function()
+		-- Only for the entry on show; the next one starts hidden again.
 		self.showObjectives = not self.showObjectives;
-		local settingsNow = MagicQuestLog.Settings.Get();
-		settingsNow.showObjectives = self.showObjectives;
-		MagicQuestLog.Settings.Save();
-		if self.record then self:ShowDetails(self.record); end
+		if self.record then self:ShowDetails(self.record, true); end
 	end
 
 	-- First unfinished requirement: puts its name into the search.
@@ -373,9 +366,13 @@ function Window:Layout()
 	self.clearIcon:SetPosition(width - MARGIN - 72, ROW + 4);
 	self.searchBox:SetPosition(boxLeft, ROW);
 	self.searchBox:SetSize(math.max(120, width - MARGIN - 80 - 8 - boxLeft), 20);
-	self.filterButton:SetPosition(MARGIN, ROW + 26);
-	self.countLabel:SetPosition(MARGIN + 160, ROW + 28);
-	self.countLabel:SetSize(math.max(200, width - MARGIN * 2 - 630), 18);
+	local filterLeft = MARGIN;
+	for _, name in ipairs({ "all", "open", "done", "available" }) do
+		self.filterButtons[name]:SetPosition(filterLeft, ROW + 26);
+		filterLeft = filterLeft + 90;
+	end
+	self.countLabel:SetPosition(filterLeft + 8, ROW + 28);
+	self.countLabel:SetSize(math.max(160, width - MARGIN - filterLeft - 8 - 480), 18);
 	self.characterButton:SetPosition(width - MARGIN - 150, ROW + 26);
 	self.characterLabel:SetPosition(width - MARGIN - 470, ROW + 28);
 	self.characterLabel:SetSize(310, 18);
@@ -449,7 +446,13 @@ function Window:Rebuild(force)
 	self.rows = {};
 	self.actions = {};
 	self.countLabel:SetText(self:CountText());
-	self.filterButton:SetText(self.strings.filter .. ": " .. self.strings["filter" .. self.filter]);
+	-- The active filter reads in brackets; "available" only for quests with progress.
+	for name, button in pairs(self.filterButtons) do
+		local caption = self.strings["filter" .. name];
+		button:SetText(name == self.filter and ("[ " .. caption .. " ]") or caption);
+		button:SetVisible(name ~= "available" or (self.kind == "quests" and self.completed ~= false));
+		if name ~= "all" then button:SetEnabled(self.completed ~= false); end
+	end
 	for _, child in ipairs(self.root.order) do self:AddNode(child, 0, "|"); end
 end
 
@@ -637,6 +640,11 @@ function Window:AddNode(node, depth, parentPath)
 			header:SetSize(1, LINE);
 			header:SetBackColor(self.headerBack);
 			header:SetMouseVisible(true);
+			if self.folded[key] == nil then
+				local sections = 0;
+				for _ in pairs(counts) do sections = sections + 1; end
+				self.folded[key] = sections > 1;
+			end
 			header.marker = makeImage(header, self.folded[key] and "closed" or "open");
 			local caption = section == "" and self.strings.general or section;
 			local label = makeLabel(header, self.small, self.gold);
@@ -708,9 +716,10 @@ function Window:SetDetailText(text)
 	self.detailText:SetVerticalScrollBar(self.detailScroll);
 end
 
-function Window:ShowDetails(record)
+function Window:ShowDetails(record, keepObjectives)
 	-- Every field gets a real value: leaving a key unset would fall through to the
 	-- object's own lookup and could look like a set value.
+	if not keepObjectives then self.showObjectives = false; end
 	self.record = record or false;
 	if record == nil then
 		self.detailTitle:SetText(self.strings.choose);
@@ -798,12 +807,15 @@ end
 --- Whose progress is shown. "date" is the day of the Companion import, if any;
 --- "current" says whether this is the logged-in character, the only one whose
 --- completions come in live.
-function Window:SetCharacter(name, date, current)
+function Window:SetCharacter(name, date, current, count)
 	self.characterName = name or false;
-	self.characterButton:SetText(name or self.strings.character);
+	-- The switch only when there is more than one character; the name only when
+	-- it is not the one logged in, which needs no telling.
+	self.characterButton:SetVisible((tonumber(count) or 1) > 1);
+	self.characterButton:SetText(self.strings.character);
 	local parts = {};
+	if not current and name ~= nil then parts[#parts + 1] = string.format(self.strings.viewing, name); end
 	if date ~= nil then parts[#parts + 1] = self.strings.importedon .. " " .. date; end
-	if current then parts[#parts + 1] = self.strings.livenow; end
 	self.characterLabel:SetText(table.concat(parts, " · "));
 end
 

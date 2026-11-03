@@ -69,6 +69,7 @@ STORY_EXTRA = {'The Black Book of Mordor', 'The Legacy of Durin and the Trials o
                'The Song of Waves and Wind', '...and the Verses of Victory'}
 
 
+SENTENCE = re.compile(r'([a-zäöüßàâçéèêëîïôûùœ]{2})\.([A-ZÄÖÜÀÂÇÉÈÊ][a-zäöüßàâçéèêëîïôûùœ])')
 CHOICE = re.compile(r'\$\{[A-Z_]+:([^}]*)\}')
 
 
@@ -92,7 +93,13 @@ def clean(text):
     if text is None:
         return ''
     text = CHOICE.sub(choice, text)
-    return text.replace('\\q', '"').replace('\\n', '\n').strip()
+    text = text.replace('\\q', '"').replace('\\n', '\n')
+    # Small slips in the game text, fixed for reading, words unchanged: a sentence
+    # running into the next ("Morgul.Ihr") and a stray dash after a colon
+    # ("Tal der Hexerei:- Die Prüfung").
+    text = SENTENCE.sub(r'\1. \2', text)
+    text = text.replace(':- ', ': ').replace(':-', ': ')
+    return text.strip()
 
 
 def fold(text):

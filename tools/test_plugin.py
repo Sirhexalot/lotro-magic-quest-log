@@ -198,6 +198,10 @@ function zahl(completed) return (erwartet(completed)); end
 assert(MQL.language == "de", "client德语 should win, got " .. tostring(MQL.language));
 assert(MQL.window ~= nil, "window missing");
 local window = MQL.window;
+-- List sections start folded in the window; these checks look at entries inside
+-- them, so every section is treated as unfolded here (folding is tested below).
+local foldedDefault = window.folded;
+window.folded = setmetatable({}, { __index = function() return false; end });
 assert(window:IsVisible(), "window must start visible");
 assert(string.find(window.countLabel:GetText(), tostring(zahl(window.completed)), 1, true), "count label: " .. window.countLabel:GetText());
 -- Collapsed by default: only root nodes are rows.
@@ -282,9 +286,13 @@ end
 -- A record without a verified position must not pretend to have one.
 local without = nil;
 for _, record in ipairs(MQL.catalogs.quests) do if #record.t == 0 then without = record; break end end
-window:ShowDetails(without);
+-- With objectives shown for this entry (they start hidden for every new one).
+window.showObjectives = true;
+window:ShowDetails(without, true);
 assert(not window.mapSlot:IsVisible(), "map slot must hide without a position");
 assert(window.mapInfo:GetText() == MQL.strings.nomap, "honest no-position text expected");
+window:ShowDetails(without);
+assert(window.showObjectives == false, "a new entry starts with its objectives hidden");
 assert(window.command == false, "no command without a position");
 -- Deeds use the same machinery.
 window:SetKind("deeds");
@@ -835,7 +843,9 @@ assert(window.completed[c] == true, "old live progress must be taken over");
 assert(window.completed["NONSENSE"] == nil and window.completed["7000000Z"] == nil, "malformed ids are dropped");
 assert(window.progressExact == true, "an import holds the older history");
 assert(string.find(window.characterLabel:GetText(), "2026-11-03", 1, true), "import date shown: " .. window.characterLabel:GetText());
-assert(window.characterButton:GetText() == "Feldobar", "switch names the character");
+-- The logged-in character needs no name; the switch shows because there are several.
+assert(not string.find(window.characterLabel:GetText(), "Feldobar", 1, true), "own name is not repeated");
+assert(window.characterButton:IsVisible(), "switch offered with several characters");
 -- The logged-in character joins the stored list; invalid names never do.
 local index = serverData["MagicQuestLog_Characters"];
 assert(index.Feldobar == true and index.Meriadoc == true, "character list must hold both");
@@ -848,6 +858,7 @@ window.CharacterClicked();
 assert(MQL.shown == "Meriadoc", "next character: " .. tostring(MQL.shown));
 assert(window.completed[b] == true and window.completed[a] == nil, "only Meriadoc's ids");
 assert(not string.find(window.characterLabel:GetText(), MQL.strings.livenow, 1, true), "no live tag for another character");
+assert(string.find(window.characterLabel:GetText(), "Meriadoc", 1, true), "another character is named");
 window.CharacterClicked();
 assert(MQL.shown == "Feldobar", "the switch wraps around");
 -- Live completions belong to the logged-in character only, in its own file.

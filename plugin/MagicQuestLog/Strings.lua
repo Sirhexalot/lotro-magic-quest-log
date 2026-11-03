@@ -3,11 +3,12 @@
 MagicQuestLog = MagicQuestLog or {};
 MagicQuestLog.Strings = {
 	en = {
+		viewing = "showing %s",
 		general = "General", group = "Group",
 		lp = "%d LOTRO points", daily = "daily", repeatable = "repeatable", upto = "up to %d times",
 		fellowship = "fellowship recommended", smallfellowship = "small fellowship recommended",
 		instance = "instance", timelimit = "time limit %s", chain = "QUEST CHAIN", before = "before", after = "next",
-		filter = "Show", filterall = "all", filteropen = "open", filterdone = "done", filteravailable = "available",
+		filter = "Show", filterall = "All", filteropen = "Open", filterdone = "Done", filteravailable = "Available",
 		from = "from %s", scaling = "scales with your level", requirements = "REQUIREMENTS",
 		reqdone = "done", reqopen = "open", reqlevel = "Level %s", reqoneof = "one of:",
 		reqother = "another condition (class, race, reputation …) – cannot be checked here",
@@ -37,11 +38,12 @@ MagicQuestLog.Strings = {
 		alternativenote = "Not possible: \"%s\" is already finished.",
 	},
 	de = {
+		viewing = "Ansicht: %s",
 		general = "Allgemein", group = "Gruppe",
 		lp = "%d LOTRO-Punkte", daily = "täglich", repeatable = "wiederholbar", upto = "bis zu %d-mal",
 		fellowship = "Gruppe empfohlen", smallfellowship = "kleine Gruppe empfohlen",
 		instance = "Instanz", timelimit = "Zeitlimit %s", chain = "AUFGABENKETTE", before = "davor", after = "danach",
-		filter = "Zeige", filterall = "alle", filteropen = "offen", filterdone = "erledigt", filteravailable = "annehmbar",
+		filter = "Zeige", filterall = "Alle", filteropen = "Offen", filterdone = "Erledigt", filteravailable = "Annehmbar",
 		from = "von %s", scaling = "wächst mit Eurer Stufe", requirements = "VORAUSSETZUNGEN",
 		reqdone = "erledigt", reqopen = "offen", reqlevel = "Stufe %s", reqoneof = "eine davon:",
 		reqother = "weitere Bedingung (Klasse, Volk, Ruf o. Ä.) – hier nicht prüfbar",
@@ -71,11 +73,12 @@ MagicQuestLog.Strings = {
 		alternativenote = "Nicht möglich: \"%s\" ist bereits erledigt.",
 	},
 	fr = {
+		viewing = "affichage : %s",
 		general = "Général", group = "Groupe",
 		lp = "%d points LOTRO", daily = "quotidienne", repeatable = "répétable", upto = "jusqu'à %d fois",
 		fellowship = "communauté recommandée", smallfellowship = "petite communauté recommandée",
 		instance = "instance", timelimit = "limite %s", chain = "CHAÎNE DE QUÊTES", before = "avant", after = "ensuite",
-		filter = "Afficher", filterall = "toutes", filteropen = "à faire", filterdone = "terminées", filteravailable = "disponibles",
+		filter = "Afficher", filterall = "Toutes", filteropen = "À faire", filterdone = "Terminées", filteravailable = "Disponibles",
 		from = "de %s", scaling = "s'adapte à votre niveau", requirements = "CONDITIONS",
 		reqdone = "terminée", reqopen = "à faire", reqlevel = "Niveau %s", reqoneof = "l'une de :",
 		reqother = "autre condition (classe, race, réputation …) – non vérifiable ici",

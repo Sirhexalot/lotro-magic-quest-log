@@ -457,8 +457,14 @@ list stacks rows — is checked in the game.
 ## Changes
 
 **0.3.0** — what the LOTRO Log Book shows, now in the plugin.
-- No spoilers by default: objectives and steps on request, MoorMap points at the
-  quest giver (5,743 quests have a known giver position).
+- No spoilers by default: objectives and steps only for the entry on show, after
+  "Show objectives"; the next entry starts hidden again. MoorMap points at the
+  quest giver, or at the first objective while they are shown.
+- The list filter is four buttons: All, Open, Done, Available.
+- The character switch appears only with more than one character; a name is shown
+  only when it is not the one logged in.
+- List sections start folded. Requirements outside the catalogue are left out.
+  Small slips in the game text ("Morgul.Ihr", ":-") are fixed for reading.
 - Quest giver, requirements with their state, "available" filter with the live
   character level, level ranges per area, "~" for scaling quests.
 - Running counters ("44/75") and the character level from the Companion import.

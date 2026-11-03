@@ -430,10 +430,18 @@ function M.Detail(record, strings, context, opts)
 		end
 		requirements[#requirements + 1] = line;
 	end
-	for _, id in ipairs(record.v or {}) do requirements[#requirements + 1] = "- " .. nameOf(id) .. state(id); end
-	if record.vo ~= nil and #record.vo > 0 then
+	-- Requirements outside the catalogue say nothing useful and are left out.
+	local known = opts.byId or {};
+	for _, id in ipairs(record.v or {}) do
+		if known[id] ~= nil then requirements[#requirements + 1] = "- " .. nameOf(id) .. state(id); end
+	end
+	local alternatives = {};
+	for _, id in ipairs(record.vo or {}) do
+		if known[id] ~= nil then alternatives[#alternatives + 1] = "    " .. nameOf(id) .. state(id); end
+	end
+	if #alternatives > 0 then
 		requirements[#requirements + 1] = "- " .. strings.reqoneof;
-		for _, id in ipairs(record.vo) do requirements[#requirements + 1] = "    " .. nameOf(id) .. state(id); end
+		for _, line in ipairs(alternatives) do requirements[#requirements + 1] = line; end
 	end
 	if record.vb == 1 then requirements[#requirements + 1] = "- " .. strings.reqother; end
 	if #requirements > 0 then

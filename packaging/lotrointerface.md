@@ -17,7 +17,7 @@ Author-only notes live in [publish-notes.md](publish-notes.md). The formatted te
 ## Description – short version
 
 > Quest and deed atlas for Middle-earth: browse 15,209 quests and 5,534 deeds by
-> area and epic story, read the objectives, see what you have finished, and jump
+> area and epic story, read the details without spoilers, see what you have finished, and jump
 > straight to the spot on MoorMap — all inside the game.
 
 ## Description – full version
@@ -32,21 +32,25 @@ No browser tab, no second monitor, no outside program: one window in the game.
 
 ### What it does
 
-- **Everything in one tree.** Quests and deeds sorted by region, zone and area.
-  The epic story has its own branch, sorted by volume and book. Missions,
-  instances, crafting and festivals have their own branches too.
-- **Search** for any part of a name. Small spelling differences don't matter:
-  "ker izel" finds "Kêr Izel".
-- **Read the details.** Description and objectives, split into steps, with the
-  number the game asks for ("required: 10"). The plugin never invents a number
-  it does not know.
-- **See your progress.** Anything you finish while playing is counted right
-  away. Every branch shows "done / total", for example `(163/276)`, and finished
-  entries get a green check.
-- **Show it on the map.** One click opens MoorMap at the right spot — but only
-  where the position has really been checked. No guessed pins.
-- **German, English and French.** The plugin follows your game language. All
-  three catalogs have the same entries and the same tree.
+- **Everything in one tree.** Two levels only: region (or epic volume), then
+  area. An area lists its quests under foldable sections – the area itself,
+  sub-areas, quest groups.
+- **Search** for any part of a name or an area. Small spelling differences don't
+  matter: "ker izel" finds "Kêr Izel".
+- **No spoilers.** You see level, quest giver, requirements, quest chain and
+  description. Steps and objectives only when you ask for them – for that one
+  quest.
+- **Filter** with four buttons: All, Open, Done, Available. "Available" checks
+  your level and earlier quests.
+- **See your progress.** Anything you finish is counted right away. Every branch
+  shows "done / total", deed counters show "44/75", finished entries get a green
+  check.
+- **Show it on the map.** One click opens MoorMap where the quest giver stands,
+  or at the first objective when you show them – only where the position is
+  known. No guessed pins.
+- **Facts from the game.** LOTRO points of deeds, daily, repeatable, fellowship,
+  instance, time limit.
+- **German, English and French.** The plugin follows your game language.
 
 Not included: items, crafting recipes, equipment, an own map.
 
@@ -135,6 +139,14 @@ Not uploaded any more, but kept: `quest-progress.jpg`, `deed-progress.jpg`,
   after a game start takes a moment.
 
 ### Changes
+
+0.3.0 - what the LOTRO Log Book shows, now in the plugin.
+
+- No spoilers: objectives per quest on request; MoorMap points at the quest giver.
+- Quest giver, requirements, quest chain, LOTRO points, daily/repeatable,
+  "available" filter.
+- Tree with two levels and foldable sections; four filter buttons.
+- More positions: 12,010 quests with an objective, 6,621 with the giver's place.
 
 0.2.0 - progress from LOTRO Companion, several characters.
 

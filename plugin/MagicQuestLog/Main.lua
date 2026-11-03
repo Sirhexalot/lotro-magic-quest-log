@@ -63,7 +63,8 @@ function MagicQuestLog.ShowCharacter(name)
 	local merged, exact, imported = Characters.Progress(name, live, legacy);
 	MagicQuestLog.shown = name;
 	MagicQuestLog.importStamp = imported and imported.stamp or false;
-	window:SetCharacter(name, imported and imported.date or nil, name == current);
+	window:SetCharacter(name, imported and imported.date or nil, name == current,
+		#(MagicQuestLog.characters or {}));
 	-- Level: live for the logged-in character, from the import for any other.
 	local level = imported and imported.level or nil;
 	if name == current then

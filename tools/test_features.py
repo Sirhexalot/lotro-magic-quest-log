@@ -90,9 +90,20 @@ local sections = {}
 for _, r in ipairs(morgul.items) do sections[r.section] = r.sectionKind end
 assert(sections[""] ~= nil and sections["Cirith Ungol"] == "area", "Imlad Morgul: general and the sub-area Cirith Ungol")
 for name in pairs(sections) do assert(not string.find(name, "Imlad Morgul:", 1, true), "area prefix left in " .. name) end
+-- Requirements outside the catalogue are left out; text slips are fixed.
+local unknown
+for _, r in ipairs(quests) do
+	for _, id in ipairs(r.v or {}) do if byId[id] == nil then unknown = r end end
+	if unknown then break end
+end
+local reqText = M.Detail(unknown, S, {}, { byId = all.byId })
+assert(not string.find(reqText, "7%x%x%x%x%x%x%x"), "no raw id for a requirement outside the catalogue")
+for _, r in ipairs(quests) do
+	assert(not string.find(r.name, ":-", 1, true), "':-' left in " .. r.name)
+end
 -- Area summary.
 local summary = M.NodeSummary(bree, S, completed, 150, {})
 assert(string.find(summary, S.available .. ":", 1, true), "summary lists available")
 print("PASS: filter (" .. avail.total .. " available of " .. all.total .. "), area search, level range "
-	.. bree.range .. ", requirements, spoiler-free details, counter 44/75, chain, daily, LOTRO points, two tree levels with list sections, area summary")
+	.. bree.range .. ", requirements, spoiler-free details, counter 44/75, chain, daily, LOTRO points, two tree levels with list sections, unknown requirements left out, area summary")
 ''')
