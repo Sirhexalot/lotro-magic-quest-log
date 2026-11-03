@@ -15,6 +15,7 @@
         "quests": 15209,
         "quests_with_targets": 8402,
         "quests_targets": 98954,
+        "quests_with_reputation": 8463,
         "quests_zone_from_position": 4804,
         "quests_hidden": 483,
         "quests_with_giver": 9352,
@@ -24,7 +25,8 @@
         "deeds_zone_from_position": 680,
         "deeds": 5534,
         "deeds_with_targets": 468,
-        "deeds_targets": 4366
+        "deeds_targets": 4366,
+        "deeds_with_reputation": 1598
       },
       "english_fallback_texts": {}
     },
@@ -33,6 +35,7 @@
         "quests": 15209,
         "quests_with_targets": 8403,
         "quests_targets": 98955,
+        "quests_with_reputation": 8463,
         "quests_zone_from_position": 4804,
         "quests_hidden": 483,
         "quests_with_giver": 9352,
@@ -42,7 +45,8 @@
         "deeds_zone_from_position": 680,
         "deeds": 5534,
         "deeds_with_targets": 468,
-        "deeds_targets": 4366
+        "deeds_targets": 4366,
+        "deeds_with_reputation": 1598
       },
       "english_fallback_texts": {
         "quests": 6,
@@ -54,6 +58,7 @@
         "quests": 15209,
         "quests_with_targets": 8403,
         "quests_targets": 98955,
+        "quests_with_reputation": 8463,
         "quests_zone_from_position": 4804,
         "quests_hidden": 483,
         "quests_with_giver": 9352,
@@ -63,7 +68,8 @@
         "deeds_zone_from_position": 680,
         "deeds": 5534,
         "deeds_with_targets": 468,
-        "deeds_targets": 4366
+        "deeds_targets": 4366,
+        "deeds_with_reputation": 1598
       },
       "english_fallback_texts": {
         "quests": 1,
