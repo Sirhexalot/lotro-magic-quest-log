@@ -44,6 +44,22 @@ a file admin approves it.
 - 3 November 2026: 0.2.0 uploaded (progress from LOTRO Companion through the map
   site, character switch, journal reader removed, Deed Tracker recommended for
   deeds). Description replaced in full. Again "awaiting approval".
+- 4 November 2026: 0.5.0 uploaded (tree like the game, split catalog, objectives
+  button under the description, MoorMap button fixed). Description replaced in
+  full, numbers updated to 15,118 quests / 5,528 deeds. "The file has been
+  updated", awaiting approval.
+
+## Uploading without a browser
+
+The form can be posted directly; no browser needed. Login is vBulletin's
+`forums/login.php?do=login` with `vb_login_md5password` and
+`vb_login_md5password_utf` (md5 of the password, `vb_login_password` empty) plus
+the `securitytoken` and `s` from the download page. Then
+`downloads/editfile.php?id=1346` gives the form's own token; post it as
+multipart with `ftitle`, `version`, `fileaction=replace`, `replacementfile`,
+`message` (the bbcode), `allowpa=1`, `op=editfile`, `id=1346`, `type=0`,
+`sbutton=Update`. The answer is a redirect page saying "The file has been
+updated." The password is never written into the repository.
 
 ## After the first upload
 
