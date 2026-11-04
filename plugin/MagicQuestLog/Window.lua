@@ -901,36 +901,40 @@ function Window:FitDetail(button)
 		self.detailScroll:SetHeight(max);
 		return;
 	end
-	-- The client lays the text out one frame after it is set, and only then does the
-	-- scroll bar report overflow. So the pane starts small and is measured next frame.
-	self.detailText:SetHeight(28);
-	self.detailScroll:SetHeight(28);
-	self.stepsButton:SetPosition(self.detailLeft, top + 34);
-	if self.fitWatcher == false then
-		self.fitWatcher = Turbine.UI.Control();
-		self.fitWatcher.Update = function(control)
-			control:SetWantsUpdates(false);
-			self:MeasureDetail();
-		end;
-	end
-	self.fitWatcher:SetWantsUpdates(true);
-end
-
---- Grow the text area until its text fits, then put the button right under it.
-function Window:MeasureDetail()
-	local top, max = self.detailTop, self.detailMax;
-	if top == nil or self.fitButton ~= true then return; end
+	-- Measured with the ruler, not with the text label: a label reports no metrics,
+	-- and its scroll bar only settles after the client has laid the text out. The
+	-- ruler is the same proven mechanism the tree rows use for wrapped names.
 	local room = math.max(40, max - 28);
-	local height = 28;
-	for candidate = 28, room, 14 do
-		height = candidate;
-		self.detailText:SetHeight(candidate);
-		if not self.detailScroll:IsVisible() then break; end
-	end
-	height = math.min(height, room);
+	local height = self:TextHeight(self.detailText:GetText(), math.max(20, self.detailText:GetWidth()), room);
 	self.detailText:SetHeight(height);
 	self.detailScroll:SetHeight(height);
 	self.stepsButton:SetPosition(self.detailLeft, top + height + 6);
+end
+
+--- Height a block of text needs in a column of this width, capped. Measured with the
+--- hidden ruler label; without a working ruler, 9 px per character is used.
+function Window:TextHeight(text, width, maxHeight)
+	text = tostring(text or "");
+	local base = self:LineHeight();
+	maxHeight = math.max(base, tonumber(maxHeight) or base);
+	if not self:RulerWorks() then
+		local perLine = math.max(8, math.floor(width / 9));
+		local lines = 1;
+		for part in string.gmatch(text .. "\n", "([^\n]*)\n") do
+			lines = lines + math.max(0, math.ceil(#part / perLine) - 1);
+		end
+		return math.min(maxHeight, base * math.max(1, lines));
+	end
+	self.ruler:SetWidth(width);
+	self.ruler:SetText(text);
+	local height = base;
+	for candidate = base, maxHeight, LINE do
+		height = candidate;
+		self.ruler:SetHeight(candidate);
+		if not self.rulerBar:IsVisible() then break; end
+	end
+	self.ruler:SetText("");
+	return math.min(height, maxHeight);
 end
 
 --- Right-hand pane for an area: level range and counts, no map button.
