@@ -142,6 +142,16 @@ Not uploaded any more, but kept: `quest-progress.jpg`, `deed-progress.jpg`,
 
 ### Changes
 
+0.5.0 - the tree like the game, and a short login.
+
+- Landscapes first, then "Weitere Inhalte" with the epic story by volume and book,
+  festivals, crafting, instances, missions and "Other quests". Books and chapters
+  sort numerically.
+- The catalog is split, so the plugin loads in about a third of the time; details
+  are read when an entry is opened.
+- "Show objectives" sits right under the description.
+- The MoorMap button works again.
+
 0.4.0 - the game's own maps.
 
 - Which map a quest is on now comes from the game's own map data; more quests,

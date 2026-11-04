@@ -133,6 +133,73 @@ end
 --- Without that set no count is invented: done stays nil.
 --- options.filter: "all", "open", "done" or "available"; options.level: the
 --- character's level for "available".
+-- Order of the first level: the game's regions in the order of the world, then
+-- everything unknown, and "Weitere Inhalte" last: in the game you look for a
+-- landscape first.
+local REGION_RANK = {
+	Eriador = 10, Rhovanion = 20, Rohan = 30, Gondor = 40, Mordor = 50,
+	Haradwaith = 60, ["Rhûn"] = 70,
+};
+-- Inside "Weitere Inhalte": epic story, festivals, crafting, instances, missions,
+-- then everything without a landscape.
+local SECTION_RANK = { story = 10, festivals = 20, craft = 30, instances = 40, missions = 50, other = 90 };
+
+--- Rank of a tree node within its level. Two levels only, so the key tells enough:
+--- a region carries the game's order, a section its fixed place.
+function M.NodeRank(node)
+	local key = tostring(node.key or "");
+	local head, body = string.match(key, "^(%w+):(.*)$");
+	if head == "region" then return REGION_RANK[body] or 500; end
+	if head == "section" then
+		if body == "more" then return 900; end
+		return SECTION_RANK[body] or 600;
+	end
+	return 0;
+end
+
+--- Roman numeral to a number; plain digits pass through.
+local function toNumber(text)
+	if text == nil then return nil; end
+	if string.match(text, "^%d+$") then return tonumber(text); end
+	local values = { I = 1, V = 5, X = 10, L = 50, C = 100, D = 500, M = 1000 };
+	local total, previous, upper = 0, 0, string.upper(text);
+	for index = string.len(upper), 1, -1 do
+		local value = values[string.sub(upper, index, index)];
+		if value == nil then return nil; end
+		if value < previous then total = total - value; else total = total + value; previous = value; end
+	end
+	return total > 0 and total or nil;
+end
+
+--- First number after one of the given words ("Band II", "Buch 9", "Kapitel 2.2").
+local function after(words, text)
+	local lower = string.lower(text);
+	local best, value = nil, nil;
+	for _, word in ipairs(words) do
+		local start, stop = string.find(lower, word .. "[%s%-:]+", 1);
+		if start ~= nil then
+			local rest = string.sub(text, stop + 1);
+			local number = toNumber(string.match(rest, "^(%d+)") or string.match(rest, "^([IVXLCDMivxlcdm]+)%f[%W]"));
+			if number ~= nil and (best == nil or start < best) then best, value = start, number; end
+		end
+	end
+	return value;
+end
+
+--- Sort key of a list section: Band I before Band II, Buch 9 before Buch 10, Prolog
+--- first and Epilog last. Falls back to the plain text key.
+function M.SectionSortKey(section)
+	if section == nil or section == "" then return ""; end
+	-- Only a volume heads the section; "Buch" is the chapter inside it.
+	local box = after({ "band", "volume", "reihe", "teil" }, section) or 500;
+	local chapter = after({ "buch", "book", "livre", "kapitel", "chapter", "chapitre" }, section) or 500;
+	local lower = string.lower(section);
+	if string.find(lower, "prolog", 1, true) then chapter = -1; end
+	if string.find(lower, "zwischenspiel", 1, true) then chapter = 9000; end
+	if string.find(lower, "epilog", 1, true) or string.find(lower, "nachwort", 1, true) then chapter = 9999; end
+	return string.format("%06.1f\1%06.1f\1", box, chapter) .. M.SortKey(section);
+end
+
 function M.Build(records, query, strings, completed, context, options)
 	options = options or {};
 	local filter = options.filter or "all";
@@ -148,7 +215,7 @@ function M.Build(records, query, strings, completed, context, options)
 			record.pathText = M.Normalize(table.concat(captions, "\1"));
 			-- List section below the area, cached like the name.
 			record.section, record.sectionKind = M.Section(record.p, context, strings);
-			record.sectionKey = M.SortKey(record.section);
+			record.sectionKey = M.SectionSortKey(record.section);
 			record.sortKey = M.SortKey(record.displayName);
 			record.displayKey = key;
 		end
@@ -237,7 +304,11 @@ function M.Build(records, query, strings, completed, context, options)
 	-- Items are ordered by section: the area itself first, then sub-areas, then
 	-- quest groups, each alphabetically, and by name inside a section.
 	local function sort(node)
-		table.sort(node.order, function(a, b) return a.sortKey < b.sortKey; end);
+		table.sort(node.order, function(a, b)
+			local ra, rb = M.NodeRank(a), M.NodeRank(b);
+			if ra ~= rb then return ra < rb; end
+			return a.sortKey < b.sortKey;
+		end);
 		local function rank(record)
 			if record.section == "" then return 0; end
 			return record.sectionKind == "area" and 1 or 2;
@@ -260,6 +331,40 @@ function M.Build(records, query, strings, completed, context, options)
 	sort(root);
 	root.byId = byId;
 	return root;
+end
+
+--- Description, steps and every objective of one entry. They live in a detail block
+--- imported the first time the entry is opened; a block is imported once per session.
+--- A missing block is reported, never passed off as empty content.
+function M.Details(record)
+	if record == nil or record.detailLoaded then return record; end
+	if record.blk == nil then record.detailLoaded = true; return record; end
+	local language = MagicQuestLog.language or "en";
+	local cache = MagicQuestLog.detailBlocks;
+	if cache == nil then cache = {}; MagicQuestLog.detailBlocks = cache; end
+	local key = language .. "_" .. tostring(record.blk);
+	local block = cache[key];
+	if block == nil then
+		local moduleName = "MagicQuestLog.Data.QuestDetails_" .. language .. "_" .. tostring(record.blk);
+		local started = MagicQuestLog.Perf ~= nil and MagicQuestLog.Perf.Now() or 0;
+		pcall(function() import(moduleName); end);
+		block = (MagicQuestLog.Data or {})["questDetails_" .. language .. "_" .. tostring(record.blk)];
+		if MagicQuestLog.Perf ~= nil then
+			MagicQuestLog.Perf.Record("Detailblock " .. tostring(record.blk), started);
+		end
+		cache[key] = type(block) == "table" and block or false;
+		block = cache[key];
+	end
+	local entry = block and block[record.id];
+	if type(entry) == "table" then
+		record.d = entry.d;
+		record.s = entry.s;
+		if entry.t ~= nil then record.t = entry.t; end
+	else
+		record.detailMissing = true;
+	end
+	record.detailLoaded = true;
+	return record;
 end
 
 --- Counter text for a tree node: "n/total" with progress, "total" without.

@@ -130,6 +130,9 @@ function Window:Constructor(strings, catalogs)
 	self.measuredVisible = false;
 	self.pendingQuery = false;
 	self.pendingAt = 0;
+	-- Real values, not nil: on this class an unset field reads back as a method.
+	self.fitWatcher = false;
+	self.fitButton = false;
 
 	-- The description was too small at Verdana12. Title leads, body follows.
 	self.font = Turbine.UI.Lotro.Font.Verdana16;
@@ -303,6 +306,7 @@ function Window:Constructor(strings, catalogs)
 	self.mapShortcut = Turbine.UI.Lotro.Shortcut(Turbine.UI.Lotro.ShortcutType.Alias, "");
 	self.mapShortcut:SetData("");
 	self.mapSlot:SetShortcut(self.mapShortcut);
+	self.mapCommand = false;
 	self.mapSlot.DragDrop = function() self.mapSlot:SetShortcut(self.mapShortcut); end;
 	self.mapCover = Turbine.UI.Control();
 	self.mapCover:SetParent(self);
@@ -838,14 +842,19 @@ function Window:ShowDetails(record, keepObjectives)
 	-- SetValue on a bound scroll bar is refused by the client and threw an error.
 	local deed = self.kind == "deeds";
 	local showSteps = self.showObjectives;
-	self:SetDetailText(Model.Detail(record, self.strings, self.context, {
+	-- Description, steps and all objectives come from the entry's detail block, which
+	-- is imported on first opening (once per block and session).
+	Model.Details(record);
+	local text = Model.Detail(record, self.strings, self.context, {
 		completed = self.completed or nil, level = self.level or nil,
 		byId = self.root and self.root.byId or nil,
 		running = self.running and self.running[record.id] or nil,
-		showSteps = showSteps, deed = deed }));
+		showSteps = showSteps, deed = deed });
+	if record.detailMissing then text = text .. "\n\n" .. self.strings.detailmissing; end
+	self:SetDetailText(text);
 	-- Objectives on request, for quests and deeds: a button right under the
 	-- description. Once shown, the pane uses its full height again.
-	local hasSteps = record.s ~= nil and #record.s > 0;
+	local hasSteps = (record.s ~= nil and #record.s > 0) or (record.sc or 0) > 0;
 	self.stepsButton:SetText(self.strings.showsteps);
 	self.stepsButton:SetVisible(hasSteps and not showSteps);
 	self:FitDetail(hasSteps and not showSteps);
@@ -860,8 +869,14 @@ function Window:ShowDetails(record, keepObjectives)
 	local command = Model.MapCommand(target, record.displayName or record.name);
 	self.command = command or false;
 	if command ~= nil then
-		self.mapShortcut:SetData(command);
-		self.mapSlot:SetShortcut(self.mapShortcut);
+		-- A fresh Shortcut object per command: the client ignores SetShortcut with the
+		-- same object, so a reused one kept the empty alias and the click did nothing.
+		if self.mapCommand ~= command then
+			self.mapCommand = command;
+			self.mapShortcut = Turbine.UI.Lotro.Shortcut(Turbine.UI.Lotro.ShortcutType.Alias, command);
+			self.mapShortcut:SetData(command);
+			self.mapSlot:SetShortcut(self.mapShortcut);
+		end
 		self.mapSlot:SetVisible(true);
 		self.mapCover:SetVisible(true);
 		self.mapLabel:SetVisible(true);
@@ -880,19 +895,37 @@ end
 function Window:FitDetail(button)
 	local top, max = self.detailTop, self.detailMax;
 	if top == nil then return; end
+	self.fitButton = button;
 	if not button then
 		self.detailText:SetHeight(max);
 		self.detailScroll:SetHeight(max);
 		return;
 	end
+	-- The client lays the text out one frame after it is set, and only then does the
+	-- scroll bar report overflow. So the pane starts small and is measured next frame.
+	self.detailText:SetHeight(28);
+	self.detailScroll:SetHeight(28);
+	self.stepsButton:SetPosition(self.detailLeft, top + 34);
+	if self.fitWatcher == false then
+		self.fitWatcher = Turbine.UI.Control();
+		self.fitWatcher.Update = function(control)
+			control:SetWantsUpdates(false);
+			self:MeasureDetail();
+		end;
+	end
+	self.fitWatcher:SetWantsUpdates(true);
+end
+
+--- Grow the text area until its text fits, then put the button right under it.
+function Window:MeasureDetail()
+	local top, max = self.detailTop, self.detailMax;
+	if top == nil or self.fitButton ~= true then return; end
 	local room = math.max(40, max - 28);
-	local height = room;
-	if self:IsVisible() then
-		for candidate = 28, room, 14 do
-			height = candidate;
-			self.detailText:SetHeight(candidate);
-			if not self.detailScroll:IsVisible() then break; end
-		end
+	local height = 28;
+	for candidate = 28, room, 14 do
+		height = candidate;
+		self.detailText:SetHeight(candidate);
+		if not self.detailScroll:IsVisible() then break; end
 	end
 	height = math.min(height, room);
 	self.detailText:SetHeight(height);

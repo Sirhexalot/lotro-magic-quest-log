@@ -14,7 +14,9 @@ PLUGIN = ROOT / 'plugin/MagicQuestLog'
 DATA = PLUGIN / 'Data'
 
 STUBS = r'''
-function import() end
+-- import() reads the named module from the Data folder, exactly like the client:
+-- the plugin's detail blocks are loaded this way when an entry is opened.
+function import(name) ladeModul(name) end
 
 -- Generic stand-in for every Turbine UI object: records what the plugin sets.
 local function controlFactory()
@@ -149,6 +151,27 @@ Turbine.Shell.WriteLine = function(text) lastShell = text end;
 
 def run():
     lua = LuaRuntime(unpack_returned_tuples=True)
+
+    def lade_modul(name):
+        """MagicQuestLog.Data.QuestDetails_de_3 -> Data/QuestDetails_de_3.lua.
+        The client's own modules ("Turbine", "Turbine.UI" …) are part of the stub."""
+        if not name.startswith('MagicQuestLog.Data.'):
+            return name
+        datei = DATA / (name.rsplit('.', 1)[-1] + '.lua')
+        if not datei.is_file():
+            raise RuntimeError('module not found: ' + name)
+        text = datei.read_text(encoding='utf-8')
+        # One test needs the progress file of another character; the module is read
+        # again on every Load, so the name is replaced on the way in.
+        if datei.name == 'Progress.lua' and lua.eval('testWithoutProgress'):
+            return name  # a client without any older progress
+        fremd = lua.eval('testProgressCharacter')
+        if datei.name == 'Progress.lua' and fremd:
+            text = re.sub(r'\["character"\]\s*=\s*"[^"]*"', '["character"] = "%s"' % fremd, text, count=1)
+        lua.execute(text)
+        return name
+
+    lua.globals().ladeModul = lade_modul
     lua.execute(STUBS)
     for name in ('Perf.lua', 'Class.lua', 'Strings.lua', 'Settings.lua', 'Model.lua', 'Live.lua', 'Characters.lua', 'Icon.lua', 'Window.lua'):
         lua.execute((PLUGIN / name).read_text(encoding='utf-8'))
@@ -261,7 +284,7 @@ search("");
 -- Selecting a record fills the details and a proven MoorMap position.
 local withTarget, sample = 0, nil;
 for _, record in ipairs(MQL.catalogs.quests) do
-	if #record.t > 0 then withTarget = withTarget + 1; if sample == nil then sample = record; end end
+	if (record.gt ~= nil or record.sc ~= nil) then withTarget = withTarget + 1; if sample == nil then sample = record; end end
 end
 assert(withTarget > 7000, "too few verified positions: " .. tostring(withTarget));
 -- No spoilers by default: description yes, objectives and steps only on request.
@@ -324,7 +347,11 @@ for _, row in ipairs(window.rows) do
 end
 -- A record without a verified position must not pretend to have one.
 local without = nil;
-for _, record in ipairs(MQL.catalogs.quests) do if #record.t == 0 then without = record; break end end
+for _, record in ipairs(MQL.catalogs.quests) do
+	if record.gt == nil then MQL.Model.Details(record); end
+	if record.gt == nil and #record.t == 0 then without = record; break end
+end
+assert(without ~= nil, "a quest without any position");
 -- With objectives shown for this entry (they start hidden for every new one).
 window.showObjectives = true;
 window:ShowDetails(without, true);
@@ -650,7 +677,8 @@ assert(MQL.Model.CleanMarkup("Asseyez-vous</sit> avec lui") == "Asseyez-vous ave
 assert(MQL.Model.CleanMarkup("<Armund sighs") == "<Armund sighs",
 	"a stray < inside real text must stay");
 local marked = nil;
-for _, record in ipairs(MQL.catalogs.quests) do
+for _, core in ipairs(MQL.catalogs.quests) do
+	local record = MQL.Model.Details(core);
 	if string.find(record.d or "", "<rgb", 1, true) ~= nil then marked = record; break; end
 end
 assert(marked ~= nil, "expected a quest whose text carries markup");
@@ -778,10 +806,18 @@ assert(quests == nil, "precondition");
 -- explicitly, with English strings, and the window must still be complete.
 -- A French client without a French catalog must fall back to English.
 languageCommand = "aide";
+-- The test stub can load every language now, so a missing French catalog is
+-- simulated the way the client would show it: the module import fails.
+local realImport = import;
+import = function(name)
+	if string.find(name, "_fr", 1, true) ~= nil then error("no French catalog in this build"); end
+	return realImport(name);
+end;
 assert(MagicQuestLog.Data["quests_fr"] == nil, "precondition: no French catalog loaded");
 local previousWindow = MagicQuestLog.window;
 MagicQuestLog.Load(nil);
 fallbackLanguage = MagicQuestLog.language;
+import = realImport;
 assert(fallbackLanguage == "en", "fallback language: " .. tostring(fallbackLanguage));
 assert(MagicQuestLog.window ~= previousWindow, "fallback must build a new window, not keep the old one");
 assert(MagicQuestLog.window ~= nil and MagicQuestLog.window.root ~= nil, "fallback window missing");
@@ -790,9 +826,10 @@ assert(MagicQuestLog.strings.quests == "Quests", "fallback strings");
 assert(MagicQuestLog.Data["quests_en"] ~= nil, "English catalog must be present for the fallback");
 assert(MagicQuestLog.Data["quests_de"] ~= nil, "German catalog stays loaded and is simply not chosen");
 assert(MagicQuestLog.window.countLabel:GetText() ~= nil and MagicQuestLog.window.countLabel:GetText() ~= "", "empty count");
--- Then a locale that exists must be used as-is.
+-- Then a locale that exists must be used as-is: with the French catalog present,
+-- a French client gets French.
 MagicQuestLog.Load(nil);
-assert(MagicQuestLog.language == "en", "still English without a local catalog");
+assert(MagicQuestLog.language == "fr", "a present French catalog must be used");
 ''')
 
     lua.execute(r'''
@@ -837,11 +874,13 @@ local progress = MagicQuestLog.Data.progress;
 assert(progress ~= nil, "progress data must be loaded for this test");
 local originalCharacter = progress.character;
 progress.character = "Someoneelse";
+testProgressCharacter = "Someoneelse";
 -- No live or imported progress either, so only the foreign file could claim anything.
 local keptServer, keptCharacter = serverData, characterData;
 serverData, characterData = {}, {};
 MagicQuestLog.Load(nil);
 assert(MagicQuestLog.window.completed == false, "foreign progress must be ignored");
+testProgressCharacter = nil;
 assert(not string.find(MagicQuestLog.window.countLabel:GetText(), MagicQuestLog.strings.finished, 1, true),
 	"a foreign progress file must never show finished counts");
 progress.character = originalCharacter;
@@ -966,7 +1005,11 @@ window.rulerWorks = measured;
 window.heights = {};
 -- Without any import, live or old file there is no claim at all.
 serverData, characterData = {}, {};
+testWithoutProgress = true;
+-- The already-loaded progress table must go too, or the old file still counts.
+MagicQuestLog.Data.progress = nil;
 MagicQuestLog.Load(nil);
+testWithoutProgress = nil;
 assert(MQL.window.completed == false, "nothing known means nothing claimed");
 assert(MQL.characters[1] == "Feldobar", "the logged-in character is always listed");
 -- Back to the regular data for the summary below.
@@ -981,7 +1024,7 @@ serverData, characterData = {}, {};
     for _ in ipairs(MQL.Model.Build(MQL.catalogs.quests, "", MQL.strings).order) do roots = roots + 1; end
     local withTargets, withoutTargets = 0, 0;
     for _, record in ipairs(MQL.catalogs.quests) do
-        if #record.t > 0 then withTargets = withTargets + 1 else withoutTargets = withoutTargets + 1 end
+        if record.sc ~= nil or record.gt ~= nil then withTargets = withTargets + 1 else withoutTargets = withoutTargets + 1 end
     end
     return { total = MQL.window.root.total,
              count = MQL.window.countLabel:GetText(),
@@ -1014,7 +1057,8 @@ assert(M.MapCommand({ gm = 268437716, lat = -30.5, lon = -50.8 }, "X") == nil, "
 assert(M.MapCommand({ gm = 268437716, map = 9, lat = -30.5, lon = -50.8, n = "1" }, "Bree quest")
 	== "/moormap ping 9:-30.50000:-50.80000:1:Bree quest", "ping format unchanged");
 local withGame, withNumber = 0, 0;
-for _, record in ipairs(MagicQuestLog.catalogs.quests) do
+for _, core in ipairs(MagicQuestLog.catalogs.quests) do
+	local record = MagicQuestLog.Model.Details(core);
 	for _, target in ipairs(record.t or {}) do
 		assert(type(target.gm) == "number", "every target names its game map");
 		withGame = withGame + 1;

@@ -1,17 +1,30 @@
 -- Timing for /mql zeit. Startup samples are kept before the command enables chat output.
--- GetGameTime stands still within one frame, so the CPU clock is used when the client
--- offers it. Each rebuild also reports the time until the next frame is drawn: that
--- is the stall a player actually notices.
+-- The game's own clock stands still within one frame (and during the whole login),
+-- so the real wall clock is used when the client offers one: os.clock, else
+-- Turbine.Engine.GetLocalTime, else GetGameTime (frame granularity only).
 MagicQuestLog = MagicQuestLog or {};
 local P = { enabled = false, samples = {}, limit = 200 };
 MagicQuestLog.Perf = P;
 
-local hasClock = type(os) == "table" and type(os.clock) == "function";
-P.clock = hasClock and "os.clock" or "GetGameTime";
+local function pickClock()
+	if type(os) == "table" and type(os.clock) == "function" then
+		return "os.clock", function() return os.clock(); end;
+	end
+	local engine = Turbine ~= nil and Turbine.Engine or nil;
+	if engine ~= nil and engine.GetLocalTime ~= nil then
+		local ok, value = pcall(function() return engine.GetLocalTime(); end);
+		if ok and type(value) == "number" then
+			return "GetLocalTime", function() return engine.GetLocalTime(); end;
+		end
+	end
+	return "GetGameTime", function() return Turbine.Engine.GetGameTime(); end;
+end
+
+local clockName, clockNow = pickClock();
+P.clock = clockName;
 
 function P.Now()
-	if hasClock then return os.clock(); end
-	return Turbine.Engine.GetGameTime();
+	return clockNow();
 end
 
 function P.Print(sample)
@@ -29,7 +42,8 @@ function P.Record(name, started, detail)
 	add({ name = name, ms = (P.Now() - started) * 1000, detail = detail });
 end
 
---- Game time until the next frame after this point, reported as its own sample.
+--- Time until the next frame after this point, reported as its own sample. Uses the
+--- game clock, which is what the player feels.
 function P.Frame(name)
 	if Turbine.UI == nil or Turbine.UI.Control == nil or Turbine.Engine == nil then return; end
 	if P.watcher == nil then

@@ -118,6 +118,7 @@ function MagicQuestLog.Toggle()
 end
 
 function MagicQuestLog.Load(plugin)
+	local started = MagicQuestLog.Perf.Now();
 	MagicQuestLog.plugin = plugin;
 	local language = clientLanguage();
 	local quests, deeds = loadCatalog(language);
@@ -178,6 +179,7 @@ function MagicQuestLog.Load(plugin)
 		current.iconLeft, current.iconTop = newLeft, newTop;
 		MagicQuestLog.Settings.Save();
 	end;
+	MagicQuestLog.Perf.Record("Plugin geladen (gesamt)", started);
 end
 
 if Turbine.Shell ~= nil and Turbine.Shell.AddCommand ~= nil then

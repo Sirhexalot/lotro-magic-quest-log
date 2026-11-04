@@ -172,39 +172,55 @@ reload in the same session can fail because of the catalog size.
 
 ## Building and checking
 
-### Performance baseline (03 November 2026, measurement pending)
+### Performance and the split catalog (04 November 2026)
 
-`/mql zeit` toggles timing output in the game chat. Startup samples are retained
-even before the command is enabled (at most 200 samples); enabling it prints
-those samples too. Timings use `Turbine.Engine.GetGameTime()` and report
-milliseconds for the catalog import, `Model.Build`, list clearing/refilling,
-row ruler measurements (count and total), and `LoadImport`.
+`/mql zeit` toggles timing output in the game chat; startup samples are kept even
+before the command is enabled (at most 200). The clock is `os.clock` when the
+client offers it, else `Turbine.Engine.GetLocalTime`, else `GetGameTime` — the
+game clock stands still within a frame and during the whole login, so it cannot
+measure the start. Each rebuild also reports the time until the next frame, which
+is the stall a player feels.
 
-In-game result (03 November 2026, 64-bit client `x64/lotroclient64.exe`):
+**The catalog is split.** `Quests_<lang>.lua` holds only what the tree, search,
+filters and counters need (id, name, path, level, flags, requirements, quest
+giver, giver position, step count, detail block number): **5.1 MB instead of
+30.8 MB**. Description, steps and every objective live in
+`QuestDetails_<lang>_<n>.lua`, 16 blocks of 1,000 entries by id range, imported
+the first time an entry is opened and then kept for the session. A missing block
+is reported in the detail pane, never shown as empty content. Deeds stay whole in
+their own file (3.7 MB): they are small and have no quest giver.
 
-- The client offers no `os.clock`; `GetGameTime()` stands still within a frame, so
-  every in-frame sample reads 0.0 ms. The useful number is the frame time after a
-  rebuild ("bis zum nächsten Bild").
-- Startup: **7,082 ms** until the first frame after the plugin's first rebuild
-  (catalog import plus login).
-- Opening the window, rebuilding the 14 root rows and reading the import:
-  **0.0 ms** frame delay, repeated; no stall visible to the player, who reported the
-  plugin "fast again" in the 64-bit client before any optimization.
-- Consequence for the plan: steps 2–5 remove repeated work as cheap insurance;
-  splitting the catalog (step 6) is not needed for speed.
+Measured in the game (64-bit client):
 
-Earlier note: the in-game baseline was first not measurable. The player reported that the plugin
-was fast again after starting the client, before any optimization was applied.
-The running executable was `x64/lotroclient64.exe`; this alone does not establish
-the cause. An attempted unload/reload still failed with "Laden von 'MagicQuestLog'
-nicht möglich", so that limitation is not restricted to the old 32-bit client.
-The timing command's shell callback was corrected to accept `(self, command,
-arguments)`; a client restart is required to load that correction.
-Before optimizing, measure each action three
-times: fresh plugin load (restart the client between loads), opening the window,
-expanding Breeland, expanding a section, entering `bree`, and switching character.
-Keep the same character, filter and window size for the before/after comparison.
-Headless checks verify the instrumentation, not client rendering performance.
+| | before (0.4.0) | after (0.5.0) |
+|---|---|---|
+| `Quests_de.lua` | 30.8 MB | 5.1 MB |
+| plugin load, whole (`Plugin geladen`) | 7,082 ms (first frame) | **2,000 ms** |
+| `Model.Build` | — | 2,000 ms (the larger part of it) |
+| opening an entry (detail block) | — | under 1 s, then cached |
+
+The clock the client offers is `GetLocalTime`, which counts whole seconds, so the
+load figures are coarse; the frame time after a rebuild is exact and reads 0.0 ms
+for every rebuild. The login itself (world load) takes far longer than the plugin
+and is not affected by it.
+
+### The tree
+
+Two levels, as before, but ordered like the game:
+
+```
+Eriador · Rhovanion · Rohan · Gondor · Mordor · Haradwaith · Rhûn
+  (then regions the game does not name, alphabetically)
+Weitere Inhalte
+  Epische Geschichte · Feste und Ereignisse · Handwerk ·
+  Instanzen und Schlachten · Missionen · Weitere Aufgaben
+```
+
+Landscapes come first because that is what a player looks for; "Weitere Inhalte"
+is last. Inside a region the areas are alphabetical. Inside the epic story the
+list sections read "Band II > Buch 9: …", ordered by volume and then by book or
+chapter — roman and arabic numerals alike, Prolog first, Zwischenspiel after the
+books, Epilog last. Chapters sort numerically ("Kapitel 2.2" before "Kapitel 10").
 
 The examples assume `LORE_DIR` is a directory with extracted game data
 (`quests.xml`, `deeds.xml`, `geoAreas.xml`, `labels/<language>/…`) and
@@ -488,6 +504,18 @@ plugin's own loader. What a headless test cannot judge — row heights, how the
 list stacks rows — is checked in the game.
 
 ## Changes
+
+**0.5.0** — the tree like the game, and a short login.
+- The tree follows the game: landscapes first (Eriador, Rhovanion, Rohan, Gondor,
+  Mordor, Haradwaith, Rhûn), then "Weitere Inhalte" with the epic story by volume
+  and book, festivals, crafting, instances, missions and "Weitere Aufgaben".
+  Books and chapters sort numerically, Prolog first, Epilog last.
+- The catalog is split: the core is 5.1 MB instead of 30.8 MB, description, steps
+  and objectives are imported when an entry is opened. The plugin's own load went
+  from 7.1 s to 2.0 s.
+- "Show objectives" sits right under the description, for quests and deeds.
+- The MoorMap button works again: the client ignored a reused shortcut object, so
+  the slot kept an empty alias.
 
 **0.4.0** — the game's own maps.
 - Which map a quest, objective or quest giver is on now comes from the game's map

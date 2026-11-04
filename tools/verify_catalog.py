@@ -14,7 +14,7 @@ HERE = Path(__file__).resolve().parent
 ROOT = HERE.parent
 DATA = ROOT / 'plugin/MagicQuestLog/Data'
 LOCALES = ('en', 'de', 'fr')
-SECTIONS = {'@story', '@shadow', '@missions', '@instances', '@craft', '@festivals', '@other'}
+SECTIONS = {'@more', '@story', '@shadow', '@missions', '@instances', '@craft', '@festivals', '@other'}
 HEX = re.compile(r'^[0-9A-F]{8}$')
 
 
@@ -26,8 +26,20 @@ def load(locale, kind, runtime):
     return runtime.globals().MagicQuestLog.Data[readable + '_' + locale]
 
 
-def check(locale, kind, records):
+def load_details(locale, runtime):
+    """All detail blocks of one language: description, steps, every objective."""
+    blocks = {}
+    for path in sorted(DATA.glob('QuestDetails_%s_*.lua' % locale)):
+        runtime.execute(path.read_text(encoding='utf-8'))
+        number = path.stem.rsplit('_', 1)[1]
+        blocks[int(number)] = runtime.globals().MagicQuestLog.Data['questDetails_' + locale + '_' + number]
+    assert blocks, 'no detail blocks for ' + locale
+    return blocks
+
+
+def check(locale, kind, records, details=None):
     assert records is not None, '%s %s missing' % (locale, kind)
+    details = details or {}
     ids, structure = set(), {}
     marks = {}
     zones, areas = set(), set()
@@ -50,9 +62,21 @@ def check(locale, kind, records):
         # the game data and must read the same in every language.
         assert record.x is None or record.x == 1, '%s %s: bad session flag %r' % (locale, record.id, record.x)
         partners = tuple(sorted(record.ex.values())) if record.ex is not None else ()
+        # Description, steps and all objectives come from the entry's detail block.
+        full = record
+        if kind == 'Quests':
+            assert record.blk is not None, '%s %s: no detail block' % (locale, record.id)
+            block = details.get(record.blk)
+            assert block is not None, '%s %s: detail block %s missing' % (locale, record.id, record.blk)
+            full = block[record.id]
+            assert full is not None, '%s %s: not in its detail block' % (locale, record.id)
+            shown = sum(1 for _ in full.s.values()) if full.s is not None else 0
+            assert (record.sc or 0) == shown, '%s %s: step count differs from its block' % (locale, record.id)
         # Goal numbering ("k") is what a character's running counter is matched by,
         # so every language must carry the same goals with the same numbers.
-        goals = tuple((step.i, tuple(goal.k for goal in step.g.values())) for step in record.s.values()
+        # Materialised once: the Lua iterator is one-shot.
+        steps = list(full.s.values()) if full.s is not None else []
+        goals = tuple((step.i, tuple(goal.k for goal in step.g.values())) for step in steps
                       if len(step.g) > 0)
         marks[record.id] = (record.x or 0, partners, goals)
         for part in record.p.values():
@@ -61,14 +85,14 @@ def check(locale, kind, records):
             elif part.k.startswith('area:'):
                 areas.add(part.k.rsplit(':', 1)[1])
         indexes = set()
-        for step in record.s.values():
+        for step in steps:
             assert step.i != '', '%s %s: step without index' % (locale, record.id)
             indexes.add(step.i)
             for goal in step.g.values():
                 assert goal.t and goal.t.strip(), '%s %s: empty goal' % (locale, record.id)
                 if goal.c is not None:
                     assert 0 < goal.c <= 100000, '%s %s: implausible count' % (locale, record.id)
-        for target in record.t.values():
+        for target in (list(full.t.values()) if full.t is not None else []):
             assert isinstance(target.map, int) and target.map > 0, '%s %s: bad map' % (locale, record.id)
             assert -180 <= target.lat <= 180 and -360 <= target.lon <= 360, \
                 '%s %s: bad position' % (locale, record.id)
@@ -94,10 +118,19 @@ def main():
     ids, structures, counts, marks = {}, {}, {}, {}
     for locale in LOCALES:
         runtime = LuaRuntime()
+        blocks = load_details(locale, runtime)
         for kind in ('Quests', 'Deeds'):
             records = load(locale, kind, runtime)
             counts.setdefault(kind, {})[locale] = len(records)
-            ids[(kind, locale)], structures[(kind, locale)], marks[(kind, locale)] = check(locale, kind, records)
+            ids[(kind, locale)], structures[(kind, locale)], marks[(kind, locale)] = check(
+                locale, kind, records, blocks if kind == 'Quests' else None)
+            if kind == 'Quests':
+                # Every detail entry belongs to a record of the core: no orphans,
+                # which would mean a block and the core disagree.
+                core_ids = {record.id for record in records.values()}
+                for number, block in blocks.items():
+                    for ident in block.keys():
+                        assert ident in core_ids, '%s: detail %s has no entry in the core' % (locale, ident)
         del runtime
     for kind in ('Quests', 'Deeds'):
         reference = ids[(kind, 'en')]
