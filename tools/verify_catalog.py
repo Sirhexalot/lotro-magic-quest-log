@@ -91,6 +91,8 @@ def check(locale, kind, records, details=None):
             assert name.strip(), '%s %s: reward without name' % (locale, record.id)
             assert '${' not in name and 'RANK NAME SURNAME' not in name, \
                 '%s %s: raw placeholder in reward %r' % (locale, record.id, name)
+            assert '\\q' not in name and '\\n' not in name, \
+                '%s %s: game markup in reward %r' % (locale, record.id, name)
             assert not re.search(r'\[[A-Za-z]{1,4}\]', name), \
                 '%s %s: game tag left in reward %r' % (locale, record.id, name)
             assert 'DNT' not in name and 'HIDING CONTENT' not in name.upper(), \

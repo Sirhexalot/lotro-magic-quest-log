@@ -131,6 +131,7 @@ def reward_text(text):
     name keeps its first form, so it stays a name and not a phrase.
     """
     text = html.unescape(text or '')
+    text = text.replace('\\q', '"').replace('\\n', ' ')
     text = re.sub(r'\$\{[A-Z_]+:([^}]*)\}',
                   lambda m: REWARD_TAG.sub('', m.group(1).split('|')[0]).strip(), text)
     text = REWARD_TAG.sub('', text)
