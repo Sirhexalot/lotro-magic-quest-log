@@ -112,6 +112,22 @@ for _, p in ipairs(barghest.h) do
 end
 assert(not string.find(M.Detail(barghest, S, {}, { deed = true }), S.huntinghint, 1, true), "hunting hints hidden by default")
 assert(string.find(M.Detail(barghest, S, {}, { deed = true, showSteps = true }), S.huntinghint, 1, true), "hunting hints labelled when disclosed")
+-- Rewards from the game's own reward table: visible without disclosing objectives.
+local advanced
+for _, r in ipairs(deeds) do if r.id == "70005BD3" then advanced = r end end
+assert(advanced and advanced.rw and #advanced.rw > 0, "advanced slayer deed carries rewards")
+local rewardText = M.Detail(advanced, S, {}, { deed = true })
+assert(string.find(rewardText, S.rewards, 1, true), "rewards block shown")
+assert(string.find(rewardText, "Entschlossenheit", 1, true), "virtue named")
+assert(not string.find(rewardText, S.step .. " ", 1, true), "objectives still hidden")
+local sample = M.Detail({ id = "70000000", name = "Probe",
+	rw = { { "i", "Zeichen", 2, 1, 30, 1 }, { "c", "Klinge", 4, 9, 1, 1 },
+		{ "t", "Warg-Jäger" }, { "v", "Eifer" }, { "tr", "Aufwärtshaken" }, { "e", "Erster Zwergentanz" } } },
+	S, {}, {})
+for _, wanted in ipairs({ "30 × Zeichen", S.choice .. ": Klinge", S.title .. ": Warg-Jäger",
+	S.virtue .. ": Eifer", S.trait .. ": Aufwärtshaken", S.emote .. ": Erster Zwergentanz" }) do
+	assert(string.find(sample, wanted, 1, true), "reward line missing: " .. wanted)
+end
 local summary = M.NodeSummary(bree, S, completed, 150, {})
 assert(string.find(summary, S.available .. ":", 1, true), "summary lists available")
 print("PASS: filter (" .. avail.total .. " available of " .. all.total .. "), area search, level range "

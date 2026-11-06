@@ -19,6 +19,7 @@ from pathlib import Path
 from collections import defaultdict, Counter
 import argparse
 import hashlib
+import html
 import json
 import re
 import shutil
@@ -117,6 +118,110 @@ def clean(text):
     text = SENTENCE.sub(r'\1. \2', text)
     text = text.replace(':- ', ': ').replace(':-', ': ')
     return text.strip()
+
+
+REWARD_TAG = re.compile(r'\[[A-Za-z]{1,4}\]')
+
+
+def reward_text(text):
+    """Item or virtue name: strip quality/plural tags and stray whitespace.
+
+    Names carry markers such as [e] (equipment), [n], [p]; some virtue labels
+    arrive with an encoded line break. None of it belongs on screen. A gendered
+    name keeps its first form, so it stays a name and not a phrase.
+    """
+    text = html.unescape(text or '')
+    text = re.sub(r'\$\{[A-Z_]+:([^}]*)\}',
+                  lambda m: REWARD_TAG.sub('', m.group(1).split('|')[0]).strip(), text)
+    text = REWARD_TAG.sub('', text)
+    text = re.sub(r'\s+', ' ', text)
+    return text.strip()
+
+
+def title_choice(match):
+    """A title's placeholder. Two forms read as "Hero / Heroine"; a class list
+    with ten forms would only clutter, so the first is taken."""
+    forms = []
+    for part in match.group(1).split('|'):
+        word = REWARD_TAG.sub('', part).strip()
+        if word and word not in forms:
+            forms.append(word)
+    return ' / '.join(forms[:2]) if len(forms) <= 2 else forms[0]
+
+
+def title_text(text):
+    """The title itself, without the character's name that precedes it.
+
+    The DAT renderer turns ${RANK}${NAME}${SURNAME} into the literal words
+    "RANK NAME SURNAME"; 66 records keep the raw placeholders.
+    """
+    text = html.unescape(text or '').strip()
+    rank = re.match(r'^RANK\s+(.+?)\s+NAME\s+SURNAME', text)
+    if rank:
+        # A rank standing before the name ("RANK Wild NAME SURNAME").
+        return reward_text(rank.group(1))
+    text = re.sub(r'^(?:RANK\s+)?NAME\s+SURNAME', '', text)
+    for token in ('${RANK}${RANK: [E]}', '${NAME}${SURNAME: [E]}${SURNAME}',
+                  '${RANK}', '${NAME}', '${SURNAME: [E]}', '${SURNAME}'):
+        text = text.replace(token, '')
+    text = re.sub(r'\$\{[A-Z_]+:([^}]*)\}', title_choice, text)
+    text = reward_text(text)
+    return text.lstrip(',').strip()
+
+
+def reward_entries(props, rewards, locale):
+    """Rewards a record's table grants, in the compact form the plugin reads.
+
+    [i] fixed item, [c] one of several, [t] title, [v] virtue, [tr] trait, [e] emote.
+    Item entries: name, quality, level, count (fixed only), bound.
+    """
+    if not rewards:
+        return []
+    table = (rewards.get('tables') or {}).get('%08X' % (props.get('Quest_QuestTreasureDID') or 0))
+    if not table:
+        return []
+    entries, items = [], rewards.get('items') or {}
+
+    def item(ident, count, kind):
+        record = items.get(ident)
+        if not record:
+            return None
+        name = reward_text(record.get('n', {}).get(locale, record.get('n', {}).get('en')))
+        if not name:
+            return None
+        entry = [kind, name]
+        for key in ('q', 'l'):
+            entry.append(record[key] if record.get(key) is not None else 0)
+        if kind == 'i':
+            entry.append(count)
+        entry.append(record.get('b', 0))
+        return entry
+
+    for ident, count in table.get('fixed', []):
+        entry = item(ident, count, 'i')
+        if entry:
+            entries.append(entry)
+    for ident, _ in table.get('choice', []):
+        entry = item(ident, 1, 'c')
+        if entry:
+            entries.append(entry)
+    virtues = rewards.get('virtues') or {}
+    for ident, _ in table.get('virtues', []):
+        record = virtues.get(str(ident))
+        name = reward_text((record or {}).get('n', {}).get(locale, (record or {}).get('n', {}).get('en')))
+        if name:
+            entries.append(['v', name])
+    for key, kind in (('titles', 't'), ('traits', 'tr'), ('emotes', 'e')):
+        pool = rewards.get(key) or {}
+        for ident in table.get(key, []):
+            if not isinstance(ident, str):
+                continue
+            record = pool.get(ident)
+            name = (record or {}).get('n', {}).get(locale, (record or {}).get('n', {}).get('en'))
+            name = title_text(name) if kind == 't' else reward_text(name)
+            if name:
+                entries.append([kind, name])
+    return entries
 
 
 def fold(text):
@@ -236,8 +341,9 @@ class Source:
 
 
 def build(export_dir, enums_path, output, moormap_path=None, overrides=None, landblocks_path=None,
-          npcs_dir=None, did_positions=None, lore_dir=None, placed_entities=None):
+          npcs_dir=None, did_positions=None, lore_dir=None, placed_entities=None, rewards_path=None):
     source = Source(export_dir)
+    rewards = json.loads(Path(rewards_path).read_text(encoding='utf-8')) if rewards_path else {}
     overrides = overrides or {}
     hidden = set(overrides.get('hidden_ids', []))
     added = overrides.get('paths', {})
@@ -713,11 +819,19 @@ def build(export_dir, enums_path, output, moormap_path=None, overrides=None, lan
         core = {'id': ident, 'name': name,
                 'l': level if level is not None else '', 'p': path}
         detail = {'d': text, 's': steps, 't': targets}
+        granted = reward_entries(props, rewards, locale)
+        if granted:
+            stats[kind + '_with_rewards'] += 1
+            stats[kind + '_rewards'] += len(granted)
+            if kind == 'quests':
+                detail['rw'] = granted
         if kind == 'deeds':
             # Deeds are small (1.4 MB for all three languages): they keep everything
             # in their own file, so the deed tab works without a second import. A
             # deed has no quest giver, so its own file's first objective places it.
             core['d'], core['s'], core['t'] = text, steps, targets;
+            if granted:
+                core['rw'] = granted
             hints = []
             for objective in entry.get('objectives') or []:
                 index = str(objective.get('Quest_ObjectiveIndex', ''))
@@ -936,11 +1050,14 @@ def main():
     parser.add_argument('--output', type=Path, default=ROOT / 'plugin/MagicQuestLog/Data')
     parser.add_argument('--placed-entities', type=Path, default=None,
                         help='Our placed raw.jsonl: enemy properties for separately labelled hunting hints')
+    parser.add_argument('--rewards', type=Path, default=None,
+                        help='rewards.json from export_rewards.py: items, titles, virtues per quest and deed')
     parser.add_argument('--overrides', type=Path, default=ROOT / 'tools/overrides.json')
     options = parser.parse_args()
     data = json.loads(options.overrides.read_text(encoding='utf-8')) if options.overrides.is_file() else {}
     report = build(options.export, options.enums, options.output, options.moormap, data,
-                   options.landblocks, options.npcs, options.did_positions, options.lore, options.placed_entities)
+                   options.landblocks, options.npcs, options.did_positions, options.lore, options.placed_entities,
+                   options.rewards)
     print(json.dumps({k: v['counts'] for k, v in report['locales'].items()}, ensure_ascii=False, indent=2))
 
 

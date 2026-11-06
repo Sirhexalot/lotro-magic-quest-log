@@ -78,7 +78,34 @@ def check(locale, kind, records, details=None):
         steps = list(full.s.values()) if full.s is not None else []
         goals = tuple((step.i, tuple(goal.k for goal in step.g.values())) for step in steps
                       if len(step.g) > 0)
-        marks[record.id] = (record.x or 0, partners, goals)
+        # Rewards come from the game's reward table. Names are localized, so the
+        # cross-language comparison uses kind, quality, level, count and binding;
+        # their number and order must match in every language.
+        rewards = list(full.rw.values()) if full.rw is not None else []
+        rewards_mark = []
+        for entry in rewards:
+            kind = entry[1]
+            assert kind in ('i', 'c', 't', 'v', 'tr', 'e'), \
+                '%s %s: unknown reward kind %r' % (locale, record.id, kind)
+            name = entry[2] or ''
+            assert name.strip(), '%s %s: reward without name' % (locale, record.id)
+            assert '${' not in name and 'RANK NAME SURNAME' not in name, \
+                '%s %s: raw placeholder in reward %r' % (locale, record.id, name)
+            assert not re.search(r'\[[A-Za-z]{1,4}\]', name), \
+                '%s %s: game tag left in reward %r' % (locale, record.id, name)
+            assert 'DNT' not in name and 'HIDING CONTENT' not in name.upper(), \
+                '%s %s: developer reward visible %r' % (locale, record.id, name)
+            if kind in ('i', 'c'):
+                quality, level = int(entry[3] or 0), int(entry[4] or 0)
+                count = int(entry[5] or 1) if kind == 'i' else 1
+                bound = int(entry[6] or 0) if kind == 'i' else int(entry[5] or 0)
+                assert 0 <= quality <= 6, '%s %s: bad quality' % (locale, record.id)
+                assert 0 <= level <= 1000, '%s %s: bad item level' % (locale, record.id)
+                assert 1 <= count <= 10000, '%s %s: bad count' % (locale, record.id)
+                rewards_mark.append((kind, quality, level, count, bound))
+            else:
+                rewards_mark.append((kind, 0, 0, 1, 0))
+        marks[record.id] = (record.x or 0, partners, goals, tuple(rewards_mark))
         for part in record.p.values():
             if part.k.startswith('zone:'):
                 zones.add(part.k[len('zone:'):])
@@ -104,7 +131,7 @@ def check(locale, kind, records, details=None):
     assert not shared, '%s %s: name used as zone and as area: %s' % (locale, kind, ', '.join(shared))
     # A partner that is not in the catalog would be a dangling promise, and a
     # one-sided entry would silently take an entry out of the count for nobody.
-    for ident, (_, partners, _goals) in marks.items():
+    for ident, (_, partners, _goals, _rewards) in marks.items():
         for partner in partners:
             assert partner in ids, '%s %s: %s points at unknown %s' % (locale, kind, ident, partner)
             assert ident in marks[partner][1], '%s %s: %s and %s are not mutual' % (locale, kind, ident, partner)

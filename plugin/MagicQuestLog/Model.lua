@@ -360,6 +360,7 @@ function M.Details(record)
 		record.d = entry.d;
 		record.s = entry.s;
 		if entry.t ~= nil then record.t = entry.t; end
+		if entry.rw ~= nil then record.rw = entry.rw; end
 	else
 		record.detailMissing = true;
 	end
@@ -562,6 +563,37 @@ function M.Detail(record, strings, context, opts)
 	local description = M.Resolve(record.d, context, strings);
 	if (string.gsub(description, "%s", "")) ~= "" then
 		table.insert(parts, strings.description .. "\n\n" .. description);
+	end
+	-- Rewards are part of what the quest journal shows before you accept, so they
+	-- stay visible; only the objectives themselves are hidden.
+	if record.rw ~= nil and #record.rw > 0 then
+		local fixed, choice, extras = {}, {}, {};
+		for _, entry in ipairs(record.rw) do
+			local kind, name = entry[1], M.Resolve(entry[2], context, strings);
+			if kind == "i" then
+				local count = tonumber(entry[5]) or 1;
+				fixed[#fixed + 1] = (count > 1 and (tostring(count) .. " × ") or "") .. name;
+			elseif kind == "c" then
+				choice[#choice + 1] = name;
+			elseif kind == "t" then
+				extras[#extras + 1] = strings.title .. ": " .. name;
+			elseif kind == "v" then
+				extras[#extras + 1] = strings.virtue .. ": " .. name;
+			elseif kind == "tr" then
+				extras[#extras + 1] = strings.trait .. ": " .. name;
+			elseif kind == "e" then
+				extras[#extras + 1] = strings.emote .. ": " .. name;
+			end
+		end
+		local lines = {};
+		for _, line in ipairs(fixed) do lines[#lines + 1] = "- " .. line; end
+		for _, line in ipairs(extras) do lines[#lines + 1] = "- " .. line; end
+		if #choice > 0 then
+			lines[#lines + 1] = strings.choice .. ": " .. table.concat(choice, " · ");
+		end
+		if #lines > 0 then
+			table.insert(parts, strings.rewards .. "\n\n" .. table.concat(lines, "\n"));
+		end
 	end
 	-- Hidden objectives: the text ends with the description, and the window puts
 	-- its "show objectives" button right under it.

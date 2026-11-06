@@ -98,6 +98,9 @@ DIDGEO="${MQL_DIDGEO:-$(dirname "$EXPORT")/did-positions-2026-11-03/positions.js
 [ -f "$DIDGEO" ] && ARGS+=(--did-positions "$DIDGEO")
 PLACED="${MQL_PLACED:-$(dirname "$EXPORT")/placed-2026-11-03/raw.jsonl}"
 [ -f "$PLACED" ] && ARGS+=(--placed-entities "$PLACED")
+# Belohnungen: der zuletzt erzeugte Belohnungsexport neben dem Hauptexport.
+REWARDS="${MQL_REWARDS:-$(ls -d "$(dirname "$EXPORT")"/rewards-*/rewards.json 2>/dev/null | sort | tail -1 || true)}"
+[ -n "$REWARDS" ] && [ -f "$REWARDS" ] && ARGS+=(--rewards "$REWARDS")
 
 echo "source:     $EXPORT"
 echo "enums:      $ENUMS"

@@ -50,6 +50,11 @@ Its **Progress** page also brings your older progress into the plugin (see below
   is and whether its completions come in live (only the logged-in one does).
 - **Show in MoorMap** through a quickslot with an alias shortcut, whenever a
    position has been verified.
+- **Rewards from the game's own reward table.** Quests and deeds show what they
+  grant: items (including "choose one"), titles, virtues, traits and emotes, with
+  item quality, item level and binding. Names and texts are translated; nothing
+  is guessed. Quest XP and money are not shown, because the client's default
+  calculation is not decoded yet.
 - Some defeat-enemy deeds have separately labelled **possible hunting locations**
   from our own game-data exports. Only simple territory/species defeat rules and
   base-world outdoor placements are supported; additional predicates, exclusions,
