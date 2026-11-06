@@ -166,7 +166,11 @@ def title_text(text):
         text = text.replace(token, '')
     text = re.sub(r'\$\{[A-Z_]+:([^}]*)\}', title_choice, text)
     text = reward_text(text)
-    return text.lstrip(',').strip()
+    # Some game titles carry a doubled separator (", , Title") or a stray dash
+    # before a lowercase word ("-sternenerleuchteter Held").
+    text = re.sub(r'^[\s,;:.]+', '', text)
+    text = re.sub(r'^[-–—](?=[a-zäöüß])', '', text)
+    return text.strip()
 
 
 def reward_entries(props, rewards, locale):
@@ -195,6 +199,8 @@ def reward_entries(props, rewards, locale):
         if kind == 'i':
             entry.append(count)
         entry.append(record.get('b', 0))
+        # The item's own id lets the site group the same reward across entries.
+        entry.append(ident)
         return entry
 
     for ident, count in table.get('fixed', []):

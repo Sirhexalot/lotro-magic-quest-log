@@ -99,12 +99,15 @@ def check(locale, kind, records, details=None):
                 quality, level = int(entry[3] or 0), int(entry[4] or 0)
                 count = int(entry[5] or 1) if kind == 'i' else 1
                 bound = int(entry[6] or 0) if kind == 'i' else int(entry[5] or 0)
+                ident = entry[7] if kind == 'i' else entry[6]
+                assert isinstance(ident, str) and HEX.match(ident), \
+                    '%s %s: reward item without a source id' % (locale, record.id)
                 assert 0 <= quality <= 6, '%s %s: bad quality' % (locale, record.id)
                 assert 0 <= level <= 1000, '%s %s: bad item level' % (locale, record.id)
                 assert 1 <= count <= 10000, '%s %s: bad count' % (locale, record.id)
-                rewards_mark.append((kind, quality, level, count, bound))
+                rewards_mark.append((kind, quality, level, count, bound, ident))
             else:
-                rewards_mark.append((kind, 0, 0, 1, 0))
+                rewards_mark.append((kind, 0, 0, 1, 0, ''))
         marks[record.id] = (record.x or 0, partners, goals, tuple(rewards_mark))
         for part in record.p.values():
             if part.k.startswith('zone:'):
