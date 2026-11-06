@@ -103,6 +103,15 @@ for _, r in ipairs(quests) do
 	assert(not string.find(r.name, ":-", 1, true), "':-' left in " .. r.name)
 end
 -- Area summary.
+local barghest
+for _, r in ipairs(deeds) do if r.id == "70005BD2" then barghest = r end end
+assert(barghest and barghest.h and #barghest.h > 0, "Barghest has hunting hints")
+assert(#(barghest.t or {}) == 0, "enemy hints are not exact objectives")
+for _, p in ipairs(barghest.h) do
+	assert(p.source == "dat-enemy-base-world" and p.species == 57 and p.territory == 1879049792 and p.did, "hint provenance")
+end
+assert(not string.find(M.Detail(barghest, S, {}, { deed = true }), S.huntinghint, 1, true), "hunting hints hidden by default")
+assert(string.find(M.Detail(barghest, S, {}, { deed = true, showSteps = true }), S.huntinghint, 1, true), "hunting hints labelled when disclosed")
 local summary = M.NodeSummary(bree, S, completed, 150, {})
 assert(string.find(summary, S.available .. ":", 1, true), "summary lists available")
 print("PASS: filter (" .. avail.total .. " available of " .. all.total .. "), area search, level range "

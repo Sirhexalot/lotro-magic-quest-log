@@ -49,7 +49,13 @@ Its **Progress** page also brings your older progress into the plugin (see below
   character of this server that has progress; the label says how old its import
   is and whether its completions come in live (only the logged-in one does).
 - **Show in MoorMap** through a quickslot with an alias shortcut, whenever a
-  position has been verified.
+   position has been verified.
+- Some defeat-enemy deeds have separately labelled **possible hunting locations**
+  from our own game-data exports. Only simple territory/species defeat rules and
+  base-world outdoor placements are supported; additional predicates, exclusions,
+  item-drop events and other content layers are not guessed. Hints stay behind
+  “Show objectives”. MoorMap can show one recorded enemy placement, not a claimed
+  hunting-area centre. The companion site groups nearby placements visually.
 - Window in the client's own style: title bar, close button, draggable.
 - **Start icon** at the right screen edge: a click opens or hides the window, a
   drag moves it. Window and icon position as well as visibility are remembered.

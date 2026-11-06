@@ -867,6 +867,10 @@ function Window:ShowDetails(record, keepObjectives)
 		target, which = record.gt, self.strings.giverpos;
 	end
 	local command = Model.MapCommand(target, record.displayName or record.name);
+	if target == nil and showSteps and record.h ~= nil then
+		target, which = record.h[1], self.strings.hunting;
+		command = Model.MapCommand(target, record.displayName or record.name);
+	end
 	self.command = command or false;
 	if command ~= nil then
 		-- A fresh Shortcut object per command: the client ignores SetShortcut with the

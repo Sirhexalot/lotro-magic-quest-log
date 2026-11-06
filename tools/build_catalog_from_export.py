@@ -236,7 +236,7 @@ class Source:
 
 
 def build(export_dir, enums_path, output, moormap_path=None, overrides=None, landblocks_path=None,
-          npcs_dir=None, did_positions=None, lore_dir=None):
+          npcs_dir=None, did_positions=None, lore_dir=None, placed_entities=None):
     source = Source(export_dir)
     overrides = overrides or {}
     hidden = set(overrides.get('hidden_ids', []))
@@ -264,6 +264,9 @@ def build(export_dir, enums_path, output, moormap_path=None, overrides=None, lan
                 break
         return found
     landblocks = source.load_landblocks(landblocks_path)
+    from deed_locations import enemy_index, hunting_rule
+    hunting = (enemy_index(placed_entities, did_positions, source.areas, landblocks, game.attribute)
+               if placed_entities and did_positions and landblocks else {})
 
     if len(source.quests) < 1000 or len(source.deeds) < 100:
         raise ValueError('Implausibly small export; refusing to replace a working catalog')
@@ -635,9 +638,12 @@ def build(export_dir, enums_path, output, moormap_path=None, overrides=None, lan
             for position, condition in enumerate(conditions):
                 found = []
                 walk_events(condition, lambda event: found.append(event)
-                            if isinstance(event.get('QuestEvent_ProgressOverride'), dict) else None)
+                            if isinstance(event.get('QuestEvent_ProgressOverride'), dict) or
+                            (kind == 'deeds' and isinstance(event.get('QuestEvent_BillboardProgressOverride'), dict))
+                            else None)
                 for event in found:
-                    texts = event['QuestEvent_ProgressOverride'].get('texts') or {}
+                    texts = (event.get('QuestEvent_ProgressOverride') or
+                             event.get('QuestEvent_BillboardProgressOverride') or {}).get('texts') or {}
                     english = clean(texts.get('en'))
                     text = clean(texts.get(locale) or texts.get('en'))
                     if not text or (english or text) in seen_goals:
@@ -649,6 +655,18 @@ def build(export_dir, enums_path, output, moormap_path=None, overrides=None, lan
                         goal['c'] = number
                     goals.append(goal)
 
+            # Deeds can have real coordinates without any display text. Keep that
+            # step only for direct defeat/landmark events, not hidden bestowal or
+            # instance script triggers (their points may merely be entrances).
+            direct = []
+            walk_events(objective.get('Quest_CompletionConditionArray') or [],
+                        lambda event: direct.append(event) if 'QuestEvent_ID' in event else None)
+            if kind == 'deeds' and not narrative and not goals and direct and all(
+                    e.get('QuestEvent_ID') == 22 and e.get('QuestEvent_MonsterDID')
+                    and not e.get('QuestEvent_RoleConstraint') for e in direct):
+                narrative.append({'de': 'In den Spieldaten verzeichnete Gegnerstandorte.',
+                                  'en': 'Enemy locations recorded in the game data.',
+                                  'fr': 'Positions des ennemis indiquées dans les données du jeu.'}[locale])
             if narrative or goals:
                 steps.append({'i': str(objective.get('Quest_ObjectiveIndex', '')), 'n': narrative, 'g': goals})
 
@@ -700,6 +718,23 @@ def build(export_dir, enums_path, output, moormap_path=None, overrides=None, lan
             # in their own file, so the deed tab works without a second import. A
             # deed has no quest giver, so its own file's first objective places it.
             core['d'], core['s'], core['t'] = text, steps, targets;
+            hints = []
+            for objective in entry.get('objectives') or []:
+                index = str(objective.get('Quest_ObjectiveIndex', ''))
+                if index not in indexes:
+                    continue
+                for point in hunting.get(hunting_rule(objective), []):
+                    hint = dict(point, step=index)
+                    for candidate in reversed(game.chain(point['gm'])):
+                        number = moormap_of_image.get(game.maps[candidate]['image'])
+                        if number is not None:
+                            hint['map'] = number
+                            break
+                    hints.append(hint)
+            if hints:
+                core['h'] = hints
+                stats['deeds_with_hunting'] += 1
+                stats['deeds_hunting_points'] += len(hints)
             detail = {};
         else:
             if len(steps) > 0:
@@ -899,11 +934,13 @@ def main():
     parser.add_argument('--did-positions', type=Path, default=None,
                         help='positions.jsonl from DidGeoExport.java: where NPCs, creatures and objects stand')
     parser.add_argument('--output', type=Path, default=ROOT / 'plugin/MagicQuestLog/Data')
+    parser.add_argument('--placed-entities', type=Path, default=None,
+                        help='Our placed raw.jsonl: enemy properties for separately labelled hunting hints')
     parser.add_argument('--overrides', type=Path, default=ROOT / 'tools/overrides.json')
     options = parser.parse_args()
     data = json.loads(options.overrides.read_text(encoding='utf-8')) if options.overrides.is_file() else {}
     report = build(options.export, options.enums, options.output, options.moormap, data,
-                   options.landblocks, options.npcs, options.did_positions, options.lore)
+                   options.landblocks, options.npcs, options.did_positions, options.lore, options.placed_entities)
     print(json.dumps({k: v['counts'] for k, v in report['locales'].items()}, ensure_ascii=False, indent=2))
 
 

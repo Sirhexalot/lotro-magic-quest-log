@@ -601,6 +601,9 @@ function M.Detail(record, strings, context, opts)
 	end
 	flush();
 	for _, block in ipairs(blocks) do table.insert(parts, block); end
+	if record.h ~= nil and #record.h > 0 then
+		table.insert(parts, strings.hunting .. " (" .. tostring(#record.h) .. ")\n\n" .. strings.huntinghint);
+	end
 	return table.concat(parts, "\n\n\n");
 end
 
