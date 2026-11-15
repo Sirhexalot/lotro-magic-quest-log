@@ -585,23 +585,18 @@ def build(export_dir, enums_path, output, moormap_path=None, overrides=None, lan
         return 'other'
 
     def thematic_path(category_en, category_loc, category_code, story, geographic_path):
-        """A second, non-geographic index for quests.
-
-        The geographic path remains in ``p``. This path is deliberately
-        independent so switching views cannot change map grouping, progress
-        ids, or the existing quest tree.
-        """
+        """Return a top-level thematic path for non-geographic quests."""
         if story:
             path = [{'k': 'theme:epic', 'n': '@themeEpic'}]
-            # Keep the epic volume/chapter sequence, but remove the geographic
-            # wrapper ("Weitere Inhalte > Epische Geschichte").
             return path + list(geographic_path[2:])
         if category_en in CLASS_CATEGORIES:
             key, label = 'class', '@themeClass'
         elif category_en in ORIGIN_CATEGORIES:
             key, label = 'origin', '@themeOrigin'
         else:
-            key, label = 'other', '@themeOther'
+            key, label = section_for(category_en or ''), '@' + section_for(category_en or '')
+            if key == 'other':
+                label = '@themeOther'
         path = [{'k': 'theme:' + key, 'n': label}]
         if category_loc:
             path.append({'k': 'category:' + str(category_code), 'n': category_loc})
@@ -888,10 +883,11 @@ def build(export_dir, enums_path, output, moormap_path=None, overrides=None, lan
         # objective (the quest giver's map button). Description, steps and all
         # objectives live in a detail block and are imported when an entry is opened.
         text = clean(description.get(locale) or description.get('en'))
+        thematic = is_story or category_en in CLASS_CATEGORIES or category_en in ORIGIN_CATEGORIES
+        if kind == 'quests' and (thematic or not zone or zone not in region_of):
+            path = thematic_path(category_en, category_loc, code, is_story, path)
         core = {'id': ident, 'name': name,
                 'l': level if level is not None else '', 'p': path}
-        if kind == 'quests':
-            core['tp'] = thematic_path(category_en, category_loc, code, is_story, path)
         if kind == 'deeds' and ident in replaced:
             core['replaced_by'] = replaced[ident]
         if monster_play:

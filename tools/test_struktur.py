@@ -137,17 +137,19 @@ for _, record in ipairs(quests) do
 	withBlock = withBlock + 1;
 	if (record.sc or 0) > 0 then withDetail = withDetail + 1; end
 end
-local thematic = MagicQuestLog.Model.Build(quests, "", MagicQuestLog.Strings.de, nil, {},
-	{ structure = "thematic" });
+local thematic = MagicQuestLog.Model.Build(quests, "", MagicQuestLog.Strings.de, nil, {});
 themeOrder = {};
 for _, node in ipairs(thematic.order) do themeOrder[#themeOrder + 1] = node.name; end
 ''')
     print('PASS: %s core entries carry no description or steps, all name their detail block '
            '(%s with steps)' % (lua.eval('checked'), lua.eval('withDetail')))
     themes = [str(value) for value in lua.eval('themeOrder').values()]
-    assert themes == ['Epische Geschichte', 'Klassenaufgaben', 'Herkunftsaufgaben',
-                      'Weitere Inhalte'], themes
-    print('PASS: thematic view has separate epic, class, origin and other roots')
+    assert themes == ['Eriador', 'Rhovanion', 'Rohan', 'Gondor', 'Mordor',
+                      'Haradwaith', 'Rhûn', 'Alte Geschichten',
+                      'Epische Geschichte', 'Klassenaufgaben', 'Herkunftsaufgaben',
+                      'Feste und Ereignisse', 'Missionen', 'Instanzen und Schlachten',
+                      'Handwerk', 'Weitere Aufgaben'], themes
+    print('PASS: one task tree combines landscapes and thematic roots')
     return 0
 
 

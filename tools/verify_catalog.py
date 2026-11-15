@@ -14,7 +14,8 @@ HERE = Path(__file__).resolve().parent
 ROOT = HERE.parent
 DATA = ROOT / 'plugin/MagicQuestLog/Data'
 LOCALES = ('en', 'de', 'fr')
-SECTIONS = {'@more', '@story', '@shadow', '@missions', '@instances', '@craft', '@festivals', '@other'}
+SECTIONS = {'@more', '@story', '@shadow', '@missions', '@instances', '@craft', '@festivals', '@other',
+            '@themeEpic', '@themeClass', '@themeOrigin', '@themeOther'}
 HEX = re.compile(r'^[0-9A-F]{8}$')
 
 

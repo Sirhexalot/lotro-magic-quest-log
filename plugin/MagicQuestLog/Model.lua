@@ -138,7 +138,7 @@ end
 -- landscape first.
 local REGION_RANK = {
 	Eriador = 10, Rhovanion = 20, Rohan = 30, Gondor = 40, Mordor = 50,
-	Haradwaith = 60, ["Rhûn"] = 70,
+	Haradwaith = 60, ["Rhûn"] = 70, ["Tales of Yore"] = 80,
 };
 -- Inside "Weitere Inhalte": epic story, festivals, crafting, instances, missions,
 -- then everything without a landscape.
@@ -155,7 +155,8 @@ function M.NodeRank(node)
 		return SECTION_RANK[body] or 600;
 	end
 	if head == "theme" then
-		return ({ epic = 10, class = 20, origin = 30, other = 90 })[body] or 600;
+		return ({ epic = 100, class = 110, origin = 120, festivals = 130,
+			missions = 140, instances = 150, craft = 160, other = 190 })[body] or 600;
 	end
 	return 0;
 end
@@ -206,7 +207,6 @@ end
 function M.Build(records, query, strings, completed, context, options)
 	options = options or {};
 	local filter = options.filter or "all";
-	local pathField = options.structure == "thematic" and "tp" or "p";
 	local root = { key = "root", name = "root", children = {}, order = {}, items = {}, total = 0 };
 	if completed ~= nil then root.done = 0; end
 	local key = M.ContextKey(context);
@@ -288,7 +288,7 @@ function M.Build(records, query, strings, completed, context, options)
 			-- Two tree levels only (region or section, then area or book); what lies
 			-- deeper becomes the entry's list section within its area.
 			local node = root;
-			local parts, depth = record[pathField] or record.p or {}, 0;
+			local parts, depth = record.p or {}, 0;
 			for _, part in ipairs(parts) do
 				depth = depth + 1;
 				if depth > 2 then break; end
