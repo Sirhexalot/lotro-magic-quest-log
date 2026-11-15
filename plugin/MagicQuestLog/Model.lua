@@ -154,6 +154,9 @@ function M.NodeRank(node)
 		if body == "more" then return 900; end
 		return SECTION_RANK[body] or 600;
 	end
+	if head == "theme" then
+		return ({ epic = 10, class = 20, origin = 30, other = 90 })[body] or 600;
+	end
 	return 0;
 end
 
@@ -203,6 +206,7 @@ end
 function M.Build(records, query, strings, completed, context, options)
 	options = options or {};
 	local filter = options.filter or "all";
+	local pathField = options.structure == "thematic" and "tp" or "p";
 	local root = { key = "root", name = "root", children = {}, order = {}, items = {}, total = 0 };
 	if completed ~= nil then root.done = 0; end
 	local key = M.ContextKey(context);
@@ -284,7 +288,7 @@ function M.Build(records, query, strings, completed, context, options)
 			-- Two tree levels only (region or section, then area or book); what lies
 			-- deeper becomes the entry's list section within its area.
 			local node = root;
-			local parts, depth = record.p or {}, 0;
+			local parts, depth = record[pathField] or record.p or {}, 0;
 			for _, part in ipairs(parts) do
 				depth = depth + 1;
 				if depth > 2 then break; end

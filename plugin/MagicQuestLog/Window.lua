@@ -116,6 +116,7 @@ function Window:Constructor(strings, catalogs)
 	self.level = false;
 	local stored = MagicQuestLog.Settings.Get();
 	self.filter = stored.filter or "all";
+	self.structure = stored.structure or "geographic";
 	self.showObjectives = false;
 	-- The built tree is cached; expanding a node must not rebuild and re-sort
 	-- 15k records again.
@@ -198,6 +199,11 @@ function Window:Constructor(strings, catalogs)
 	self.kindDeed.Click = function() self:SetKind("deeds"); end;
 	self.kindQuestIcon = makeImage(self, "quests");
 	self.kindDeedIcon = makeImage(self, "deeds");
+	self.structureButton = Turbine.UI.Lotro.Button();
+	self.structureButton:SetParent(self);
+	self.structureButton:SetSize(122, 22);
+	self.structureButton:SetFont(self.small);
+	self.structureButton.Click = function() self:SetStructure(self.structure == "thematic" and "geographic" or "thematic"); end;
 
 	self.searchIcon = makeImage(self, "search");
 	self.searchLabel = makeLabel(self, self.body, self.gold);
@@ -393,7 +399,8 @@ function Window:Layout()
 	self.kindQuest:SetPosition(MARGIN + 30, ROW);
 	self.kindDeedIcon:SetPosition(MARGIN + 156, ROW);
 	self.kindDeed:SetPosition(MARGIN + 178, ROW);
-	local labelLeft = MARGIN + 306;
+	self.structureButton:SetPosition(MARGIN + 306, ROW);
+	local labelLeft = MARGIN + 438;
 	self.searchIcon:SetPosition(labelLeft, ROW + 2);
 	self.searchLabel:SetPosition(labelLeft + 22, ROW + 2);
 	self.searchLabel:SetSize(66, 20);
@@ -463,6 +470,18 @@ function Window:SetKind(kind)
 	self:Rebuild();
 end
 
+function Window:SetStructure(structure)
+	if structure ~= "thematic" then structure = "geographic"; end
+	if self.structure == structure then return; end
+	self.structure = structure;
+	local settingsNow = MagicQuestLog.Settings.Get();
+	settingsNow.structure = structure;
+	MagicQuestLog.Settings.Save();
+	self.expanded = {};
+	self:ShowDetails(nil);
+	self:Rebuild();
+end
+
 function Window:Catalog()
 	return (self.catalogs or {})[self.kind] or {};
 end
@@ -477,11 +496,12 @@ function Window:Rebuild(force)
 	-- Only kind, query or progress change the tree. Expanding is a display
 	-- change, so it must not rebuild and re-sort the whole catalog.
 	local key = self.kind .. "\1" .. tostring(self.query) .. "\1" .. (self.completed and "known" or "?")
-		.. "\1" .. Model.ContextKey(self.context) .. "\1" .. self.filter .. "\1" .. tostring(self.level);
+		.. "\1" .. Model.ContextKey(self.context) .. "\1" .. self.filter .. "\1"
+		.. self.structure .. "\1" .. tostring(self.level);
 	if force or self.treeCacheKey ~= key or self.root == nil then
 		local buildStarted = perf.Now();
 		self.root = Model.Build(self:Catalog(), self.query, self.strings, self.completed or nil, self.context,
-			{ filter = self.filter, level = self.level or nil });
+			{ filter = self.filter, level = self.level or nil, structure = self.structure });
 		perf.Record("Model.Build", buildStarted);
 		self.treeCacheKey = key;
 		-- New counts and names: rows made for the old tree are stale.
@@ -493,6 +513,7 @@ function Window:Rebuild(force)
 	self.rows = {};
 	self.actions = {};
 	self.countLabel:SetText(self:CountText());
+	self.structureButton:SetText(self.strings[self.structure == "thematic" and "themegeographic" or "themethematic"]);
 	-- The active filter reads in brackets; "available" only for quests with progress.
 	for name, button in pairs(self.filterButtons) do
 		local caption = self.strings["filter" .. name];

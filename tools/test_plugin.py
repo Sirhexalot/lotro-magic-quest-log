@@ -894,11 +894,11 @@ local known = 0;
 for key in pairs(saved) do
 	assert(key == "windowLeft" or key == "windowTop" or key == "iconLeft"
 		or key == "iconTop" or key == "windowVisible" or key == "useIcon"
-		or key == "showObjectives" or key == "filter",
+		or key == "showObjectives" or key == "filter" or key == "structure",
 		"unexpected key in the settings file: " .. tostring(key));
 	known = known + 1;
 end
-assert(known >= 2 and known <= 8, "settings file has " .. known .. " keys");
+	assert(known >= 2 and known <= 9, "settings file has " .. known .. " keys");
 for _, name in ipairs({ "windowLeft", "windowTop", "iconLeft", "iconTop" }) do
 	assert(saved[name] == nil or type(saved[name]) == "string",
 		"saved " .. name .. " must be text, got " .. type(saved[name]));

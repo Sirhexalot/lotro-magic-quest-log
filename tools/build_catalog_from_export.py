@@ -85,6 +85,14 @@ STORY_VOLUME = re.compile(r'^Epic - Vol\. ([IVX]+)')
 SHADOW_PREFIX = 'Before the Shadow'
 STORY_EXTRA = {'The Black Book of Mordor', 'The Legacy of Durin and the Trials of the Dwarves',
                'The Song of Waves and Wind', '...and the Verses of Victory'}
+CLASS_CATEGORIES = {
+    'Burglar', 'Captain', 'Champion', 'Guardian', 'Hunter', 'Lore-master',
+    'Minstrel', 'Rune-keeper', 'Warden', 'Brawler', 'Mariner',
+}
+ORIGIN_CATEGORIES = {
+    'Hobbit', 'Man', 'Elf', 'Dwarf', 'High Elf', 'Beorning', 'Stout-axe',
+    'River Hobbit',
+}
 
 
 SENTENCE = re.compile(r'([a-zäöüßàâçéèêëîïôûùœ]{2})\.([A-ZÄÖÜÀÂÇÉÈÊ][a-zäöüßàâçéèêëîïôûùœ])')
@@ -576,6 +584,29 @@ def build(export_dir, enums_path, output, moormap_path=None, overrides=None, lan
             return 'festivals'
         return 'other'
 
+    def thematic_path(category_en, category_loc, category_code, story, geographic_path):
+        """A second, non-geographic index for quests.
+
+        The geographic path remains in ``p``. This path is deliberately
+        independent so switching views cannot change map grouping, progress
+        ids, or the existing quest tree.
+        """
+        if story:
+            path = [{'k': 'theme:epic', 'n': '@themeEpic'}]
+            # Keep the epic volume/chapter sequence, but remove the geographic
+            # wrapper ("Weitere Inhalte > Epische Geschichte").
+            return path + list(geographic_path[2:])
+        if category_en in CLASS_CATEGORIES:
+            key, label = 'class', '@themeClass'
+        elif category_en in ORIGIN_CATEGORIES:
+            key, label = 'origin', '@themeOrigin'
+        else:
+            key, label = 'other', '@themeOther'
+        path = [{'k': 'theme:' + key, 'n': label}]
+        if category_loc:
+            path.append({'k': 'category:' + str(category_code), 'n': category_loc})
+        return path
+
     positions = defaultdict(list)
     # Where an NPC stands: every objective that names it as its target (talk to,
     # bring back to …) carries its position. An NPC seen at one place only gives
@@ -859,6 +890,8 @@ def build(export_dir, enums_path, output, moormap_path=None, overrides=None, lan
         text = clean(description.get(locale) or description.get('en'))
         core = {'id': ident, 'name': name,
                 'l': level if level is not None else '', 'p': path}
+        if kind == 'quests':
+            core['tp'] = thematic_path(category_en, category_loc, code, is_story, path)
         if kind == 'deeds' and ident in replaced:
             core['replaced_by'] = replaced[ident]
         if monster_play:

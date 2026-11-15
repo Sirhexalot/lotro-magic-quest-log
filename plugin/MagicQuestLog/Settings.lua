@@ -7,7 +7,7 @@ local S = {};
 MagicQuestLog.Settings = S;
 
 local KEY = "MagicQuestLogSettings";
-local DEFAULTS = { windowVisible = true, useIcon = true, showObjectives = false, filter = "all" };
+local DEFAULTS = { windowVisible = true, useIcon = true, showObjectives = false, filter = "all", structure = "geographic" };
 
 -- Positions are stored as text, never as numbers. The client writes numbers with
 -- the locale's decimal separator ("239,000000" on a German client), which is not
@@ -16,7 +16,7 @@ local PLACEMENTS = { "windowLeft", "windowTop", "iconLeft", "iconTop" };
 -- Placement, the switches, the list filter and whether objectives are shown (off by
 -- default, so a quest's solution is not in view right away): the only keys stored.
 local KNOWN = { "windowLeft", "windowTop", "iconLeft", "iconTop", "windowVisible", "useIcon",
-	"showObjectives", "filter" };
+	"showObjectives", "filter", "structure" };
 local FILTERS = { all = true, open = true, done = true, available = true };
 
 function S.Load()
@@ -42,6 +42,7 @@ function S.Load()
 	settings.useIcon = settings.useIcon ~= false;
 	settings.showObjectives = settings.showObjectives == true or settings.showObjectives == "true";
 	if not FILTERS[tostring(settings.filter)] then settings.filter = "all"; end
+	if settings.structure ~= "thematic" then settings.structure = "geographic"; end
 	S.current = settings;
 	return settings;
 end
