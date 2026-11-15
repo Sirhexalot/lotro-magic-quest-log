@@ -516,6 +516,15 @@ list stacks rows — is checked in the game.
 
 ## Changes
 
+**0.5.4** — landscapes and thematic quest groups share one task tree.
+- The task list now shows landscape groups and thematic groups as equal
+  top-level nodes. There is no separate "by landscape/by topic" mode.
+- Epic Story, Class Quests, Origin Quests, Festivals and Events, Missions,
+  Instances and Battles, Crafting and Other Quests are directly reachable
+  beside the landscapes.
+- Quest ids, deed ids, imported progress and live completion tracking are
+  unchanged.
+
 **0.5.3** — duplicate class deeds are shown once.
 - Exact duplicates of class deeds (65 groups, 67 older entries) no longer appear
   twice in the tree or in the counters. The older entry stays in the catalog;

@@ -3,7 +3,7 @@
 Not for the download page. The text that goes there is in
 [lotrointerface.md](lotrointerface.md).
 
-Current upload description (0.5.3): [lotrointerface-0.5.3.bbcode](lotrointerface-0.5.3.bbcode).
+Current upload description (0.5.4): [lotrointerface-0.5.4.bbcode](lotrointerface-0.5.4.bbcode).
 The unversioned BBCode and the older Markdown below are historical, not the current upload source.
 On 7 November 2026 the description alone was updated with `fileaction=keep`:
 separate Companion, website and plugin steps, explicit Plugins/PluginData paths,
@@ -60,6 +60,9 @@ a file admin approves it.
 - 13 November 2026: 0.5.3 prepared (exact duplicate class deeds shown once; 65
   groups, 67 older entries). Archive: `dist/MagicQuestLog-0.5.3.zip`. Upload
   pending; no approval claimed.
+- 15 November 2026: 0.5.4 prepared. Landscapes and thematic quest groups now
+  share one task tree; the old export instructions were removed from the public
+  description. Archive: `dist/MagicQuestLog-0.5.4.zip`.
 
 ## Uploading without a browser
 
