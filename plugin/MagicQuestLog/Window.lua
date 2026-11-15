@@ -761,7 +761,8 @@ function Window:AddNode(node, depth, parentPath)
 		-- A status mark only exists when progress is known: without it every row
 		-- would carry a grey circle that says nothing. Entries that are not counted
 		-- get no mark at all - a circle would claim they are still open.
-		if self.completed and not record.sessionPlay and not record.excluded then
+		if self.completed and not record.sessionPlay and not record.excluded
+			and not record.monsterPlay then
 			local mark = makeImage(item, self.completed[record.id] == true and "done" or "todo");
 			mark:SetPosition(3, 1);
 			item.status = mark;
@@ -773,8 +774,9 @@ function Window:AddNode(node, depth, parentPath)
 		local text = makeLabel(item, self.body, self.trim);
 		text:SetMultiline(true);
 		-- An entry that cannot be counted says so next to its name: a session play
-		-- the game never records, or one the finished alternative rules out. Both
-		-- are dimmed so the eye skips them when reading the numbers.
+		-- the game never records, a monster-play entry the creep side fights, or
+		-- one the finished alternative rules out. All are dimmed so the eye skips
+		-- them when reading the numbers.
 		local name = record.displayName or record.name;
 		if record.twin and record.g ~= nil then name = name .. "  –  " .. record.g; end
 		local levelText = Model.LevelText(record);
@@ -785,6 +787,9 @@ function Window:AddNode(node, depth, parentPath)
 		if record.sessionPlay then
 			text:SetForeColor(self.dim);
 			name = name .. "   (" .. self.strings.sessionplay .. ")";
+		elseif record.monsterPlay then
+			text:SetForeColor(self.dim);
+			name = name .. "   (" .. self.strings.monsterplay .. ")";
 		elseif record.excluded then
 			text:SetForeColor(self.dim);
 			name = name .. "   (" .. self.strings.alternative .. ")";
@@ -959,16 +964,19 @@ end
 
 --- Whose progress is shown. "date" is the day of the Companion import, if any;
 --- "current" says whether this is the logged-in character, the only one whose
---- completions come in live.
-function Window:SetCharacter(name, date, current, count)
+--- completions come in live. "missing" says no import file was found: without it
+--- the window would show no progress and no reason.
+function Window:SetCharacter(name, date, current, count, missing)
 	self.characterName = name or false;
-	-- The switch only when there is more than one character; the name only when
-	-- it is not the one logged in, which needs no telling.
-	self.characterButton:SetVisible((tonumber(count) or 1) > 1);
+	-- Keep the control in place if the index is missing or has only one name.
+	-- A disabled switch is clearer than a button disappearing after its click.
+	self.characterButton:SetVisible(true);
+	self.characterButton:SetEnabled((tonumber(count) or 1) > 1);
 	self.characterButton:SetText(self.strings.character);
 	local parts = {};
 	if not current and name ~= nil then parts[#parts + 1] = string.format(self.strings.viewing, name); end
 	if date ~= nil then parts[#parts + 1] = self.strings.importedon .. " " .. date; end
+	if missing and name ~= nil then parts[#parts + 1] = string.format(self.strings.noimport, name); end
 	self.characterLabel:SetText(table.concat(parts, " · "));
 end
 

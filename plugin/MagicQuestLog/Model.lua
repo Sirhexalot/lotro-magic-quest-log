@@ -222,16 +222,20 @@ function M.Build(records, query, strings, completed, context, options)
 		return record.displayName;
 	end
 	-- What a character can still do, not what exists. A session play is never
-	-- written to the journal (the game plays someone else), and of two quests that
-	-- rule each other out only one can be taken. Neither belongs in a counter.
+	-- written to the journal (the game plays someone else), monster play deeds
+	-- belong to the creep side and never appear in a character's journal either,
+	-- and of two quests that rule each other out only one can be taken. None of
+	-- them belongs in a counter.
 	-- A finished entry always counts: the game data has a few pairs that a
 	-- character has evidently done both of.
 	local function attainable(record, finished)
 		record.sessionPlay = record.x == 1;
+		record.monsterPlay = record.mp == 1;
 		record.excluded = false;
 		record.excludedBy = false;
 		if finished then return true; end
 		if record.sessionPlay then return false; end
+		if record.monsterPlay then return false; end
 		if completed ~= nil then
 			for _, other in ipairs(record.ex or {}) do
 				if completed[other] == true then
@@ -244,15 +248,29 @@ function M.Build(records, query, strings, completed, context, options)
 	end
 	local byId = {};
 	for _, record in ipairs(records or {}) do byId[record.id] = record; end
+	-- A removed duplicate points at its replacement. A character's progress
+	-- written under the old id still counts for the new entry; the old record
+	-- itself leaves the tree, so the list shows the name once.
+	local aliasDone = {};
+	if completed ~= nil then
+		for _, record in ipairs(records or {}) do
+			if record.replaced_by ~= nil and completed[record.id] == true then
+				aliasDone[record.replaced_by] = true;
+			end
+		end
+	end
 	local needle = M.Normalize(query or "");
 	for _, record in ipairs(records or {}) do
 		local name = display(record);
 		-- The state is worked out for every record, not only for the ones the
 		-- search keeps: a stale flag would otherwise be shown later.
-		local finished = completed ~= nil and completed[record.id] == true;
+		local finished = completed ~= nil and (completed[record.id] == true or aliasDone[record.id] == true);
 		local counts = attainable(record, finished);
 		local shown = needle == "" or string.find(record.searchText, needle, 1, true) ~= nil
 			or string.find(record.pathText, needle, 1, true) ~= nil;
+		-- The old half of a duplicate stays in the catalog for progress and
+		-- lookup, but never appears a second time in the tree.
+		if record.replaced_by ~= nil then shown = false; end
 		if shown and filter ~= "all" and completed ~= nil then
 			if filter == "done" then shown = finished;
 			elseif filter == "open" then shown = counts and not finished;
@@ -511,6 +529,9 @@ function M.Detail(record, strings, context, opts)
 	-- Why an entry is not counted. The row is dimmed in the tree; this says why.
 	if record.sessionPlay then
 		table.insert(parts, strings.sessionnote);
+	end
+	if record.monsterPlay then
+		table.insert(parts, strings.monsternote);
 	end
 	if record.excluded then
 		-- Resolve returns two values; the second would become table.insert's position.

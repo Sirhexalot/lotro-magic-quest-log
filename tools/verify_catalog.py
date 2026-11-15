@@ -61,6 +61,8 @@ def check(locale, kind, records, details=None):
         # x = session play, ex = quests that rule this one out. Both are facts from
         # the game data and must read the same in every language.
         assert record.x is None or record.x == 1, '%s %s: bad session flag %r' % (locale, record.id, record.x)
+        # mp = monster play: a creep-side deed that never enters a freep journal.
+        assert record.mp is None or record.mp == 1, '%s %s: bad monster play flag %r' % (locale, record.id, record.mp)
         partners = tuple(sorted(record.ex.values())) if record.ex is not None else ()
         # Description, steps and all objectives come from the entry's detail block.
         full = record
@@ -110,7 +112,7 @@ def check(locale, kind, records, details=None):
                 rewards_mark.append((kind, quality, level, count, bound, ident))
             else:
                 rewards_mark.append((kind, 0, 0, 1, 0, ''))
-        marks[record.id] = (record.x or 0, partners, goals, tuple(rewards_mark))
+        marks[record.id] = (record.x or 0, record.mp or 0, partners, goals, tuple(rewards_mark))
         for part in record.p.values():
             if part.k.startswith('zone:'):
                 zones.add(part.k[len('zone:'):])
@@ -125,7 +127,10 @@ def check(locale, kind, records, details=None):
                 if goal.c is not None:
                     assert 0 < goal.c <= 100000, '%s %s: implausible count' % (locale, record.id)
         for target in (list(full.t.values()) if full.t is not None else []):
-            assert isinstance(target.map, int) and target.map > 0, '%s %s: bad map' % (locale, record.id)
+            # map: MoorMap's number for the button. Absent on interior maps (inns,
+            # caves, dungeons) that MoorMap does not cover; the button stays hidden.
+            assert target.map is None or (isinstance(target.map, int) and target.map > 0), \
+                '%s %s: bad map' % (locale, record.id)
             assert -180 <= target.lat <= 180 and -360 <= target.lon <= 360, \
                 '%s %s: bad position' % (locale, record.id)
             assert target.step in indexes, '%s %s: target for unshown step' % (locale, record.id)
@@ -136,10 +141,10 @@ def check(locale, kind, records, details=None):
     assert not shared, '%s %s: name used as zone and as area: %s' % (locale, kind, ', '.join(shared))
     # A partner that is not in the catalog would be a dangling promise, and a
     # one-sided entry would silently take an entry out of the count for nobody.
-    for ident, (_, partners, _goals, _rewards) in marks.items():
+    for ident, (_x, _mp, partners, _goals, _rewards) in marks.items():
         for partner in partners:
             assert partner in ids, '%s %s: %s points at unknown %s' % (locale, kind, ident, partner)
-            assert ident in marks[partner][1], '%s %s: %s and %s are not mutual' % (locale, kind, ident, partner)
+            assert ident in marks[partner][2], '%s %s: %s and %s are not mutual' % (locale, kind, ident, partner)
     return ids, structure, marks
 
 
@@ -182,9 +187,10 @@ def main():
     print('PASS: identical path structure and id sets across all languages')
     for kind in ('Quests', 'Deeds'):
         english = marks[(kind, 'en')]
-        print('PASS: %s flags read the same in all languages (%d session plays, %d entries with an alternative)'
+        print('PASS: %s flags read the same in all languages (%d session plays, %d monster play, %d entries with an alternative)'
               % (kind.lower(), sum(1 for value in english.values() if value[0]),
-                 sum(1 for value in english.values() if value[1])))
+                 sum(1 for value in english.values() if value[1]),
+                 sum(1 for value in english.values() if value[2])))
     print(json.dumps(counts, indent=2))
     return 0
 

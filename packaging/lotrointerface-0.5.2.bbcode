@@ -1,0 +1,99 @@
+[center][size=5][color=#E0B062][b]Magic Quest Log[/b][/color][/size]
+[size=3][i]Quest and deed atlas for Middle-earth - right inside the game[/i][/size]
+
+[b]15,118 quests | 5,528 deeds | English, German, French[/b]
+Companion website: [url=https://llb.sirhexalot.de][b]LOTRO Log Book[/b][/url][/center]
+
+[size=4][color=#E0B062][b]What is this?[/b][/color][/size]
+Magic Quest Log lets you browse quests and deeds by area and epic story, read their descriptions without revealing the objectives, and see your progress in one window inside the game.
+
+[size=4][color=#E0B062][b]What it does[/b][/color][/size]
+[list]
+[*][b]Browse by landscape or story.[/b] Landscapes come first, followed by the epic story by volume and book, festivals, crafting, instances, missions and other quests.
+[*][b]Search[/b] by part of a quest, deed or area name. Search ignores case and accents.
+[*][b]No spoilers by default.[/b] Read the description, quest giver and requirements first. Show the steps and objectives for an individual entry when you want them.
+[*][b]Filter[/b] with All, Open, Done and Available. Available checks known requirements and your level; it cannot check every condition in the game.
+[*][b]See your progress.[/b] Import older progress from LOTRO Companion. The plugin records completions reported in the game's quest channel while it is running. Finished entries get a green check; groups show completed / total.
+[*][b]Show in MoorMap.[/b] Open the recorded quest-giver position, or an objective position after revealing objectives. Only entries with a recorded map position have this button.
+[*][b]Several characters.[/b] The Character button switches between imported characters on your current server. It stays visible but is disabled when only one character is known.
+[*][b]English, German and French.[/b] The plugin follows your game language.
+[/list]
+[i]This fix release does not add items, recipes, equipment or a built-in map to the plugin. The website has additional features.[/i]
+
+[size=4][color=#E0B062][b]Installing or updating[/b][/color][/size]
+[list=1]
+[*]Close the game before replacing plugin files.
+[*]Open [b]Documents\The Lord of the Rings Online\Plugins[/b]. This is in your Documents folder, not the folder containing the game's program files. If you already use other plugins, use the same Plugins folder. On a Mac, the usual location is [font=Courier New]~/Documents/The Lord of the Rings Online/Plugins[/font]; your Wine setup may use another location.
+[*]Extract the downloaded [b]MagicQuestLog-0.5.2.zip[/b] into Plugins. Afterwards, [font=Courier New]Plugins\MagicQuestLog\MagicQuestLog.plugin[/font] must exist. If you see [font=Courier New]Plugins\MagicQuestLog\MagicQuestLog\MagicQuestLog.plugin[/font], there is one folder too many. For an update, allow the plugin files to be replaced. Keep your [b]PluginData[/b] folder: it contains your saved progress and settings.
+[*]Start the game and load the plugin: [font=Courier New]/plugins load MagicQuestLog[/font]. In the German client: [font=Courier New]/zusatzmodule laden MagicQuestLog[/font].
+[*]Type [font=Courier New]/mql[/font] to open the window.
+[/list]
+Only the map button needs [url=https://www.lotrointerface.com/downloads/info532-MoorMap.html]MoorMap[/url] by Garan. The rest works without it.
+
+[size=4][color=#E0B062][b]Importing older progress[/b][/color][/size]
+The game does not let plugins read your quest journal. To show quests and deeds you finished before using Magic Quest Log, import them through LOTRO Companion. This is optional; you can browse the catalog without it.
+
+[b]1. Read your character in LOTRO Companion[/b]
+[list=1]
+[*]Install and open [url=https://sourceforge.net/projects/lotrocompanion/]LOTRO Companion[/url]. Log into LOTRO with the character you want to import and enter the world.
+[*]In Companion, choose [b]Misc > Import from LOTRO[/b], then [b]Refresh[/b] and [b]Start[/b]. Use this command, not "Import a character". Repeat for your other characters if wanted.
+[/list]
+
+[b]2. Open those saved characters on the website[/b]
+[list=1]
+[*]Open [url=https://llb.sirhexalot.de/spielstand.html?lang=en]LOTRO Log Book - Import progress[/url].
+[*]Select Companion's [b]characters[/b] folder, not the game's Plugins or PluginData folder. On Windows, paste [font=Courier New]%USERPROFILE%\.lotrocompanion\data\characters[/font] into the folder dialog's address bar. The website also gives Mac instructions; the location depends on your Wine installation.
+[*]Check that the website shows the character and server you expected. It reads and converts the files in your browser; your character files are not uploaded.
+[/list]
+
+[b]3. Save the converted progress for the plugin[/b]
+Choose one of these methods:
+[list]
+[*][b]Chrome or Edge:[/b] click [b]Write into the LOTRO folder[/b] and select [b]Documents\The Lord of the Rings Online\PluginData[/b]. Select PluginData itself, not Plugins and not an account folder inside it.
+[*][b]ZIP download:[/b] download the progress ZIP from the website. Open the ZIP and extract the account folder inside it into [b]Documents\The Lord of the Rings Online\PluginData[/b]. Copying the unopened ZIP there does not install the progress. Do not put an extra MagicQuestLog-PluginData folder between PluginData and your account folder.
+[/list]
+[b]The plugin ZIP goes into Plugins. The progress ZIP's contents go into PluginData.[/b] These are two different downloads and folders. On a Mac, use PluginData next to your game's Plugins folder.
+
+Check that the resulting file is here (replace ACCOUNT, SERVER and NAME with your own names):
+[font=Courier New]PluginData\ACCOUNT\SERVER\AllCharacters\MagicQuestLog_Import_NAME.plugindata[/font]
+
+[b]4. Show the imported progress[/b]
+If Magic Quest Log is already running, close its window, wait at least 30 seconds after its last opening, then type [font=Courier New]/mql[/font] to open it again. An import does not require a game restart. Replacing plugin files with a newer version does: fully close and restart the game in that case.
+
+The [b]Character[/b] button at the top right switches between imported characters on your current server. With only one known character, it stays visible but cannot be clicked.
+
+[b]If your character name contains an accent:[/b] update to 0.5.2 and export again from the website. The old exporter silently skipped those names, so updating the plugin alone cannot restore a file that was never exported.
+
+[b]No progress after importing?[/b]
+[list]
+[*]First check the installed version. While LOTROInterface says "awaiting approval", the main download may still provide an older version.
+[*]Check whether the website showed the right character before you exported. If not, repeat the Companion import and select its characters folder again.
+[*]In 0.5.1 and later, a missing-import notice names the expected file path in chat. Compare it with the extracted file: account, server, character name and folder nesting must match.
+[*]If it still fails, leave a comment with the installed plugin version, server and whether the expected file exists. Do not post your account folder name or full character-data ZIP publicly.
+[/list]
+
+[b]Collecting deeds above all?[/b] [url=https://www.lotrointerface.com/downloads/info1139-DeedTracker.html]Deed Tracker[/url] by b414213562 is a dedicated deed plugin. Both work side by side.
+
+[size=4][color=#E0B062][b]Changes[/b][/color][/size]
+[b]0.5.2 - Monster play deeds no longer count[/b]
+[list]
+[*]Deeds from the old monster-play areas (Angmar, Eregion, Forochel) and every deed the game marks as monster play are left out of the counters. They never appear in a normal character's journal, so they should not count as attainable. Reported by Evereus.
+[*]The deeds stay visible in the tree; their details now explain why they do not count.
+[*]The plugin still carries quests and deeds only.
+[/list]
+[b]0.5.1 - Companion import fixes[/b]
+[list]
+[*]Fixed imports appearing missing after reopening the window or switching characters. Loaded progress and the character list now stay in place while the plugin checks for an updated import.
+[*]Accented Latin character names are accepted in website exports and by the plugin.
+[*]The Character button no longer disappears when only one character is known; it stays visible and disabled.
+[*]Missing Companion imports are explained in the window and once per character and session in chat, with the expected path.
+[*]The catalog and other features are unchanged from 0.5.0.
+[/list]
+[b]0.5.0[/b] - Landscape-first tree, epic story by volume and book, split catalog for faster loading, objectives below the description, MoorMap button fix.
+[b]0.4.0[/b] - Map relationships from the game's own data, more mapped entries, objectives on request.
+[b]0.3.1[/b] - Faster window and working chat command.
+[b]0.3.0[/b] - Quest givers, requirements, chains, LOTRO points and Available filter.
+[b]0.2.0[/b] - Progress from LOTRO Companion through the website, several characters, per-character live progress.
+[b]0.1.2[/b] - Session plays and ruled-out alternatives excluded from completion totals.
+[b]0.1.1[/b] - Long-name wrapping and duplicate areas fixed.
+[b]0.1.0[/b] - First release.

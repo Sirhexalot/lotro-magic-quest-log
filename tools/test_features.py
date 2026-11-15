@@ -32,6 +32,16 @@ assert(M.Available(sample, completed, 150), "requirement met -> available")
 assert(not M.Available(sample, {}, 150), "requirement open -> not available")
 local done = M.Build(quests, "", S, completed, {}, { filter = "done" })
 assert(done.total == 1, "done shows exactly the finished entry, got " .. done.total)
+-- A replaced duplicate leaves the tree; an old completion counts for the new id.
+local mini = {
+	{ id = "70000001", name = "Doppelt", p = { { k = "region:Eriador", n = "Eriador" } }, replaced_by = "70000002" },
+	{ id = "70000002", name = "Doppelt", p = { { k = "region:Eriador", n = "Eriador" } } },
+}
+local miniAll = M.Build(mini, "", S, { ["70000001"] = true }, {}, {})
+assert(miniAll.total == 1, "old duplicate leaves the tree")
+assert(miniAll.done == 1, "old progress counts for the replacement")
+local miniDone = M.Build(mini, "", S, { ["70000001"] = true }, {}, { filter = "done" })
+assert(miniDone.total == 1, "done shows the replacement once")
 -- Area search: the area name finds its entries.
 local area = M.Build(quests, "Breeland", S, nil, {}, {})
 local byName = M.Build(quests, "Abgetragen", S, nil, {}, {})

@@ -3,6 +3,15 @@
 Not for the download page. The text that goes there is in
 [lotrointerface.md](lotrointerface.md).
 
+Current upload description (0.5.3): [lotrointerface-0.5.3.bbcode](lotrointerface-0.5.3.bbcode).
+The unversioned BBCode and the older Markdown below are historical, not the current upload source.
+On 7 November 2026 the description alone was updated with `fileaction=keep`:
+separate Companion, website and plugin steps, explicit Plugins/PluginData paths,
+two ZIP destinations and troubleshooting. The public page was fetched again and
+confirmed to contain the revised instructions. Version and archive were unchanged;
+0.5.1 still awaited file-admin approval. The description is ASCII-only. Remaining
+mojibake observed in the site's cookie dialog belongs to LOTROInterface, not this description.
+
 ## Upload mechanics
 
 - The archive must contain **one top-level folder** holding the `.plugin` file.
@@ -48,6 +57,9 @@ a file admin approves it.
   button under the description, MoorMap button fixed). Description replaced in
   full, numbers updated to 15,118 quests / 5,528 deeds. "The file has been
   updated", awaiting approval.
+- 13 November 2026: 0.5.3 prepared (exact duplicate class deeds shown once; 65
+  groups, 67 older entries). Archive: `dist/MagicQuestLog-0.5.3.zip`. Upload
+  pending; no approval claimed.
 
 ## Uploading without a browser
 

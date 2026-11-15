@@ -348,12 +348,21 @@ class Source:
 
 
 def build(export_dir, enums_path, output, moormap_path=None, overrides=None, landblocks_path=None,
-          npcs_dir=None, did_positions=None, lore_dir=None, placed_entities=None, rewards_path=None):
+          npcs_dir=None, did_positions=None, lore_dir=None, placed_entities=None, rewards_path=None,
+          only='all'):
     source = Source(export_dir)
     rewards = json.loads(Path(rewards_path).read_text(encoding='utf-8')) if rewards_path else {}
     overrides = overrides or {}
     hidden = set(overrides.get('hidden_ids', []))
     added = overrides.get('paths', {})
+    replaced = overrides.get('replaced_by', {})
+    if replaced:
+        deed_ids = {str(entry['id']) for entry in source.deeds}
+        missing = {old: new for old, new in replaced.items()
+                   if old in deed_ids and new not in deed_ids}
+        if missing:
+            raise ValueError('replaced_by target missing from the export: %s'
+                             % sorted(missing.items())[:5])
     enums = json.loads(Path(enums_path).read_text(encoding='utf-8'))
     quest_categories = enums['QuestCategory']
     deed_categories = enums['AccomplishmentUITab']
@@ -657,6 +666,10 @@ def build(export_dir, enums_path, output, moormap_path=None, overrides=None, lan
                 found.add(name)
         return found.pop() if len(found) == 1 else None
 
+    # Where a quest is: filled while quests are built, so deeds that only say
+    # "complete quest X" can borrow that spot (field hz).
+    quest_point = {}
+
     def make_record(entry, kind, locale, stats, fallback):
         ident = entry['id']
         props = entry.get('properties') or {}
@@ -686,6 +699,19 @@ def build(export_dir, enums_path, output, moormap_path=None, overrides=None, lan
             derived = territory_for(ident)
             if derived is not None and derived in region_of:
                 zone, area, stats[kind + '_zone_from_position'] = derived, None, stats[kind + '_zone_from_position'] + 1
+
+        # Monster play: the game flags most of these deeds, but a few dozen in the
+        # old PvMP areas carry no flag and only their title gives them away. A
+        # normal character never writes them to the journal, so they must not be
+        # counted as attainable (reported by Evereus, 09.11.2026: +100 each in
+        # Angmar, Eregion and Forochel).
+        monster_play = props.get('Quest_IsMonsterPlayQuest') == 1
+        if kind == 'deeds' and not monster_play and zone in ('Angmar', 'Eregion', 'Forochel'):
+            english_title = (((entry.get('title') or {}).get('texts') or {}).get('en') or '')
+            monster_play = ('slayer' in english_title.lower()
+                            and re.search(r'-- Tier [1-5]$', english_title) is not None)
+        if monster_play:
+            stats[kind + '_monster_play'] += 1
         if zone in HIDDEN_ZONES or (area and any(word in area for word in HIDDEN_AREA_WORDS)):
             stats[kind + '_hidden'] += 1
             return None
@@ -809,6 +835,14 @@ def build(export_dir, enums_path, output, moormap_path=None, overrides=None, lan
             seen.add(key)
             targets.append(dict(chosen, lat=round(lat, 5), lon=round(lon, 5), step=step_index))
 
+        # Positions that fit no world map were also tried on interior maps (inns,
+        # caves, dungeons) on 07.11.2026: 306 cases looked unambiguous, but all of
+        # them were nameless internal records (name = id). Interior maps give the
+        # player nothing here, so the attempt was dropped again.
+        if kind == 'quests' and targets:
+            first = targets[0]
+            quest_point[ident] = {key: first[key] for key in ('gm', 'lat', 'lon', 'map') if key in first}
+
         title = ((entry.get('title') or {}).get('texts') or {})
         name = clean(title.get(locale) or title.get('en'))
         if not name:
@@ -825,6 +859,10 @@ def build(export_dir, enums_path, output, moormap_path=None, overrides=None, lan
         text = clean(description.get(locale) or description.get('en'))
         core = {'id': ident, 'name': name,
                 'l': level if level is not None else '', 'p': path}
+        if kind == 'deeds' and ident in replaced:
+            core['replaced_by'] = replaced[ident]
+        if monster_play:
+            core['mp'] = 1
         detail = {'d': text, 's': steps, 't': targets}
         granted = reward_entries(props, rewards, locale)
         if granted:
@@ -856,6 +894,36 @@ def build(export_dir, enums_path, output, moormap_path=None, overrides=None, lan
                 core['h'] = hints
                 stats['deeds_with_hunting'] += 1
                 stats['deeds_hunting_points'] += len(hints)
+            # hz: places of the quests this deed asks for ("complete X"). The deed
+            # itself names no spot, but the quest does; the field is a hint, not an
+            # objective of the deed, and the plugin ignores it.
+            if not targets and not hints:
+                eigene = []
+                for objective in entry.get('objectives') or []:
+                    index = str(objective.get('Quest_ObjectiveIndex', ''))
+                    if index not in indexes:
+                        continue
+                    events = []
+                    walk_events(objective.get('Quest_CompletionConditionArray') or [], events.append)
+                    for event in events:
+                        verweist = event.get('QuestEvent_QuestComplete')
+                        if not isinstance(verweist, int):
+                            continue
+                        point = quest_point.get('%08X' % (verweist & 0xffffffff))
+                        if point is None:
+                            continue
+                        key = (point['gm'], round(point['lat'], 4), round(point['lon'], 4), index)
+                        if key in {(p['gm'], round(p['lat'], 4), round(p['lon'], 4), p['step']) for p in eigene}:
+                            continue
+                        eigene.append(dict(point, step=index))
+                        if len(eigene) >= 6:
+                            break
+                    if len(eigene) >= 6:
+                        break
+                if eigene:
+                    core['hz'] = eigene
+                    stats['deeds_with_quest_hint'] += 1
+                    stats['deeds_quest_hint_points'] += len(eigene)
             detail = {};
         else:
             if len(steps) > 0:
@@ -1027,6 +1095,9 @@ def build(export_dir, enums_path, output, moormap_path=None, overrides=None, lan
         for source_file in sorted(staging.rglob('*')):
             if not source_file.is_file():
                 continue
+            if only == 'deeds' and not (source_file.name.startswith('Deeds_')
+                                        or source_file.name == 'manifest.json'):
+                continue
             target = output / source_file.relative_to(staging)
             if source_file.suffix == '.lua' and target.is_file():
                 if not target.read_text(encoding='utf-8').startswith(MARKER):
@@ -1060,11 +1131,13 @@ def main():
     parser.add_argument('--rewards', type=Path, default=None,
                         help='rewards.json from export_rewards.py: items, titles, virtues per quest and deed')
     parser.add_argument('--overrides', type=Path, default=ROOT / 'tools/overrides.json')
+    parser.add_argument('--only', choices=('all', 'deeds'), default='all',
+                        help='deeds: build everything for the hints but write only Deeds_*.lua and manifest.json')
     options = parser.parse_args()
     data = json.loads(options.overrides.read_text(encoding='utf-8')) if options.overrides.is_file() else {}
     report = build(options.export, options.enums, options.output, options.moormap, data,
                    options.landblocks, options.npcs, options.did_positions, options.lore, options.placed_entities,
-                   options.rewards)
+                   options.rewards, options.only)
     print(json.dumps({k: v['counts'] for k, v in report['locales'].items()}, ensure_ascii=False, indent=2))
 
 

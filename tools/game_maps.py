@@ -73,6 +73,17 @@ class GameMaps:
                 self.links.append((parent, target, float(link.group(3)), float(link.group(4))))
         self._fit_overviews()
         self._names = {}
+        # Interior maps (inns, jails, caves, dungeons) are in maps.xml with their own
+        # bounds and image, but not in parchmentMaps.xml. They stay out of the world
+        # maps above: attribute() must never pick one, or it would swallow every
+        # point that happens to lie inside a cave. They are used only where a
+        # position fits no world map at all (see build_catalog_from_export.py).
+        self.interior = {}
+        for ident, entry in geometry.items():
+            if ident in self.maps:
+                continue
+            self.interior[ident] = dict(entry, id=ident, region=0, parent=None,
+                                        bounds=True, overview=False)
 
     def _fit_overviews(self):
         """Bounds for an overview from its links: x = a*lon + b, y = c*lat + d."""
@@ -155,7 +166,16 @@ class GameMaps:
         return self._names[language]
 
     def name(self, ident, language):
-        return self.names(language).get(ident) or clean_name(self.maps[ident]['name'])
+        entry = self.maps.get(ident) or self.interior.get(ident)
+        return self.names(language).get(ident) or clean_name((entry or {}).get('name'))
+
+    def interior_at(self, lat, lon, limit=25.0):
+        """Interior maps whose frame holds this position and is small enough to be a
+        room or a cave (not a world-sized image). Several can match: nested copies."""
+        return [entry for entry in self.interior.values()
+                if entry['bounds'] and self.contains(entry, lat, lon)
+                and (entry['east'] - entry['west']) <= limit
+                and (entry['north'] - entry['south']) <= limit]
 
 
 def clean_name(name):

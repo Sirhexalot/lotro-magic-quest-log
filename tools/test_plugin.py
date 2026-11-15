@@ -51,6 +51,7 @@ local function controlFactory()
 		if key == "SetVerticalScrollBar" then return function(s, v) s.scrollbar = v end end
 		if key == "GetValue" then return function(s) return s.value or 0 end end
 		if key == "SetVisible" then return function(s, v) s.visible = v end end
+		if key == "SetEnabled" then return function(s, v) s.enabled = v end end
 		if key == "IsVisible" then return function(s) return s.visible ~= false end end
 		return function() end
 	end });
@@ -239,7 +240,7 @@ function erwartet(completed)
 		local finished = known and completed[record.id] == true;
 		if finished then
 			total, done = total + 1, done + 1;
-		elseif record.x ~= 1 then
+		elseif record.x ~= 1 and record.mp ~= 1 then
 			local blocked = false;
 			if known then
 				for _, other in ipairs(record.ex or {}) do
@@ -362,7 +363,11 @@ assert(window.showObjectives == false, "a new entry starts with its objectives h
 assert(window.command == false, "no command without a position");
 -- Deeds use the same machinery.
 window:SetKind("deeds");
-assert(window.kind == "deeds" and window.root.total == deedTotal, "deed catalog");
+local deedsCounted = 0;
+for _, record in ipairs(MQL.catalogs.deeds) do
+	if record.mp ~= 1 and record.replaced_by == nil then deedsCounted = deedsCounted + 1; end
+end
+assert(window.kind == "deeds" and window.root.total == deedsCounted, "deed catalog");
 window:SetKind("quests");
 -- Expanding a node keeps the totals and shows its children.
 local function node(key)
@@ -473,6 +478,42 @@ assert(sessionRecord.sessionPlay == true, "the session play must be flagged");
 assert(excludedRecord.excluded == true, "a finished alternative must rule an entry out");
 assert(type(excludedRecord.excludedByName) == "string" and excludedRecord.excludedByName ~= "",
 	"the entry that rules it out must be named");
+-- Monster play: the game flags most of these deeds, and a few dozen in the old
+-- PvMP areas only their title. A normal character's journal never contains one,
+-- so they must be flagged and left out of the counters (Evereus, 09.11.2026:
+-- +100 each in Angmar, Eregion and Forochel).
+local monsterRecord = nil;
+for _, record in ipairs(MQL.catalogs.deeds) do
+	if record.mp == 1 and monsterRecord == nil then monsterRecord = record; end
+end
+assert(monsterRecord ~= nil, "expected a monster play deed in the catalog");
+MQL.Model.Build(MQL.catalogs.deeds, "", MQL.strings);
+assert(monsterRecord.monsterPlay == true, "the monster play deed must be flagged");
+assert(monsterRecord.sessionPlay ~= true, "a monster play deed is not a session play");
+-- Rows say so too: dimmed text with a short label, and no status mark that would
+-- claim the entry is still open.
+window:SetKind("deeds");
+window.expanded = {};
+window.searchBox:SetText(monsterRecord.displayName);
+window.query = monsterRecord.displayName;
+local monsterPath = "|";
+for depth, part in ipairs(monsterRecord.p) do
+	monsterPath = monsterPath .. (depth - 1) .. "/" .. part.k;
+	window.expanded[monsterPath] = true;
+end
+window:Rebuild();
+local monsterRow = nil;
+for _, row in ipairs(window.rows) do
+	local shown = row.control.text and row.control.text:GetText() or "";
+	if string.find(shown, monsterRecord.displayName, 1, true) == 1 then monsterRow = row; break; end
+end
+assert(monsterRow ~= nil, "a monster play deed must stay visible in the tree");
+assert(string.find(monsterRow.control.text:GetText(), "(" .. MQL.strings.monsterplay .. ")", 1, true) ~= nil,
+	"the monster play row must carry its label");
+assert(monsterRow.control.status == false, "a monster play row must not show a status mark");
+window.searchBox:SetText("");
+window.query = "";
+window:SetKind("quests");
 -- A finished entry always counts, even where the data claims both alternatives are
 -- exclusive: eleven such pairs exist in the export and this character has both.
 assert(completed[excludedRecord.id] ~= true, "precondition: the ruled-out entry is open");
@@ -924,6 +965,11 @@ assert(string.find(window.characterLabel:GetText(), "2026-11-03", 1, true), "imp
 -- The logged-in character needs no name; the switch shows because there are several.
 assert(not string.find(window.characterLabel:GetText(), "Feldobar", 1, true), "own name is not repeated");
 assert(window.characterButton:IsVisible(), "switch offered with several characters");
+assert(window.characterButton.enabled == true, "switch enabled with several characters");
+window:SetCharacter("Feldobar", nil, true, 1, true);
+assert(window.characterButton:IsVisible(), "single-character switch must not disappear");
+assert(window.characterButton.enabled == false, "single-character switch must be disabled");
+window:SetCharacter("Feldobar", "2026-11-03", true, #MQL.characters, false);
 -- The logged-in character joins the stored list; invalid names never do.
 local index = serverData["MagicQuestLog_Characters"];
 assert(index.Feldobar == true and index.Meriadoc == true, "character list must hold both");
@@ -932,6 +978,10 @@ assert(MQL.characters[1] == "Feldobar" and #MQL.characters == 3, "sorted list wi
 window.CharacterClicked();
 assert(MQL.shown == "Fremder", "next character: " .. tostring(MQL.shown));
 assert(window.completed == false, "a file naming someone else must be ignored");
+assert(string.find(window.characterLabel:GetText(), "kein Companion-Import", 1, true),
+	"a missing import is named in the header: " .. window.characterLabel:GetText());
+assert(string.find(lastShell or "", "MagicQuestLog_Import_Fremder", 1, true),
+	"a missing import names the expected file: " .. tostring(lastShell));
 window.CharacterClicked();
 assert(MQL.shown == "Meriadoc", "next character: " .. tostring(MQL.shown));
 assert(window.completed[b] == true and window.completed[a] == nil, "only Meriadoc's ids");
@@ -960,6 +1010,61 @@ window.VisibleChanged();
 assert(window.completed[quests[4].id] == true, "a new import must be picked up on opening");
 assert(builds >= 1, "a changed import rebuilds the tree");
 MQL.Model.Build = original;
+-- The real client returns nil at runtime and delivers data in a callback.
+-- Pending reads must not erase an import or shrink the character list.
+local synchronousLoad = Turbine.PluginData.Load;
+local queue = {};
+Turbine.PluginData.Load = function(scope, key, callback)
+	assert(type(callback) == "function", "runtime loads need a callback");
+	queue[#queue + 1] = { scope = scope, key = key, callback = callback };
+	return nil;
+end;
+local function deliver()
+	local batch = queue;
+	queue = {};
+	for _, request in ipairs(batch) do
+		request.callback(synchronousLoad(request.scope, request.key));
+	end
+	assert(#queue == 0, "callback must not recursively reload data");
+end
+local oldStamp = MQL.importStamp;
+gameTime = gameTime + 31;
+window.Shown();
+assert(MQL.importStamp == oldStamp and window.completed[a], "pending refresh must keep progress");
+deliver();
+assert(MQL.importStamp == oldStamp, "unchanged async result must keep its stamp");
+assert(not string.find(window.characterLabel:GetText(), "kein Companion-Import", 1, true),
+	"async nil is not a missing import");
+local replacement = {};
+for key, value in pairs(serverData["MagicQuestLog_Import_Feldobar"]) do replacement[key] = value; end
+replacement.date = "2026-11-05";
+serverData["MagicQuestLog_Import_Feldobar"] = replacement;
+gameTime = gameTime + 31;
+window.Shown();
+assert(MQL.importStamp == oldStamp, "new import waits for callback");
+deliver();
+assert(string.find(window.characterLabel:GetText(), "2026-11-05", 1, true), "callback applies new import");
+window.CharacterClicked();
+assert(#MQL.characters == 3 and window.characterButton.enabled, "pending index must not lose characters");
+deliver();
+window.CharacterClicked();
+deliver();
+assert(MQL.shown == "Meriadoc" and window.completed[b], "switch uses async import");
+window.CharacterClicked();
+deliver();
+assert(MQL.shown == "Feldobar" and window.completed[a], "switch back preserves own import");
+serverData["MagicQuestLog_Import_Nouveau"] = {
+	character = "Nouveau", date = "2026-11-05", completed = { [b] = true }
+};
+MQL.ShowCharacter("Nouveau");
+assert(MQL.Characters.ImportPending("Nouveau"), "first runtime import is pending");
+assert(not string.find(window.characterLabel:GetText(), "kein Companion-Import", 1, true),
+	"first asynchronous read must not claim a missing file");
+deliver();
+assert(window.completed[b] and window.progressExact, "first callback supplies imported progress");
+MQL.ShowCharacter("Feldobar");
+deliver();
+Turbine.PluginData.Load = synchronousLoad;
 -- Search waits for a pause in typing; one character does not search.
 window.query = "";
 window:Rebuild();

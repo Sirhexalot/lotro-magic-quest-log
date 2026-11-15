@@ -54,6 +54,42 @@ end
 
 local Characters = MagicQuestLog.Characters;
 
+--- Runtime PluginData.Load results arrive later, not as a return value.
+--- Reapply the received data without recursively starting more reads.
+Characters.DataLoaded = function(key)
+	if MagicQuestLog.window == nil then return; end
+	local shown = MagicQuestLog.shown;
+	if key ~= "MagicQuestLog_Characters" and key ~= "MagicQuestLog_Import_" .. tostring(shown)
+		and key ~= "MagicQuestLog_Live_" .. tostring(shown) then return; end
+	Characters.Cached(function()
+		local current = MagicQuestLog.context and MagicQuestLog.context.name;
+		if key == "MagicQuestLog_Import_" .. tostring(shown) then
+			local imported = Characters.LoadImport(shown);
+			if (imported and imported.stamp or false) == MagicQuestLog.importStamp then return; end
+		end
+		if key == "MagicQuestLog_Characters" then
+			local names = Characters.List(current);
+			if table.concat(names, "|") == table.concat(MagicQuestLog.characters or {}, "|") then return; end
+		end
+		MagicQuestLog.characters = Characters.List(current);
+		if shown ~= nil then MagicQuestLog.ShowCharacter(shown); end
+	end);
+end;
+
+--- A missing import looks like a broken plugin: no progress and no hint why. Say it
+--- once per character and session, in the chat where the plugin's errors go, and
+--- name the file the map site would have written. Users without LOTRO Companion see
+--- this once and know the counters start at zero by design.
+function MagicQuestLog.ReportMissingImport(name)
+	local reported = MagicQuestLog.missingReported or {};
+	MagicQuestLog.missingReported = reported;
+	if reported[name] then return; end;
+	reported[name] = true;
+	local strings = MagicQuestLog.strings or MagicQuestLog.Strings.en;
+	Turbine.Shell.WriteLine("<rgb=#D6B35A>Magic Quest Log: </rgb>"
+		.. string.format(strings.noimportpath, name, name));
+end
+
 --- Show one character's progress in the window. Any character of this server can be
 --- chosen; live completions only ever come in for the one that is logged in.
 function MagicQuestLog.ShowCharacter(name)
@@ -64,10 +100,12 @@ function MagicQuestLog.ShowCharacter(name)
 	local legacy = MagicQuestLog.legacy;
 	if MagicQuestLog.legacyCharacter ~= name then legacy = nil; end
 	local merged, exact, imported = Characters.Progress(name, live, legacy);
+	local missing = imported == nil and not Characters.ImportPending(name);
+	if missing and name ~= nil then MagicQuestLog.ReportMissingImport(name); end
 	MagicQuestLog.shown = name;
 	MagicQuestLog.importStamp = imported and imported.stamp or false;
 	window:SetCharacter(name, imported and imported.date or nil, name == current,
-		#(MagicQuestLog.characters or {}));
+		#(MagicQuestLog.characters or {}), missing);
 	-- Level: live for the logged-in character, from the import for any other.
 	local level = imported and imported.level or nil;
 	if name == current then
@@ -87,9 +125,12 @@ function MagicQuestLog.Refresh()
 	local now = Turbine.Engine.GetGameTime();
 	if MagicQuestLog.refreshedAt ~= nil and now - MagicQuestLog.refreshedAt < 30 then return; end
 	MagicQuestLog.refreshedAt = now;
+	local names = Characters.List(MagicQuestLog.context and MagicQuestLog.context.name);
+	local namesChanged = table.concat(names, "|") ~= table.concat(MagicQuestLog.characters or {}, "|");
+	MagicQuestLog.characters = names;
 	local imported = Characters.LoadImport(name);
 	local stamp = imported and imported.stamp or false;
-	if stamp ~= MagicQuestLog.importStamp then MagicQuestLog.ShowCharacter(name); end
+	if namesChanged or stamp ~= MagicQuestLog.importStamp then MagicQuestLog.ShowCharacter(name); end
 end
 
 --- Next character in the list, for the switch in the window.
@@ -118,6 +159,7 @@ function MagicQuestLog.Toggle()
 end
 
 function MagicQuestLog.Load(plugin)
+	Characters.BeginLoad();
 	local started = MagicQuestLog.Perf.Now();
 	MagicQuestLog.plugin = plugin;
 	local language = clientLanguage();
@@ -180,6 +222,7 @@ function MagicQuestLog.Load(plugin)
 		MagicQuestLog.Settings.Save();
 	end;
 	MagicQuestLog.Perf.Record("Plugin geladen (gesamt)", started);
+	Characters.loading = false;
 end
 
 if Turbine.Shell ~= nil and Turbine.Shell.AddCommand ~= nil then

@@ -516,6 +516,27 @@ list stacks rows — is checked in the game.
 
 ## Changes
 
+**0.5.3** — duplicate class deeds are shown once.
+- Exact duplicates of class deeds (65 groups, 67 older entries) no longer appear
+  twice in the tree or in the counters. The older entry stays in the catalog;
+  progress recorded under its old id counts for the current deed. Reported by
+  Evereus on LOTROInterface.
+- The two unconfirmed duplicates ("Tracking an Old Goat", "Enmity of the Orcs")
+  are unchanged; they need an in-game check.
+- No other features changed.
+
+**0.5.2** — monster play deeds no longer count.
+- Deeds from the old monster-play areas (Angmar, Eregion, Forochel) and every deed
+  the game marks as monster play are flagged and kept out of the counters: a normal
+  character's journal never contains one. Reported by Evereus on LOTROInterface.
+  The tree and the details still show them, with the reason.
+- The plugin still carries quests and deeds only.
+
+**0.5.1** — the import keeps its data.
+- The client's `PluginData.Load` returns nil at runtime and calls back later; the
+  plugin now keeps the old state until the callback arrives. Fixes a vanishing
+  character button and a wrongly empty progress display.
+
 **0.5.0** — the tree like the game, and a short login.
 - The tree follows the game: landscapes first (Eriador, Rhovanion, Rohan, Gondor,
   Mordor, Haradwaith, Rhûn), then "Weitere Inhalte" with the epic story by volume

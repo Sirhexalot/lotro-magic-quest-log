@@ -9,8 +9,8 @@
 --   MagicQuestLog_Live_<name>       what this plugin saw finish in the quest channel
 --
 -- An import file is only ever read here; the plugin never writes it. The client
--- reads a plugin data file from disk on every Load (checked in the game), so a new
--- import shows up the next time the window opens, without a restart.
+-- returns data directly during startup, but delivers it through a callback at
+-- runtime. Keep the last result while a runtime read is pending.
 MagicQuestLog = MagicQuestLog or {};
 local C = {};
 MagicQuestLog.Characters = C;
@@ -22,28 +22,71 @@ local LIVE = "MagicQuestLog_Live_";
 -- character can read. It is taken over once and left untouched.
 local OLD_LIVE = "MagicQuestLogLive";
 local HEX = "^%x%x%x%x%x%x%x%x$";
+local cached, pending = {}, {};
+local cachedOnly = false;
+
+function C.BeginLoad()
+	cached, pending = {}, {};
+	C.loading = true;
+end
+
+--- Apply an asynchronous result without starting another round of disk reads.
+function C.Cached(action)
+	local previous = cachedOnly;
+	cachedOnly = true;
+	local ok, result = pcall(action);
+	cachedOnly = previous;
+	if not ok then error(result); end
+	return result;
+end
 
 local function scope(name)
 	if Turbine == nil or Turbine.DataScope == nil then return nil; end
 	return Turbine.DataScope[name];
 end
 
+function C.ImportPending(name)
+	return pending[tostring(scope("Server")) .. ":" .. IMPORT .. tostring(name)] == true;
+end
+
 local function load(where, key)
 	if Turbine.PluginData == nil or where == nil then return nil; end
-	local ok, data = pcall(Turbine.PluginData.Load, where, key);
-	if ok and type(data) == "table" then return data; end
-	return nil;
+	local slot = tostring(where) .. ":" .. key;
+	if cachedOnly or pending[slot] then return cached[slot] or nil; end
+	pending[slot] = true;
+	local calling = true;
+	local function received(data)
+		cached[slot] = type(data) == "table" and data or false;
+		pending[slot] = nil;
+		if not calling and C.DataLoaded ~= nil then C.DataLoaded(key); end
+	end
+	local ok, data = pcall(Turbine.PluginData.Load, where, key, received);
+	if ok and type(data) == "table" then
+		received(data);
+	elseif C.loading or not ok then
+		-- Startup nil means missing. Runtime nil means wait for the callback.
+		pending[slot] = nil;
+		if ok then cached[slot] = false; end
+	end
+	calling = false;
+	return cached[slot] or nil;
 end
 
 local function save(where, key, value)
 	if Turbine.PluginData == nil or where == nil then return false; end
 	local ok = pcall(Turbine.PluginData.Save, where, key, value);
+	if ok then cached[tostring(where) .. ":" .. key] = value; end
 	return ok == true;
 end
 
---- Only plain names make a usable file name. LOTRO character names are letters.
+--- LOTRO names include accented Latin letters. Lua 5.1's %a only recognises
+--- ASCII in the client; validate UTF-8 Latin-1/Extended-A explicitly instead.
+--- Still reject separators, punctuation and other unsafe file-name characters.
 function C.ValidName(name)
-	return type(name) == "string" and string.find(name, "^%a+$") ~= nil;
+	if type(name) ~= "string" or name == "" then return false; end
+	if string.find(name, "×", 1, true) or string.find(name, "÷", 1, true) then return false; end
+	local rest = string.gsub(name, "[\195-\197][\128-\191]", "A");
+	return string.find(rest, "^[A-Za-z]+$") ~= nil;
 end
 
 --- Ids from a table of "70000006" = true. Anything else is dropped, never guessed.
@@ -92,8 +135,8 @@ local function readImport(name)
 	local data = load(scope("Server"), IMPORT .. name);
 	if data == nil then return nil; end
 	if data.character ~= nil and data.character ~= name then return nil; end
+	if type(data.completed) ~= "table" then return nil; end
 	local completed, count = idSet(data.completed);
-	if count == 0 then return nil; end
 	return {
 		completed = completed,
 		count = count,
